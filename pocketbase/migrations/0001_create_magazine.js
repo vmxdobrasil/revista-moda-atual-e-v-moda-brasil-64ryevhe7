@@ -34,7 +34,7 @@ migrate(
           collectionId: editions.id,
           cascadeDelete: true,
         },
-        { name: 'page_number', type: 'number', required: true },
+        { name: 'page_number', type: 'number' },
         { name: 'image_url', type: 'url' },
         { name: 'toc_title', type: 'text' },
         { name: 'created', type: 'autodate', onCreate: true, onUpdate: false },
