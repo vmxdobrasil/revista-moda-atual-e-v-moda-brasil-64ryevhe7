@@ -1,0 +1,249 @@
+import { useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Copy, Sparkles, Wand2, RefreshCcw } from 'lucide-react'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip } from 'recharts'
+import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart'
+import { useToast } from '@/hooks/use-toast'
+
+const MOCK_EDITIONS = [
+  { id: '45', title: 'Edição 45 - Outono Inverno', status: 'Aprovado', date: '10/05/2026' },
+  { id: '46', title: 'Edição 46 - Alto Verão', status: 'Em Revisão', date: '10/06/2026' },
+  { id: '47', title: 'Edição Especial - V MODA', status: 'Rascunho', date: '20/06/2026' },
+]
+
+const MOCK_DATA = [
+  { name: 'Jan', views: 4000, clicks: 2400 },
+  { name: 'Fev', views: 3000, clicks: 1398 },
+  { name: 'Mar', views: 2000, clicks: 9800 },
+  { name: 'Abr', views: 2780, clicks: 3908 },
+  { name: 'Mai', views: 1890, clicks: 4800 },
+  { name: 'Jun', views: 2390, clicks: 3800 },
+]
+
+export default function Dashboard() {
+  const { toast } = useToast()
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [aiContent, setAiContent] = useState<null | { reels: string; seo: string }>(null)
+
+  const handleGenerate = () => {
+    setIsGenerating(true)
+    setTimeout(() => {
+      setAiContent({
+        reels:
+          '✨ [HOOK] Sabia que o atacado mudou para sempre? \n\n[BODY] Descubra as peças que vão esgotar nas vitrines nesta temporada. A nova coleção Lumina traz exclusividade e margem de lucro. \n\n[CTA] Clique no link da bio e acesse a Revista Moda Atual!',
+        seo: 'Título: Tendências de Outono: Como lucrar mais com a nova coleção.\nDesc: Descubra as melhores marcas do atacado brasileiro no V MODA BRASIL e transforme suas vendas nesta estação com curadoria exclusiva.',
+      })
+      setIsGenerating(false)
+      toast({
+        title: 'Conteúdo Gerado!',
+        description: 'Os roteiros e metadados foram criados pela IA com sucesso.',
+      })
+    }, 2000)
+  }
+
+  return (
+    <div className="p-6 max-w-7xl mx-auto space-y-8 animate-fade-in">
+      <div>
+        <h1 className="text-3xl font-serif font-bold tracking-tight">Hub Editorial & IA</h1>
+        <p className="text-muted-foreground mt-2">
+          Gerencie publicações, acompanhe métricas e gere conteúdo automaticamente com Inteligência
+          Artificial.
+        </p>
+      </div>
+
+      <Tabs defaultValue="ai" className="space-y-6">
+        <TabsList className="bg-muted/50 p-1">
+          <TabsTrigger value="editorial">Gestão Editorial</TabsTrigger>
+          <TabsTrigger
+            value="ai"
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+          >
+            Automação & IA
+          </TabsTrigger>
+          <TabsTrigger value="reports">Relatórios</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="editorial">
+          <Card>
+            <CardHeader>
+              <CardTitle>Últimas Edições</CardTitle>
+              <CardDescription>Gerencie o fluxo de trabalho das revistas digitais.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Edição</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Data Prevista</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {MOCK_EDITIONS.map((ed) => (
+                    <TableRow key={ed.id}>
+                      <TableCell className="font-medium">{ed.title}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            ed.status === 'Aprovado'
+                              ? 'default'
+                              : ed.status === 'Em Revisão'
+                                ? 'secondary'
+                                : 'outline'
+                          }
+                        >
+                          {ed.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{ed.date}</TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="sm">
+                          Editar
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="ai">
+          <div className="grid md:grid-cols-3 gap-6">
+            <Card className="md:col-span-1 border-primary/20 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-primary">
+                  <Sparkles className="w-5 h-5" /> Assistente IA
+                </CardTitle>
+                <CardDescription>
+                  Selecione um artigo para gerar conteúdo multiplataforma.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Artigo Fonte</label>
+                  <Select defaultValue="art1">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um artigo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="art1">Pág 12: Tendências Outono</SelectItem>
+                      <SelectItem value="art2">Pág 24: Especial Jeanswear</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button className="w-full" onClick={handleGenerate} disabled={isGenerating}>
+                  {isGenerating ? (
+                    <RefreshCcw className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Wand2 className="w-4 h-4 mr-2" />
+                  )}
+                  Gerar Conteúdo Social
+                </Button>
+              </CardContent>
+            </Card>
+
+            <div className="md:col-span-2 space-y-6">
+              {isGenerating && (
+                <div className="h-64 flex flex-col items-center justify-center space-y-4 text-muted-foreground border rounded-lg border-dashed">
+                  <RefreshCcw className="w-8 h-8 animate-spin text-primary" />
+                  <p className="animate-pulse">Analisando texto e gerando roteiros...</p>
+                </div>
+              )}
+
+              {aiContent && !isGenerating && (
+                <div className="grid sm:grid-cols-2 gap-4 animate-fade-in-up">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg flex items-center justify-between">
+                        Roteiro TikTok/Reels
+                        <Button variant="ghost" size="icon" className="h-6 w-6">
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm whitespace-pre-wrap leading-relaxed text-muted-foreground">
+                        {aiContent.reels}
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg flex items-center justify-between">
+                        Metadados SEO
+                        <Button variant="ghost" size="icon" className="h-6 w-6">
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm whitespace-pre-wrap leading-relaxed text-muted-foreground">
+                        {aiContent.seo}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {!aiContent && !isGenerating && (
+                <div className="h-64 flex flex-col items-center justify-center border rounded-lg border-dashed bg-muted/20">
+                  <Sparkles className="w-8 h-8 text-muted-foreground mb-4 opacity-50" />
+                  <p className="text-muted-foreground text-sm">O conteúdo gerado aparecerá aqui.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="reports">
+          <Card>
+            <CardHeader>
+              <CardTitle>Engajamento de Leitores</CardTitle>
+              <CardDescription>Visualizações e cliques em produtos por mês.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer
+                config={{
+                  views: { label: 'Visualizações', color: 'hsl(var(--chart-1))' },
+                  clicks: { label: 'Cliques', color: 'hsl(var(--chart-2))' },
+                }}
+                className="h-[400px] w-full"
+              >
+                <BarChart data={MOCK_DATA}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <RechartsTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="views" fill="var(--color-views)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="clicks" fill="var(--color-clicks)" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}
