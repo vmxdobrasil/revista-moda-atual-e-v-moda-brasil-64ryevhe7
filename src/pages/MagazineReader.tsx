@@ -2,6 +2,7 @@ import { useParams, Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import {
   getEdition,
+  getLatestEdition,
   getEditionPages,
   getHotspots,
   Edition,
@@ -21,42 +22,97 @@ import {
 } from '@/components/ui/sheet'
 import { Drawer, DrawerContent, DrawerTrigger, DrawerClose } from '@/components/ui/drawer'
 import { Button } from '@/components/ui/button'
-import { LayoutGrid, List } from 'lucide-react'
+import { LayoutGrid, List, Loader2 } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 
-export default function MagazineReader() {
-  const { id } = useParams<{ id: string }>()
+export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
+  const { id: paramId } = useParams<{ id: string }>()
   const isMobile = useIsMobile()
 
   const [edition, setEdition] = useState<Edition | null>(null)
   const [pages, setPages] = useState<EditionPage[]>([])
   const [hotspots, setHotspots] = useState<Hotspot[]>([])
   const [loading, setLoading] = useState(true)
+  const [errorEmpty, setErrorEmpty] = useState(false)
 
   const [currentSpread, setCurrentSpread] = useState(0)
   const [currentPage, setCurrentPage] = useState(0) // for mobile
 
   useEffect(() => {
-    if (!id) return
-    Promise.all([getEdition(id), getEditionPages(id), getHotspots(id)])
-      .then(([ed, pgs, hts]) => {
+    const loadData = async () => {
+      try {
+        setLoading(true)
+        setErrorEmpty(false)
+        let ed: Edition | null = null
+
+        if (isLatest) {
+          ed = await getLatestEdition()
+          if (!ed) {
+            setErrorEmpty(true)
+            setLoading(false)
+            return
+          }
+        } else if (paramId) {
+          ed = await getEdition(paramId)
+        }
+
+        if (!ed) {
+          setLoading(false)
+          return
+        }
+
+        const [pgs, hts] = await Promise.all([getEditionPages(ed.id), getHotspots(ed.id)])
+
         setEdition(ed)
         setPages(pgs)
         setHotspots(hts)
+        document.title = `Revista Moda Atual - ${ed.title}`
+      } catch (err) {
+        console.error(err)
+      } finally {
         setLoading(false)
-      })
-      .catch(console.error)
-  }, [id])
+      }
+    }
+
+    loadData()
+  }, [paramId, isLatest])
 
   if (loading)
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-gray-50 text-orange-500 text-lg font-medium animate-pulse">
-        Carregando edição...
+      <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-50 text-orange-500 gap-4">
+        <Loader2 className="w-10 h-10 animate-spin" />
+        <span className="text-lg font-medium animate-pulse">Carregando edição...</span>
       </div>
     )
+
+  if (errorEmpty)
+    return (
+      <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-50 gap-4">
+        <h2 className="text-2xl font-bold text-gray-800 text-center px-4">
+          Nenhuma edição disponível no momento
+        </h2>
+        <Link
+          to="/"
+          className="px-6 py-2 bg-orange-500 text-white rounded-md font-medium hover:bg-orange-600 transition-colors"
+        >
+          Voltar para Home
+        </Link>
+      </div>
+    )
+
   if (!edition)
     return (
-      <div className="flex h-screen w-full items-center justify-center">Edição não encontrada.</div>
+      <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-50 gap-4">
+        <h2 className="text-2xl font-bold text-gray-800 text-center px-4">
+          Edição não encontrada.
+        </h2>
+        <Link
+          to="/"
+          className="px-6 py-2 bg-orange-500 text-white rounded-md font-medium hover:bg-orange-600 transition-colors"
+        >
+          Voltar para Home
+        </Link>
+      </div>
     )
 
   const totalPages = pages.length

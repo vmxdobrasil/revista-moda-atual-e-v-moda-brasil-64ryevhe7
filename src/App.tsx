@@ -20,6 +20,7 @@ const App = () => (
         <Route element={<Layout />}>
           <Route path="/" element={<Index />} />
           <Route path="/edition/:id" element={<MagazineReader />} />
+          <Route path="/reader/latest" element={<MagazineReader isLatest />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
