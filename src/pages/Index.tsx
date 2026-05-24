@@ -1,141 +1,92 @@
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-} from 'recharts'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-
-const viewsData = [
-  { name: 'Out/Inv 26', views: 12400 },
-  { name: 'Noivas', views: 8200 },
-  { name: 'Verão 26', views: 15300 },
-  { name: 'Especial SP', views: 9800 },
-]
-
-const radarData = [
-  { subject: 'Festa', A: 120, fullMark: 150 },
-  { subject: 'Casual', A: 98, fullMark: 150 },
-  { subject: 'Alfaiataria', A: 86, fullMark: 150 },
-  { subject: 'Acessórios', A: 99, fullMark: 150 },
-  { subject: 'Praia', A: 85, fullMark: 150 },
-]
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { getEditions, Edition } from '@/services/magazine'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { ArrowRight, BookOpen } from 'lucide-react'
 
 export default function Index() {
+  const [editions, setEditions] = useState<Edition[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    getEditions()
+      .then((data) => {
+        setEditions(data)
+        setLoading(false)
+      })
+      .catch(console.error)
+  }, [])
+
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-4xl font-serif tracking-tight">IA & Insights</h1>
-        <p className="text-muted-foreground">Bem-vindo ao hub de inteligência da V MODA BRASIL.</p>
-      </div>
+    <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
+      <header className="bg-white border-b py-5 px-6 md:px-12 flex items-center justify-between sticky top-0 z-30 shadow-sm">
+        <img
+          src="https://img.usecurling.com/i?q=v%20moda%20brasil%20logo&color=orange&shape=outline"
+          alt="V MODA BRASIL"
+          className="h-8 md:h-10"
+        />
+        <div className="flex items-center gap-2 text-orange-600 font-semibold text-sm md:text-base">
+          <BookOpen className="w-5 h-5" />
+          <span>Acervo Digital</span>
+        </div>
+      </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border-border/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Tempo Médio de Leitura
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-4xl font-bold text-brand-orange">12m 45s</CardContent>
-        </Card>
-        <Card className="border-border/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Cliques no Marketplace
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-4xl font-bold text-brand-gold">8.402</CardContent>
-        </Card>
-        <Card className="border-border/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Engajamento Social (IA)
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-4xl font-bold text-green-500">+24.5%</CardContent>
-        </Card>
-      </div>
+      <main className="flex-1 container mx-auto px-4 py-16 md:py-24">
+        <div className="mb-16 text-center max-w-3xl mx-auto">
+          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-6">
+            Revista Moda Atual
+          </h2>
+          <p className="text-lg md:text-xl text-gray-600 leading-relaxed">
+            Explore as últimas edições da nossa revista digital imersiva. Descubra as principais
+            tendências, editoriais exclusivos e tenha acesso direto ao melhor do atacado brasileiro
+            através de nossa vitrine interativa.
+          </p>
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="font-serif">Acessos por Edição</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer
-              config={{ views: { label: 'Leituras', color: 'hsl(var(--chart-1))' } }}
-              className="h-[300px] w-full"
-            >
-              <BarChart data={viewsData} margin={{ top: 20, right: 0, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                <XAxis
-                  dataKey="name"
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar
-                  dataKey="views"
-                  fill="var(--color-views)"
-                  radius={[4, 4, 0, 0]}
-                  maxBarSize={50}
-                />
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="font-serif">Interesse por Categoria</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer
-              config={{ A: { label: 'Interesse', color: 'hsl(var(--chart-2))' } }}
-              className="h-[300px] w-full"
-            >
-              <RadarChart data={radarData} outerRadius="70%">
-                <PolarGrid stroke="var(--border)" />
-                <PolarAngleAxis
-                  dataKey="subject"
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={12}
-                />
-                <PolarRadiusAxis
-                  stroke="hsl(var(--muted-foreground))"
-                  angle={30}
-                  domain={[0, 150]}
-                  tick={false}
-                  axisLine={false}
-                />
-                <Radar
-                  name="Interesse"
-                  dataKey="A"
-                  stroke="var(--color-A)"
-                  fill="var(--color-A)"
-                  fillOpacity={0.6}
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-              </RadarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      </div>
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="aspect-[0.7118] bg-gray-200 animate-pulse rounded-xl" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-12">
+            {editions.map((ed) => (
+              <Card
+                key={ed.id}
+                className="overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-white rounded-xl"
+              >
+                <div className="relative aspect-[0.7118] overflow-hidden bg-gray-100">
+                  <img
+                    src={ed.cover_url}
+                    alt={ed.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                    <Button
+                      asChild
+                      className="w-full bg-orange-600 hover:bg-orange-500 text-white shadow-lg h-12 text-md"
+                    >
+                      <Link to={`/edition/${ed.id}`}>
+                        Ler Edição <ArrowRight className="w-5 h-5 ml-2" />
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-1 group-hover:text-orange-600 transition-colors">
+                    {ed.title}
+                  </h3>
+                  <p className="text-gray-600 text-sm line-clamp-3 leading-relaxed">
+                    {ed.description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </main>
     </div>
   )
 }
