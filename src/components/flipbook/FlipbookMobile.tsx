@@ -41,17 +41,21 @@ export function FlipbookMobile({
   return (
     <div
       ref={containerRef}
-      className="w-full h-full overflow-y-auto snap-y snap-mandatory bg-gray-50 pb-[10vh]"
+      className="w-full h-full overflow-x-auto overflow-y-hidden snap-x snap-mandatory flex bg-gray-50"
     >
       {pages.map((p, i) => (
         <div
           key={p.id}
           data-page={i}
-          className="mobile-page w-full h-full flex-shrink-0 snap-center p-4 pt-6 flex items-start justify-center"
+          className="mobile-page w-full h-full flex-shrink-0 snap-center p-4 flex flex-col items-center justify-center"
         >
           <div
             className="w-full bg-white shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] rounded-sm overflow-hidden shrink-0 mx-auto relative"
-            style={{ aspectRatio: '0.7118', maxHeight: '82vh', maxWidth: 'calc(82vh * 0.7118)' }}
+            style={{
+              aspectRatio: '0.7118',
+              maxHeight: '80vh',
+              maxWidth: 'min(100%, calc(80vh * 0.7118))',
+            }}
           >
             <PageRenderer page={p} hotspots={hotspots.filter((h) => h.page === p.id)} />
           </div>

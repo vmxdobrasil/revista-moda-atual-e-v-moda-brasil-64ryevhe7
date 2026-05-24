@@ -79,9 +79,16 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
 
   if (loading)
     return (
-      <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-50 text-orange-500 gap-4">
-        <Loader2 className="w-10 h-10 animate-spin" />
-        <span className="text-lg font-medium animate-pulse">Carregando edição...</span>
+      <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-50 gap-6">
+        <img
+          src="https://img.usecurling.com/i?q=v%20moda%20brasil%20logo&color=orange&shape=outline"
+          alt="Revista Moda Atual"
+          className="h-16 md:h-24 animate-pulse opacity-80"
+        />
+        <div className="flex items-center gap-3 text-orange-500">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <span className="text-lg font-medium tracking-wide">Carregando edição...</span>
+        </div>
       </div>
     )
 
@@ -115,6 +122,21 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
       </div>
     )
 
+  if (pages.length === 0)
+    return (
+      <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-50 gap-4">
+        <h2 className="text-2xl font-bold text-gray-800 text-center px-4">
+          Nenhuma página encontrada para esta edição.
+        </h2>
+        <Link
+          to="/"
+          className="px-6 py-2 bg-orange-500 text-white rounded-md font-medium hover:bg-orange-600 transition-colors"
+        >
+          Voltar para Home
+        </Link>
+      </div>
+    )
+
   const totalPages = pages.length
   const displayPage = isMobile ? currentPage : Math.min(currentSpread * 2, totalPages - 1)
   const progress = totalPages > 1 ? (displayPage / (totalPages - 1)) * 100 : 0
@@ -125,7 +147,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
   const jumpToPage = (pageNum: number) => {
     if (isMobile) {
       const el = document.querySelector(`[data-page="${pageNum}"]`)
-      el?.scrollIntoView({ behavior: 'smooth' })
+      el?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' })
     } else {
       setCurrentSpread(Math.floor((pageNum + 1) / 2))
     }
@@ -228,10 +250,22 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
       </main>
 
       <footer className="h-12 bg-white border-t flex flex-col shrink-0 relative z-40 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
-        <Progress
-          value={progress}
-          className="h-1 bg-gray-100 rounded-none [&>div]:bg-orange-500 transition-all"
-        />
+        <div
+          className="h-2 w-full cursor-pointer group"
+          onClick={(e) => {
+            if (totalPages <= 1) return
+            const rect = e.currentTarget.getBoundingClientRect()
+            const x = e.clientX - rect.left
+            const percent = x / rect.width
+            const targetPage = Math.round(percent * (totalPages - 1))
+            jumpToPage(targetPage)
+          }}
+        >
+          <Progress
+            value={progress}
+            className="h-1 group-hover:h-2 bg-gray-200 rounded-none [&>div]:bg-orange-500 transition-all cursor-pointer"
+          />
+        </div>
         <div className="flex-1 flex items-center justify-center px-6 text-xs md:text-sm font-medium text-gray-500 tracking-wide uppercase">
           Página {displayPage} de {totalPages - 1}
         </div>

@@ -89,7 +89,7 @@ export function FlipbookDesktop({
       </Button>
 
       <div
-        className="relative perspective-book shadow-2xl rounded-md bg-[#f4f4f4] mx-auto transition-transform"
+        className="relative perspective-book shadow-2xl rounded-md bg-[#f4f4f4] mx-auto transition-transform w-[90vw] lg:w-auto"
         style={{ aspectRatio: '1.4237', maxHeight: '85vh', maxWidth: 'calc(85vh * 1.4237)' }}
       >
         {/* Left Base */}
@@ -111,29 +111,33 @@ export function FlipbookDesktop({
 
         {/* Flipping Page */}
         {isFlipping && isNext && (
-          <div className="absolute right-0 top-0 w-1/2 h-full transform-style-3d origin-left animate-flip-next z-20 shadow-[-10px_0_20px_rgba(0,0,0,0.1)] rounded-l-md rounded-r-md">
+          <div className="absolute right-0 top-0 w-1/2 h-full transform-style-3d origin-left animate-flip-next z-20 shadow-[-10px_0_20px_rgba(0,0,0,0.2)] rounded-l-md rounded-r-md">
             <div className="absolute inset-0 backface-hidden bg-white rounded-r-md overflow-hidden">
               <PageRenderer page={R_curr} hotspots={[]} />
+              <div className="absolute inset-0 bg-gradient-to-l from-black/30 to-transparent opacity-0 animate-flip-shadow-front pointer-events-none" />
             </div>
             <div className="absolute inset-0 backface-hidden [transform:rotateY(180deg)] border-r border-black/10 bg-white rounded-l-md overflow-hidden">
               <PageRenderer page={L_next} hotspots={[]} isLeft />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent opacity-100 animate-flip-shadow-back pointer-events-none" />
             </div>
           </div>
         )}
 
         {isFlipping && isPrev && (
-          <div className="absolute left-0 top-0 w-1/2 h-full transform-style-3d origin-right animate-flip-prev z-20 shadow-[10px_0_20px_rgba(0,0,0,0.1)] rounded-r-md rounded-l-md">
+          <div className="absolute left-0 top-0 w-1/2 h-full transform-style-3d origin-right animate-flip-prev z-20 shadow-[10px_0_20px_rgba(0,0,0,0.2)] rounded-r-md rounded-l-md">
             <div className="absolute inset-0 backface-hidden border-r border-black/10 bg-white rounded-l-md overflow-hidden">
               <PageRenderer page={L_curr} hotspots={[]} isLeft />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent opacity-0 animate-flip-shadow-front pointer-events-none" />
             </div>
             <div className="absolute inset-0 backface-hidden [transform:rotateY(180deg)] bg-white rounded-r-md overflow-hidden">
               <PageRenderer page={R_prev} hotspots={[]} />
+              <div className="absolute inset-0 bg-gradient-to-l from-black/30 to-transparent opacity-100 animate-flip-shadow-back pointer-events-none" />
             </div>
           </div>
         )}
 
         {/* Spine shadow */}
-        <div className="absolute left-1/2 top-0 bottom-0 w-10 -ml-5 bg-gradient-to-r from-transparent via-black/30 to-transparent pointer-events-none z-30" />
+        <div className="absolute left-1/2 top-0 bottom-0 w-12 -ml-6 bg-gradient-to-r from-transparent via-black/40 to-transparent pointer-events-none z-30" />
       </div>
 
       <Button

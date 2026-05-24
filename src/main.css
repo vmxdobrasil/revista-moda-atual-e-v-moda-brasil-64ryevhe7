@@ -330,4 +330,36 @@
       transform: rotateY(180deg);
     }
   }
+
+  .animate-flip-shadow-front {
+    animation: flip-shadow-front 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+
+  .animate-flip-shadow-back {
+    animation: flip-shadow-back 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+
+  @keyframes flip-shadow-front {
+    0% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.5;
+    }
+  }
+
+  @keyframes flip-shadow-back {
+    0% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
 }
