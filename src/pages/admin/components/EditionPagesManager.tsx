@@ -12,8 +12,18 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
-import { Plus, Trash2, Save, Loader2, Image as ImageIcon, GripVertical, Tag } from 'lucide-react'
+import {
+  Plus,
+  Trash2,
+  Save,
+  Loader2,
+  Image as ImageIcon,
+  GripVertical,
+  Tag,
+  Crop,
+} from 'lucide-react'
 import { HotspotEditorModal } from './HotspotEditorModal'
+import { ImageAdapterModal } from './ImageAdapterModal'
 
 export function EditionPagesManager({ editionId }: { editionId: string }) {
   const [pages, setPages] = useState<EditionPage[]>([])
@@ -133,6 +143,7 @@ function PageRow({ page, onUpdated }: { page: EditionPage; onUpdated: () => void
   const [tocTitle, setTocTitle] = useState(page.toc_title || '')
   const [saving, setSaving] = useState(false)
   const [editorOpen, setEditorOpen] = useState(false)
+  const [adapterOpen, setAdapterOpen] = useState(false)
   const { toast } = useToast()
 
   const handleSave = async () => {
@@ -186,6 +197,14 @@ function PageRow({ page, onUpdated }: { page: EditionPage; onUpdated: () => void
           >
             <Tag className="w-3 h-3" /> Hotspots
           </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="gap-2 h-7"
+            onClick={() => setAdapterOpen(true)}
+          >
+            <Crop className="w-3 h-3" /> Adaptar
+          </Button>
         </div>
         <div className="space-y-1">
           <Label className="text-xs">Título do Índice (Opcional)</Label>
@@ -213,6 +232,14 @@ function PageRow({ page, onUpdated }: { page: EditionPage; onUpdated: () => void
 
       {editorOpen && (
         <HotspotEditorModal page={page} open={editorOpen} onOpenChange={setEditorOpen} />
+      )}
+      {adapterOpen && (
+        <ImageAdapterModal
+          page={page}
+          open={adapterOpen}
+          onOpenChange={setAdapterOpen}
+          onSaved={onUpdated}
+        />
       )}
     </div>
   )
