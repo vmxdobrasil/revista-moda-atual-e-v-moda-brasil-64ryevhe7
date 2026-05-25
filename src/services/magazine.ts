@@ -68,4 +68,10 @@ export const updateEditionPage = (id: string, data: FormData | Partial<EditionPa
   pb.collection('edition_pages').update<EditionPage>(id, data)
 export const deleteEditionPage = (id: string) => pb.collection('edition_pages').delete(id)
 
+export const createHotspot = (data: Partial<Hotspot>) =>
+  pb.collection('page_hotspots').create<Hotspot>(data)
+export const updateHotspot = (id: string, data: Partial<Hotspot>) =>
+  pb.collection('page_hotspots').update<Hotspot>(id, data)
+export const deleteHotspot = (id: string) => pb.collection('page_hotspots').delete(id)
+
 export const getFileUrl = (record: any, filename: string) => pb.files.getURL(record, filename)

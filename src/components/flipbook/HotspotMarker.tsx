@@ -16,12 +16,14 @@ export function HotspotMarker({ hotspot }: { hotspot: Hotspot }) {
   return (
     <>
       <div
-        className="absolute z-20 cursor-pointer group"
+        className="absolute z-20 cursor-pointer group pointer-events-auto"
         style={{ left: `${hotspot.x}%`, top: `${hotspot.y}%`, transform: 'translate(-50%, -50%)' }}
         onClick={(e) => {
+          e.preventDefault()
           e.stopPropagation()
           setOpen(true)
         }}
+        onPointerDown={(e) => e.stopPropagation()}
       >
         <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform relative z-10">
           <Tag className="w-4 h-4 text-white" />

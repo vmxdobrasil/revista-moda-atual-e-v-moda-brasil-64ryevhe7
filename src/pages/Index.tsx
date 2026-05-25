@@ -37,11 +37,20 @@ export default function Index() {
           <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-6">
             Revista Moda Atual
           </h2>
-          <p className="text-lg md:text-xl text-gray-600 leading-relaxed">
+          <p className="text-lg md:text-xl text-gray-600 leading-relaxed mb-8">
             Explore as últimas edições da nossa revista digital imersiva. Descubra as principais
             tendências, editoriais exclusivos e tenha acesso direto ao melhor do atacado brasileiro
             através de nossa vitrine interativa.
           </p>
+          <Button
+            asChild
+            size="lg"
+            className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-6 text-lg rounded-full shadow-xl animate-fade-in-up"
+          >
+            <Link to="/reader/latest">
+              <BookOpen className="w-6 h-6 mr-3" /> Ler Última Edição
+            </Link>
+          </Button>
         </div>
 
         {loading ? (

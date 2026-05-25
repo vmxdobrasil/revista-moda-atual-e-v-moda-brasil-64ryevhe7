@@ -33,52 +33,56 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
   const [edition, setEdition] = useState<Edition | null>(null)
   const [pages, setPages] = useState<EditionPage[]>([])
   const [hotspots, setHotspots] = useState<Hotspot[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loadingEdition, setLoadingEdition] = useState(true)
+  const [loadingPages, setLoadingPages] = useState(true)
   const [errorEmpty, setErrorEmpty] = useState(false)
 
   const [currentSpread, setCurrentSpread] = useState(0)
-  const [currentPage, setCurrentPage] = useState(0) // for mobile
+  const [currentPage, setCurrentPage] = useState(0)
 
   useEffect(() => {
-    const loadData = async () => {
+    const loadEd = async () => {
       try {
-        setLoading(true)
+        setLoadingEdition(true)
         setErrorEmpty(false)
-        let ed: Edition | null = null
-
-        if (isLatest) {
-          ed = await getLatestEdition()
-          if (!ed) {
-            setErrorEmpty(true)
-            setLoading(false)
-            return
-          }
-        } else if (paramId) {
-          ed = await getEdition(paramId)
-        }
+        const ed = isLatest ? await getLatestEdition() : paramId ? await getEdition(paramId) : null
 
         if (!ed) {
-          setLoading(false)
+          setErrorEmpty(true)
+          setLoadingEdition(false)
           return
         }
 
-        const [pgs, hts] = await Promise.all([getEditionPages(ed.id), getHotspots(ed.id)])
-
         setEdition(ed)
-        setPages(pgs)
-        setHotspots(hts)
         document.title = `Revista Moda Atual - ${ed.title}`
       } catch (err) {
         console.error(err)
+        setErrorEmpty(true)
       } finally {
-        setLoading(false)
+        setLoadingEdition(false)
       }
     }
-
-    loadData()
+    loadEd()
   }, [paramId, isLatest])
 
-  if (loading)
+  useEffect(() => {
+    if (!edition) return
+    const loadPg = async () => {
+      try {
+        setLoadingPages(true)
+        const [pgs, hts] = await Promise.all([getEditionPages(edition.id), getHotspots(edition.id)])
+        setPages(pgs)
+        setHotspots(hts)
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setLoadingPages(false)
+      }
+    }
+    loadPg()
+  }, [edition])
+
+  if (loadingEdition) {
     return (
       <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-50 gap-6">
         <img
@@ -86,57 +90,68 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
           alt="Revista Moda Atual"
           className="h-16 md:h-24 animate-pulse opacity-80"
         />
-        <div className="flex items-center gap-3 text-orange-500">
+        <div className="flex items-center gap-3 text-orange-500 mt-4">
           <Loader2 className="w-6 h-6 animate-spin" />
-          <span className="text-lg font-medium tracking-wide">Carregando edição...</span>
+          <span className="text-lg font-medium tracking-wide">Buscando edição...</span>
         </div>
       </div>
     )
+  }
 
-  if (errorEmpty)
+  if (errorEmpty || !edition) {
+    return (
+      <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-50 gap-4">
+        <h2 className="text-2xl font-bold text-gray-800 text-center px-4">Edição não encontrada</h2>
+        <Button asChild className="bg-orange-500 hover:bg-orange-600">
+          <Link to="/">Voltar para Home</Link>
+        </Button>
+      </div>
+    )
+  }
+
+  if (loadingPages) {
+    const coverImage = edition.cover_file
+      ? getFileUrl(edition, edition.cover_file)
+      : edition.cover_url
+    return (
+      <div className="flex flex-col h-screen w-full items-center justify-center bg-[#f4f4f4] relative overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img
+            src={coverImage}
+            alt="Cover Blur"
+            className="w-full h-full object-cover opacity-20 blur-3xl scale-110"
+          />
+        </div>
+        <div className="z-10 flex flex-col items-center gap-8 animate-fade-in-up">
+          <div className="w-48 md:w-64 aspect-[0.7118] rounded-md shadow-2xl overflow-hidden bg-white">
+            <img src={coverImage} alt={edition.title} className="w-full h-full object-cover" />
+          </div>
+          <div className="flex flex-col items-center gap-3">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-800 text-center drop-shadow-md">
+              {edition.title}
+            </h2>
+            <div className="flex items-center gap-2 text-orange-600 bg-white/80 px-4 py-2 rounded-full shadow-sm backdrop-blur">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span className="font-medium tracking-wide">Carregando páginas...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (pages.length === 0) {
     return (
       <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-50 gap-4">
         <h2 className="text-2xl font-bold text-gray-800 text-center px-4">
-          Nenhuma edição disponível no momento
+          Nenhuma página encontrada
         </h2>
-        <Link
-          to="/"
-          className="px-6 py-2 bg-orange-500 text-white rounded-md font-medium hover:bg-orange-600 transition-colors"
-        >
-          Voltar para Home
-        </Link>
+        <Button asChild className="bg-orange-500 hover:bg-orange-600">
+          <Link to="/">Voltar para Home</Link>
+        </Button>
       </div>
     )
-
-  if (!edition)
-    return (
-      <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-50 gap-4">
-        <h2 className="text-2xl font-bold text-gray-800 text-center px-4">
-          Edição não encontrada.
-        </h2>
-        <Link
-          to="/"
-          className="px-6 py-2 bg-orange-500 text-white rounded-md font-medium hover:bg-orange-600 transition-colors"
-        >
-          Voltar para Home
-        </Link>
-      </div>
-    )
-
-  if (pages.length === 0)
-    return (
-      <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-50 gap-4">
-        <h2 className="text-2xl font-bold text-gray-800 text-center px-4">
-          Nenhuma página encontrada para esta edição.
-        </h2>
-        <Link
-          to="/"
-          className="px-6 py-2 bg-orange-500 text-white rounded-md font-medium hover:bg-orange-600 transition-colors"
-        >
-          Voltar para Home
-        </Link>
-      </div>
-    )
+  }
 
   const totalPages = pages.length
   const displayPage = isMobile ? currentPage : Math.min(currentSpread * 2, totalPages - 1)
@@ -167,7 +182,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
           </Link>
           <div className="h-6 w-px bg-gray-300 hidden md:block" />
           <h1 className="font-semibold text-gray-800 text-sm md:text-lg hidden md:block truncate max-w-sm">
-            Revista Moda Atual
+            {edition.title}
           </h1>
         </div>
         <div className="flex items-center gap-2 md:gap-4">
