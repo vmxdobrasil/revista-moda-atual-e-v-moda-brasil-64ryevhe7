@@ -28,6 +28,7 @@ export function HotspotEditorModal({
   const [hotspots, setHotspots] = useState<Hotspot[]>([])
   const [loading, setLoading] = useState(true)
   const imgRef = useRef<HTMLImageElement>(null)
+  const { toast } = useToast()
 
   const loadData = async () => {
     setLoading(true)
@@ -64,8 +65,9 @@ export function HotspotEditorModal({
     try {
       const created = await createHotspot(newHotspot)
       setHotspots((prev) => [...prev, created])
+      toast({ title: 'Tag adicionada.', description: 'Clique na tag recém criada para editá-la.' })
     } catch {
-      // error
+      toast({ title: 'Erro ao adicionar tag.', variant: 'destructive' })
     }
   }
 
