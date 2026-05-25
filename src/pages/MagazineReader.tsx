@@ -8,6 +8,7 @@ import {
   Edition,
   EditionPage,
   Hotspot,
+  getFileUrl,
 } from '@/services/magazine'
 import { FlipbookDesktop } from '@/components/flipbook/FlipbookDesktop'
 import { FlipbookMobile } from '@/components/flipbook/FlipbookMobile'
@@ -218,7 +219,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
                       >
                         <div className="relative aspect-[0.7118] overflow-hidden rounded-sm shadow-sm group-hover:shadow-lg group-hover:ring-2 ring-orange-500 transition-all">
                           <img
-                            src={p.image_url}
+                            src={p.image_file ? getFileUrl(p, p.image_file) : p.image_url}
                             alt={`Página ${p.page_number}`}
                             className="w-full h-full object-cover"
                           />

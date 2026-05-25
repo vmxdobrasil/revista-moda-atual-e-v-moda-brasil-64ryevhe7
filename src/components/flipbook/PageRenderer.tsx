@@ -1,4 +1,4 @@
-import { EditionPage, Hotspot } from '@/services/magazine'
+import { EditionPage, Hotspot, getFileUrl } from '@/services/magazine'
 import { HotspotMarker } from './HotspotMarker'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -48,7 +48,7 @@ export function PageRenderer({ page, hotspots = [], isLeft = false }: PageRender
         style={{ transform: `scale(${zoom})`, transformOrigin: origin }}
       >
         <img
-          src={page.image_url}
+          src={page.image_file ? getFileUrl(page, page.image_file) : page.image_url}
           alt={`Página ${page.page_number}`}
           className="w-full h-full object-cover select-none pointer-events-none"
         />

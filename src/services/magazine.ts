@@ -2,17 +2,27 @@ import pb from '@/lib/pocketbase/client'
 
 export interface Edition {
   id: string
+  collectionId: string
+  collectionName: string
   title: string
   cover_url: string
+  cover_file?: string
   description: string
+  created: string
+  updated: string
 }
 
 export interface EditionPage {
   id: string
+  collectionId: string
+  collectionName: string
   edition: string
   page_number: number
   image_url: string
+  image_file?: string
   toc_title: string
+  created: string
+  updated: string
 }
 
 export interface Hotspot {
@@ -46,3 +56,16 @@ export const getHotspots = (editionId: string) =>
   pb.collection('page_hotspots').getFullList<Hotspot>({
     filter: `page.edition = "${editionId}"`,
   })
+
+export const createEdition = (data: FormData) => pb.collection('editions').create<Edition>(data)
+export const updateEdition = (id: string, data: FormData) =>
+  pb.collection('editions').update<Edition>(id, data)
+export const deleteEdition = (id: string) => pb.collection('editions').delete(id)
+
+export const createEditionPage = (data: FormData) =>
+  pb.collection('edition_pages').create<EditionPage>(data)
+export const updateEditionPage = (id: string, data: FormData | Partial<EditionPage>) =>
+  pb.collection('edition_pages').update<EditionPage>(id, data)
+export const deleteEditionPage = (id: string) => pb.collection('edition_pages').delete(id)
+
+export const getFileUrl = (record: any, filename: string) => pb.files.getURL(record, filename)
