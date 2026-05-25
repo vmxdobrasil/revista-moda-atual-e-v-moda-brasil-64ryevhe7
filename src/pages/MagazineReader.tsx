@@ -123,8 +123,8 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
           />
         </div>
         <div className="z-10 flex flex-col items-center gap-8 animate-fade-in-up">
-          <div className="w-48 md:w-64 aspect-[0.7118] rounded-md shadow-2xl overflow-hidden bg-white">
-            <img src={coverImage} alt={edition.title} className="w-full h-full object-cover" />
+          <div className="w-48 md:w-64 aspect-[0.7118] rounded-md shadow-2xl overflow-hidden bg-white flex items-center justify-center">
+            <img src={coverImage} alt={edition.title} className="w-full h-full object-contain" />
           </div>
           <div className="flex flex-col items-center gap-3">
             <h2 className="text-xl md:text-2xl font-bold text-gray-800 text-center drop-shadow-md">
@@ -232,11 +232,11 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
                         className="cursor-pointer group flex flex-col gap-3"
                         onClick={() => jumpToPage(index)}
                       >
-                        <div className="relative aspect-[0.7118] overflow-hidden rounded-sm shadow-sm group-hover:shadow-lg group-hover:ring-2 ring-orange-500 transition-all">
+                        <div className="relative aspect-[0.7118] overflow-hidden rounded-sm shadow-sm group-hover:shadow-lg group-hover:ring-2 ring-orange-500 transition-all flex items-center justify-center bg-gray-50">
                           <img
                             src={p.image_file ? getFileUrl(p, p.image_file) : p.image_url}
                             alt={`Página ${p.page_number}`}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain"
                           />
                         </div>
                         <p className="text-center text-sm font-medium text-gray-600 group-hover:text-orange-600 transition-colors">

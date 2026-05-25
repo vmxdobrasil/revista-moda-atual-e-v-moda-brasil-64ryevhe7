@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getEditions, Edition } from '@/services/magazine'
+import { getEditions, Edition, getFileUrl } from '@/services/magazine'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, BookOpen } from 'lucide-react'
@@ -66,11 +66,11 @@ export default function Index() {
                 key={ed.id}
                 className="overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-white rounded-xl"
               >
-                <div className="relative aspect-[0.7118] overflow-hidden bg-gray-100">
+                <div className="relative aspect-[0.7118] overflow-hidden bg-gray-100 flex items-center justify-center">
                   <img
-                    src={ed.cover_url}
+                    src={ed.cover_file ? getFileUrl(ed, ed.cover_file) : ed.cover_url}
                     alt={ed.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700 ease-out"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
                     <Button

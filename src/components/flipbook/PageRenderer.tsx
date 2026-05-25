@@ -44,13 +44,13 @@ export function PageRenderer({ page, hotspots = [], isLeft = false }: PageRender
       onDoubleClick={handleDoubleClick}
     >
       <div
-        className="absolute inset-0 transition-transform duration-300 ease-out"
+        className="absolute inset-0 transition-transform duration-300 ease-out flex items-center justify-center"
         style={{ transform: `scale(${zoom})`, transformOrigin: origin }}
       >
         <img
           src={page.image_file ? getFileUrl(page, page.image_file) : page.image_url}
           alt={`Página ${page.page_number}`}
-          className="w-full h-full object-cover select-none pointer-events-none"
+          className="w-full h-full object-contain select-none pointer-events-none"
         />
         {zoom === 1 && hotspots.map((h) => <HotspotMarker key={h.id} hotspot={h} />)}
 
