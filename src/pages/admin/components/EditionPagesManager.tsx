@@ -21,9 +21,11 @@ import {
   GripVertical,
   Tag,
   Crop,
+  LayoutTemplate,
 } from 'lucide-react'
 import { HotspotEditorModal } from './HotspotEditorModal'
 import { ImageAdapterModal } from './ImageAdapterModal'
+import { PageTemplateModal } from './PageTemplateModal'
 
 export function EditionPagesManager({ editionId }: { editionId: string }) {
   const [pages, setPages] = useState<EditionPage[]>([])
@@ -144,6 +146,7 @@ function PageRow({ page, onUpdated }: { page: EditionPage; onUpdated: () => void
   const [saving, setSaving] = useState(false)
   const [editorOpen, setEditorOpen] = useState(false)
   const [adapterOpen, setAdapterOpen] = useState(false)
+  const [templateOpen, setTemplateOpen] = useState(false)
   const { toast } = useToast()
 
   const handleSave = async () => {
@@ -205,6 +208,15 @@ function PageRow({ page, onUpdated }: { page: EditionPage; onUpdated: () => void
           >
             <Crop className="w-3 h-3" /> Adaptar
           </Button>
+          <Button
+            variant={page.template && page.template !== 'default' ? 'default' : 'secondary'}
+            size="sm"
+            className="gap-2 h-7"
+            onClick={() => setTemplateOpen(true)}
+          >
+            <LayoutTemplate className="w-3 h-3" />{' '}
+            {page.template && page.template !== 'default' ? 'Template Ativo' : 'Template'}
+          </Button>
         </div>
         <div className="space-y-1">
           <Label className="text-xs">Título do Índice (Opcional)</Label>
@@ -238,6 +250,14 @@ function PageRow({ page, onUpdated }: { page: EditionPage; onUpdated: () => void
           page={page}
           open={adapterOpen}
           onOpenChange={setAdapterOpen}
+          onSaved={onUpdated}
+        />
+      )}
+      {templateOpen && (
+        <PageTemplateModal
+          page={page}
+          open={templateOpen}
+          onOpenChange={setTemplateOpen}
           onSaved={onUpdated}
         />
       )}

@@ -9,6 +9,7 @@ import Layout from './components/Layout'
 import MagazineReader from './pages/MagazineReader'
 import Login from './pages/Login'
 import { AdminLayout } from './pages/admin/AdminLayout'
+import { AdminDashboard } from './pages/admin/AdminDashboard'
 import EditionsPage from './pages/admin/EditionsPage'
 import EditionEditPage from './pages/admin/EditionEditPage'
 import { AuthProvider } from './hooks/use-auth'
@@ -32,7 +33,8 @@ const App = () => (
           <Route path="/login" element={<Login />} />
 
           <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<EditionsPage />} />
+            <Route index element={<AdminDashboard />} />
+            <Route path="editions" element={<EditionsPage />} />
             <Route path="editions/:id" element={<EditionEditPage />} />
           </Route>
 

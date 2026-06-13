@@ -1,5 +1,6 @@
 import { EditionPage, Hotspot, getFileUrl } from '@/services/magazine'
 import { HotspotMarker } from './HotspotMarker'
+import { TemplateRenderer } from './TemplateRenderer'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 
@@ -50,8 +51,16 @@ export function PageRenderer({ page, hotspots = [], isLeft = false }: PageRender
         <img
           src={page.image_file ? getFileUrl(page, page.image_file) : page.image_url}
           alt={`Página ${page.page_number}`}
-          className="w-full h-full object-contain select-none pointer-events-none"
+          className="w-full h-full object-contain select-none pointer-events-none absolute inset-0"
         />
+
+        {/* Template Overlay */}
+        {page.template && page.template !== 'default' && (
+          <div className="absolute inset-0 w-full h-full flex flex-col p-8 md:p-12 pointer-events-none overflow-hidden">
+            <TemplateRenderer page={page} />
+          </div>
+        )}
+
         {zoom === 1 && hotspots.map((h) => <HotspotMarker key={h.id} hotspot={h} />)}
 
         {/* Book shadow effect */}

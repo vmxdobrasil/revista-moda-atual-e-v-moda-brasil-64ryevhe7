@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-25T19:26:44.712Z",
+  "generatedAt": "2026-06-13T18:41:07.114Z",
   "collections": [
     {
       "name": "users",
@@ -149,6 +149,19 @@
         {
           "name": "image_file",
           "type": "file",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "template",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["default", "editorial", "marketing", "holofote", "entrevista"]
+        },
+        {
+          "name": "template_data",
+          "type": "json",
           "required": false,
           "system": false
         }

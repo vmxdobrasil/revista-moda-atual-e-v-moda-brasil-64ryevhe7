@@ -21,6 +21,8 @@ export interface EditionPage {
   image_url: string
   image_file?: string
   toc_title: string
+  template?: string
+  template_data?: any
   created: string
   updated: string
 }
