@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import {
   getEdition,
@@ -29,6 +29,7 @@ import { Progress } from '@/components/ui/progress'
 export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
   const { id: paramId } = useParams<{ id: string }>()
   const isMobile = useIsMobile()
+  const navigate = useNavigate()
 
   const [edition, setEdition] = useState<Edition | null>(null)
   const [pages, setPages] = useState<EditionPage[]>([])
@@ -41,6 +42,13 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
   const [currentPage, setCurrentPage] = useState(0)
 
   useEffect(() => {
+    if (paramId === ':id' || !paramId) {
+      if (!isLatest) {
+        navigate('/', { replace: true })
+        return
+      }
+    }
+
     const loadEd = async () => {
       try {
         setLoadingEdition(true)
@@ -48,8 +56,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
         const ed = isLatest ? await getLatestEdition() : paramId ? await getEdition(paramId) : null
 
         if (!ed) {
-          setErrorEmpty(true)
-          setLoadingEdition(false)
+          navigate('/', { replace: true })
           return
         }
 
@@ -57,13 +64,13 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
         document.title = `Revista Moda Atual - ${ed.title}`
       } catch (err) {
         console.error(err)
-        setErrorEmpty(true)
+        navigate('/', { replace: true })
       } finally {
         setLoadingEdition(false)
       }
     }
     loadEd()
-  }, [paramId, isLatest])
+  }, [paramId, isLatest, navigate])
 
   useEffect(() => {
     if (!edition) return
@@ -101,10 +108,8 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
   if (errorEmpty || !edition) {
     return (
       <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-50 gap-4">
-        <h2 className="text-2xl font-bold text-gray-800 text-center px-4">Edição não encontrada</h2>
-        <Button asChild className="bg-orange-500 hover:bg-orange-600">
-          <Link to="/">Voltar para Home</Link>
-        </Button>
+        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+        <h2 className="text-xl font-medium text-gray-600 text-center px-4">Redirecionando...</h2>
       </div>
     )
   }
