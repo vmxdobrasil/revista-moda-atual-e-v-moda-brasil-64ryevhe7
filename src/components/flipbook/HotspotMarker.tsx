@@ -48,7 +48,7 @@ export function HotspotMarker({ hotspot }: { hotspot: Hotspot }) {
 
   const markerButton = (
     <button
-      className="cursor-pointer group relative border-0 bg-transparent p-0 flex items-center justify-center outline-none w-10 h-10"
+      className="cursor-pointer group relative border-0 bg-transparent p-0 flex items-center justify-center outline-none w-10 h-10 active:scale-90 transition-transform duration-100"
       aria-label={`Ver detalhes: ${hotspot.title}`}
     >
       <div className="w-8 h-8 bg-black/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform relative z-10 border border-white/20">

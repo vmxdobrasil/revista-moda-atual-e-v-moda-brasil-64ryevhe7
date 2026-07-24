@@ -51,7 +51,7 @@ export function SocialShare({ title, url }: SocialShareProps) {
       <Button
         size="sm"
         variant="outline"
-        className="gap-2 bg-[#25D366]/10 border-[#25D366]/30 text-[#25D366] hover:bg-[#25D366]/20 hover:text-[#25D366]"
+        className="gap-2 bg-[#25D366]/10 border-[#25D366]/30 text-[#25D366] hover:bg-[#25D366]/20 hover:text-[#25D366] active:scale-95 transition-transform duration-100"
         onClick={handleWhatsApp}
       >
         <MessageCircle className="w-4 h-4" />
@@ -60,7 +60,7 @@ export function SocialShare({ title, url }: SocialShareProps) {
       <Button
         size="sm"
         variant="outline"
-        className="gap-2 bg-[#1877F2]/10 border-[#1877F2]/30 text-[#1877F2] hover:bg-[#1877F2]/20 hover:text-[#1877F2]"
+        className="gap-2 bg-[#1877F2]/10 border-[#1877F2]/30 text-[#1877F2] hover:bg-[#1877F2]/20 hover:text-[#1877F2] active:scale-95 transition-transform duration-100"
         onClick={handleFacebook}
       >
         <Facebook className="w-4 h-4" />
@@ -69,7 +69,7 @@ export function SocialShare({ title, url }: SocialShareProps) {
       <Button
         size="sm"
         variant="outline"
-        className="gap-2 bg-gray-800/10 border-gray-800/30 text-gray-800 hover:bg-gray-800/20 hover:text-gray-800"
+        className="gap-2 bg-gray-800/10 border-gray-800/30 text-gray-800 hover:bg-gray-800/20 hover:text-gray-800 active:scale-95 transition-transform duration-100"
         onClick={handleTwitter}
       >
         <Twitter className="w-4 h-4" />
@@ -79,7 +79,7 @@ export function SocialShare({ title, url }: SocialShareProps) {
         <Button
           size="sm"
           variant="outline"
-          className="gap-2 text-gray-700"
+          className="gap-2 text-gray-700 active:scale-95 transition-transform duration-100"
           onClick={handleNativeShare}
         >
           <Share2 className="w-4 h-4" />

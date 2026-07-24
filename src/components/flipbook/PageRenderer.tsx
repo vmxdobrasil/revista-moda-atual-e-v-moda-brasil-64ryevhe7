@@ -1,6 +1,7 @@
 import { EditionPage, Hotspot, getFileUrl } from '@/services/magazine'
 import { HotspotMarker } from './HotspotMarker'
 import { TemplateRenderer } from './TemplateRenderer'
+import { SmartImage } from './SmartImage'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 
@@ -48,10 +49,11 @@ export function PageRenderer({ page, hotspots = [], isLeft = false }: PageRender
         className="absolute inset-0 transition-transform duration-300 ease-out flex items-center justify-center"
         style={{ transform: `scale(${zoom})`, transformOrigin: origin }}
       >
-        <img
+        <SmartImage
           src={page.image_file ? getFileUrl(page, page.image_file) : page.image_url}
           alt={`Página ${page.page_number}`}
-          className="w-full h-full object-contain select-none pointer-events-none absolute inset-0"
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          imgClassName="w-full h-full object-contain select-none"
         />
 
         {/* Template Overlay */}

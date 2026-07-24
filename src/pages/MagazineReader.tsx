@@ -1,5 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react'
+import { cn } from '@/lib/utils'
 import {
   getEdition,
   getLatestEdition,
@@ -12,6 +13,7 @@ import {
 } from '@/services/magazine'
 import { FlipbookDesktop } from '@/components/flipbook/FlipbookDesktop'
 import { FlipbookMobile } from '@/components/flipbook/FlipbookMobile'
+import { SmartImage } from '@/components/flipbook/SmartImage'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useMetaTags } from '@/hooks/use-meta-tags'
 import { SocialShare } from '@/components/SocialShare'
@@ -42,6 +44,22 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
 
   const [currentSpread, setCurrentSpread] = useState(0)
   const [currentPage, setCurrentPage] = useState(0)
+  const [uiVisible, setUiVisible] = useState(true)
+
+  const inactivityTimerRef = useRef<ReturnType<typeof setTimeout>>()
+
+  const resetInactivityTimer = useCallback(() => {
+    setUiVisible(true)
+    if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current)
+    inactivityTimerRef.current = setTimeout(() => setUiVisible(false), 2000)
+  }, [])
+
+  useEffect(() => {
+    resetInactivityTimer()
+    return () => {
+      if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current)
+    }
+  }, [resetInactivityTimer])
 
   useEffect(() => {
     if (paramId === ':id' || !paramId) {
@@ -81,6 +99,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
         setLoadingPages(true)
         const pgs = await getEditionPages(edition.id)
         setPages(pgs)
+        setCurrentPage(0)
         try {
           const hts = await getHotspots(edition.id, pgs)
           setHotspots(hts)
@@ -123,6 +142,8 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
           src="https://img.usecurling.com/i?q=v%20moda%20brasil%20logo&color=orange&shape=outline"
           alt="Revista Moda Atual"
           className="h-16 md:h-24 animate-pulse opacity-80"
+          loading="lazy"
+          decoding="async"
         />
         <div className="flex items-center gap-3 text-orange-500 mt-4">
           <Loader2 className="w-6 h-6 animate-spin" />
@@ -152,11 +173,18 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
             src={coverImage}
             alt="Cover Blur"
             className="w-full h-full object-cover opacity-20 blur-3xl scale-110"
+            loading="lazy"
+            decoding="async"
           />
         </div>
         <div className="z-10 flex flex-col items-center gap-8 animate-fade-in-up">
-          <div className="w-48 md:w-64 aspect-[0.7118] rounded-md shadow-2xl overflow-hidden bg-white flex items-center justify-center">
-            <img src={coverImage} alt={edition.title} className="w-full h-full object-contain" />
+          <div className="w-48 md:w-64 aspect-[0.7118] rounded-md shadow-2xl overflow-hidden bg-white">
+            <SmartImage
+              src={coverImage}
+              alt={edition.title}
+              className="w-full h-full"
+              imgClassName="w-full h-full object-contain"
+            />
           </div>
           <div className="flex flex-col items-center gap-3">
             <h2 className="text-xl md:text-2xl font-bold text-gray-800 text-center drop-shadow-md">
@@ -180,35 +208,48 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
         </h2>
         <div className="flex items-center gap-2">
           <SocialShare title={edition.title} url={window.location.href} />
-          <Button asChild className="bg-orange-500 hover:bg-orange-600">
+          <Button
+            asChild
+            className="bg-orange-500 hover:bg-orange-600 active:scale-95 transition-transform duration-100"
+          >
             <Link to="/">Voltar para Home</Link>
           </Button>
         </div>
       </div>
     )
   }
+
   const totalPages = pages.length
   const displayPage = isMobile ? currentPage : Math.min(currentSpread * 2, totalPages - 1)
   const progress = totalPages > 1 ? (displayPage / (totalPages - 1)) * 100 : 0
 
   const jumpToPage = (pageNum: number) => {
     if (isMobile) {
-      const el = document.querySelector(`[data-page="${pageNum}"]`)
-      el?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' })
+      setCurrentPage(pageNum)
     } else {
       setCurrentSpread(Math.floor((pageNum + 1) / 2))
     }
   }
 
   return (
-    <div className="flex flex-col h-screen w-full bg-[#f4f4f4] overflow-hidden text-gray-900 font-sans">
-      <header className="h-16 bg-white border-b flex items-center justify-between px-4 md:px-6 shrink-0 z-50 shadow-sm">
+    <div
+      className="flex flex-col h-screen w-full bg-[#f4f4f4] overflow-hidden text-gray-900 font-sans"
+      onPointerDown={resetInactivityTimer}
+    >
+      <header
+        className={cn(
+          'h-16 bg-white border-b flex items-center justify-between px-4 md:px-6 shrink-0 z-50 shadow-sm transition-opacity duration-300',
+          isMobile && !uiVisible ? 'opacity-30' : 'opacity-100',
+        )}
+      >
         <div className="flex items-center gap-4">
           <Link to="/" className="shrink-0 hover:opacity-80 transition-opacity">
             <img
               src="https://img.usecurling.com/i?q=v%20moda%20brasil%20logo&color=orange&shape=outline"
               alt="V MODA BRASIL"
               className="h-6 md:h-8"
+              loading="lazy"
+              decoding="async"
             />
           </Link>
           <div className="h-6 w-px bg-gray-300 hidden md:block" />
@@ -222,7 +263,11 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
           </div>
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2 text-gray-700">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 text-gray-700 active:scale-95 transition-transform duration-100"
+              >
                 <List className="w-4 h-4" />
                 <span className="hidden md:inline">Índice</span>
               </Button>
@@ -238,7 +283,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
                     <SheetClose asChild key={p.id}>
                       <Button
                         variant="ghost"
-                        className="w-full justify-start text-left h-auto py-3 border border-transparent hover:border-gray-200"
+                        className="w-full justify-start text-left h-auto py-3 border border-transparent hover:border-gray-200 active:scale-95 transition-transform duration-100"
                         onClick={() => jumpToPage(pages.indexOf(p))}
                       >
                         <span className="font-medium text-gray-700">{p.toc_title}</span>
@@ -252,7 +297,11 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
 
           <Drawer>
             <DrawerTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2 text-gray-700">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 text-gray-700 active:scale-95 transition-transform duration-100"
+              >
                 <LayoutGrid className="w-4 h-4" />
                 <span className="hidden md:inline">Páginas</span>
               </Button>
@@ -263,7 +312,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
                   {pages.map((p, index) => (
                     <DrawerClose asChild key={p.id}>
                       <div
-                        className="cursor-pointer group flex flex-col gap-3"
+                        className="cursor-pointer group flex flex-col gap-3 active:scale-95 transition-transform duration-100"
                         onClick={() => jumpToPage(index)}
                       >
                         <div className="relative aspect-[0.7118] overflow-hidden rounded-sm shadow-sm group-hover:shadow-lg group-hover:ring-2 ring-orange-500 transition-all flex items-center justify-center bg-gray-50">
@@ -271,6 +320,8 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
                             src={p.image_file ? getFileUrl(p, p.image_file) : p.image_url}
                             alt={`Página ${p.page_number}`}
                             className="w-full h-full object-contain"
+                            loading="lazy"
+                            decoding="async"
                           />
                         </div>
                         <p className="text-center text-sm font-medium text-gray-600 group-hover:text-orange-600 transition-colors">
@@ -288,7 +339,12 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
 
       <main className="flex-1 relative overflow-hidden flex items-center justify-center">
         {isMobile ? (
-          <FlipbookMobile pages={pages} hotspots={hotspots} onPageChange={handlePageChange} />
+          <FlipbookMobile
+            pages={pages}
+            hotspots={hotspots}
+            onPageChange={handlePageChange}
+            targetPage={currentPage}
+          />
         ) : (
           <FlipbookDesktop
             pages={pages}
@@ -299,7 +355,12 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
         )}
       </main>
 
-      <footer className="h-12 bg-white border-t flex flex-col shrink-0 relative z-40 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+      <footer
+        className={cn(
+          'h-12 bg-white border-t flex flex-col shrink-0 relative z-40 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] transition-opacity duration-300',
+          isMobile && !uiVisible ? 'opacity-30' : 'opacity-100',
+        )}
+      >
         <div className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 z-50">
           <SocialShare title={edition.title} url={window.location.href} />
         </div>
@@ -319,7 +380,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
             className="h-1 group-hover:h-2 bg-gray-200 rounded-none [&>div]:bg-orange-500 transition-all cursor-pointer"
           />
         </div>
-        <div className="flex-1 flex items-center justify-center px-6 text-xs md:text-sm font-medium text-gray-500 tracking-wide uppercase md:px-6 px-20">
+        <div className="flex-1 flex items-center justify-center px-20 md:px-6 text-xs md:text-sm font-medium text-gray-500 tracking-wide uppercase">
           Página {displayPage} de {totalPages - 1}
         </div>
       </footer>

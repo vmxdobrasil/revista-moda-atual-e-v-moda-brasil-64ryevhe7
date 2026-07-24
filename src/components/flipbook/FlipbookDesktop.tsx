@@ -78,7 +78,7 @@ export function FlipbookDesktop({
       <Button
         variant="ghost"
         size="icon"
-        className="absolute left-4 lg:left-12 z-10 w-12 h-12 rounded-full bg-white/50 hover:bg-white/90 backdrop-blur shadow-md"
+        className="absolute left-4 lg:left-12 z-10 w-12 h-12 rounded-full bg-white/50 hover:bg-white/90 backdrop-blur shadow-md active:scale-90 transition-transform duration-100"
         onClick={(e) => {
           e.stopPropagation()
           handlePrev()
@@ -143,7 +143,7 @@ export function FlipbookDesktop({
       <Button
         variant="ghost"
         size="icon"
-        className="absolute right-4 lg:right-12 z-10 w-12 h-12 rounded-full bg-white/50 hover:bg-white/90 backdrop-blur shadow-md"
+        className="absolute right-4 lg:right-12 z-10 w-12 h-12 rounded-full bg-white/50 hover:bg-white/90 backdrop-blur shadow-md active:scale-90 transition-transform duration-100"
         onClick={(e) => {
           e.stopPropagation()
           handleNext()
