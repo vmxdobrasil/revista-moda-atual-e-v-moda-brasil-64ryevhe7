@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-24T18:07:46.688Z",
+  "generatedAt": "2026-07-24T18:31:52.971Z",
   "collections": [
     {
       "name": "users",
@@ -92,6 +92,12 @@
           "type": "file",
           "required": false,
           "system": false
+        },
+        {
+          "name": "view_count",
+          "type": "number",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": []
@@ -162,6 +168,12 @@
         {
           "name": "template_data",
           "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "view_count",
+          "type": "number",
           "required": false,
           "system": false
         }
@@ -237,6 +249,12 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "click_count",
+          "type": "number",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": ["CREATE INDEX `idx_hotspots_page` ON `page_hotspots` (page)"]

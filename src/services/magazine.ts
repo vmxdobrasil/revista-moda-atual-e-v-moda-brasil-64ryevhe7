@@ -8,6 +8,7 @@ export interface Edition {
   cover_url: string
   cover_file?: string
   description: string
+  view_count?: number
   created: string
   updated: string
 }
@@ -23,6 +24,7 @@ export interface EditionPage {
   toc_title: string
   template?: string
   template_data?: any
+  view_count?: number
   created: string
   updated: string
 }
@@ -38,6 +40,7 @@ export interface Hotspot {
   description: string
   price: string
   link: string
+  click_count?: number
   created: string
   updated: string
 }

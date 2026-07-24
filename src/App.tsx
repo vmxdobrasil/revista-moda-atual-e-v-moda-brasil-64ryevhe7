@@ -12,6 +12,7 @@ import EditionsPage from './pages/admin/EditionsPage'
 import EditionEditPage from './pages/admin/EditionEditPage'
 import EditionCreatePage from './pages/admin/EditionCreatePage'
 import PageEditPage from './pages/admin/PageEditPage'
+import AnalyticsPage from './pages/admin/AnalyticsPage'
 import { AuthProvider } from './hooks/use-auth'
 
 const App = () => (
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="editions/new" element={<EditionCreatePage />} />
             <Route path="editions/:id" element={<EditionEditPage />} />
             <Route path="editions/:editionId/pages/:pageId/edit" element={<PageEditPage />} />
+            <Route path="analytics" element={<AnalyticsPage />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

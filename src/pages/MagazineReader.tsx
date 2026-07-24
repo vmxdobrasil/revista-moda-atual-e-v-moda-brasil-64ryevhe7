@@ -11,6 +11,7 @@ import {
   Hotspot,
   getFileUrl,
 } from '@/services/magazine'
+import { trackPageView } from '@/services/analytics'
 import { FlipbookDesktop } from '@/components/flipbook/FlipbookDesktop'
 import { FlipbookMobile } from '@/components/flipbook/FlipbookMobile'
 import { SmartImage } from '@/components/flipbook/SmartImage'
@@ -131,6 +132,16 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
   }, [edition])
 
   useMetaTags(metaConfig)
+
+  const currentVisiblePageIndex = isMobile
+    ? currentPage
+    : Math.min(currentSpread * 2, Math.max(pages.length - 1, 0))
+  const currentVisiblePageId = pages[currentVisiblePageIndex]?.id
+
+  useEffect(() => {
+    if (!currentVisiblePageId) return
+    trackPageView(currentVisiblePageId).catch(() => {})
+  }, [currentVisiblePageId])
 
   const handleSpreadChange = (spread: number) => setCurrentSpread(spread)
   const handlePageChange = (page: number) => setCurrentPage(page)
