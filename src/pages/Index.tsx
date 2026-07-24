@@ -35,12 +35,16 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       <header className="bg-white border-b py-5 px-6 md:px-12 flex items-center justify-between sticky top-0 z-30 shadow-sm">
-        <Link to="/" className="shrink-0 hover:opacity-80 transition-opacity">
-          <img
-            src="https://img.usecurling.com/i?q=v%20moda%20brasil%20logo&color=orange&shape=outline"
-            alt="V MODA BRASIL"
-            className="h-8 md:h-10"
-          />
+        <Link
+          to="/"
+          className="shrink-0 hover:opacity-80 transition-opacity flex items-center gap-2"
+        >
+          <div className="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-lg bg-orange-600 text-white font-extrabold text-sm md:text-lg shadow-md">
+            V
+          </div>
+          <span className="text-orange-600 font-bold text-lg md:text-xl tracking-tight">
+            MODA BRASIL
+          </span>
         </Link>
         <div className="flex items-center gap-4 md:gap-6">
           <div className="flex items-center gap-2 text-orange-600 font-semibold text-sm md:text-base">
@@ -153,11 +157,9 @@ export default function Index() {
       <footer className="bg-gray-900 text-gray-400 py-12 px-6 md:px-12">
         <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <img
-              src="https://img.usecurling.com/i?q=v%20moda%20brasil%20logo&color=orange&shape=outline"
-              alt="V MODA BRASIL"
-              className="h-8 opacity-80"
-            />
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-600 text-white font-extrabold text-sm opacity-80">
+              V
+            </div>
             <span className="text-sm">Revista Moda Atual Digital</span>
           </div>
           <div className="flex items-center gap-6 text-sm">
