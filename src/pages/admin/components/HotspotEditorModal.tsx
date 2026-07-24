@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import {
   EditionPage,
   Hotspot,
-  getHotspots,
+  getHotspotsByPage,
   createHotspot,
   updateHotspot,
   deleteHotspot,
@@ -33,8 +33,8 @@ export function HotspotEditorModal({
   const loadData = async () => {
     setLoading(true)
     try {
-      const data = await getHotspots(page.edition)
-      setHotspots(data.filter((h) => h.page === page.id))
+      const data = await getHotspotsByPage(page.id)
+      setHotspots(data)
     } catch {
       // ignore
     } finally {

@@ -1,10 +1,14 @@
+import { useState } from 'react'
 import { useAuth } from '@/hooks/use-auth'
-import { Navigate, Outlet, Link } from 'react-router-dom'
+import { Navigate, Outlet, Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { Loader2, LayoutDashboard, Globe, LogOut } from 'lucide-react'
+import { Sheet, SheetContent } from '@/components/ui/sheet'
+import { Loader2, BookOpen, LogOut, Menu } from 'lucide-react'
 
 export function AdminLayout() {
   const { isAuthenticated, loading, signOut } = useAuth()
+  const navigate = useNavigate()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   if (loading) {
     return (
@@ -15,39 +19,68 @@ export function AdminLayout() {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/admin/login" replace />
   }
 
+  const handleLogout = () => {
+    signOut()
+    navigate('/admin/login')
+  }
+
+  const navContent = (
+    <div className="flex flex-col h-full">
+      <Link
+        to="/admin/editions"
+        className="flex items-center gap-2 px-4 py-6 border-b"
+        onClick={() => setSidebarOpen(false)}
+      >
+        <BookOpen className="w-6 h-6 text-orange-500" />
+        <span className="font-bold text-gray-800">Moda Atual</span>
+      </Link>
+      <nav className="flex-1 p-4 space-y-1">
+        <Link
+          to="/admin/editions"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <BookOpen className="w-5 h-5" /> Edições
+        </Link>
+      </nav>
+      <div className="p-4 border-t">
+        <Button
+          variant="ghost"
+          onClick={handleLogout}
+          className="w-full justify-start gap-3 text-gray-600 hover:text-red-600"
+        >
+          <LogOut className="w-5 h-5" /> Sair
+        </Button>
+      </div>
+    </div>
+  )
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-      <header className="bg-white border-b px-6 py-4 flex justify-between items-center sticky top-0 z-10 shadow-sm">
-        <div className="flex items-center gap-4">
-          <Link to="/admin" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <LayoutDashboard className="w-6 h-6 text-orange-500" />
-            <h1 className="text-xl font-bold text-gray-800">Admin Dashboard</h1>
-          </Link>
-        </div>
-        <div className="flex items-center gap-2 md:gap-4">
-          <Button variant="outline" asChild size="sm" className="hidden sm:flex gap-2">
-            <Link to="/">
-              <Globe className="w-4 h-4" />
-              Ver Site
-            </Link>
+    <div className="min-h-screen bg-gray-50 flex font-sans">
+      <aside className="hidden md:flex w-64 flex-col bg-white border-r shrink-0 sticky top-0 h-screen">
+        {navContent}
+      </aside>
+
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetContent side="left" className="w-64 p-0">
+          {navContent}
+        </SheetContent>
+      </Sheet>
+
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="md:hidden bg-white border-b px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
+          <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)}>
+            <Menu className="w-5 h-5" />
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={signOut}
-            className="gap-2 text-gray-600 hover:text-red-600"
-          >
-            <LogOut className="w-4 h-4" />
-            <span className="hidden sm:inline">Sair</span>
-          </Button>
-        </div>
-      </header>
-      <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
-        <Outlet />
-      </main>
+          <span className="font-bold text-gray-800">Moda Atual Admin</span>
+        </header>
+        <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
+          <Outlet />
+        </main>
+      </div>
     </div>
   )
 }

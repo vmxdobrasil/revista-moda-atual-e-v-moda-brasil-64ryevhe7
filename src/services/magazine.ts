@@ -54,9 +54,17 @@ export const getEditionPages = (editionId: string) =>
     sort: 'page_number',
   })
 
+export const getEditionPage = (pageId: string) =>
+  pb.collection('edition_pages').getOne<EditionPage>(pageId)
+
 export const getHotspots = (editionId: string) =>
   pb.collection('page_hotspots').getFullList<Hotspot>({
     filter: `page.edition = "${editionId}"`,
+  })
+
+export const getHotspotsByPage = (pageId: string) =>
+  pb.collection('page_hotspots').getFullList<Hotspot>({
+    filter: `page = "${pageId}"`,
   })
 
 export const createEdition = (data: FormData) => pb.collection('editions').create<Edition>(data)
