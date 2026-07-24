@@ -28,8 +28,10 @@ function setCanonical(url: string) {
   el.setAttribute('href', url)
 }
 
-export function useMetaTags(config: MetaTagConfig) {
+export function useMetaTags(config: MetaTagConfig | null) {
   useEffect(() => {
+    if (!config) return
+
     const fullUrl = config.url || window.location.href
 
     document.title = config.title
@@ -47,5 +49,5 @@ export function useMetaTags(config: MetaTagConfig) {
 
     setMetaTag('name', 'description', config.description)
     setCanonical(fullUrl)
-  }, [config.title, config.description, config.image, config.url, config.type])
+  }, [config])
 }

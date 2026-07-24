@@ -26,6 +26,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/edition/:id" element={<MagazineReader />} />
             <Route path="/reader/latest" element={<MagazineReader isLatest />} />
+            <Route path="/reader/:id" element={<MagazineReader />} />
           </Route>
 
           <Route path="/admin/login" element={<Login />} />

@@ -139,12 +139,15 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
   const currentVisiblePageId = pages[currentVisiblePageIndex]?.id
 
   useEffect(() => {
-    if (!currentVisiblePageId) return
+    if (!currentVisiblePageId || !isValidPages) return
     trackPageView(currentVisiblePageId).catch(() => {})
-  }, [currentVisiblePageId])
+  }, [currentVisiblePageId, isValidPages])
 
   const handleSpreadChange = (spread: number) => setCurrentSpread(spread)
   const handlePageChange = (page: number) => setCurrentPage(page)
+
+  const isValidEdition = !loadingEdition && !errorEmpty && !!edition
+  const isValidPages = isValidEdition && !loadingPages && pages.length > 0
 
   if (loadingEdition) {
     return (
