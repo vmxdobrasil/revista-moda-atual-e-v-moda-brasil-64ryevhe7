@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import {
   getEdition,
   getLatestEdition,
@@ -13,6 +13,8 @@ import {
 import { FlipbookDesktop } from '@/components/flipbook/FlipbookDesktop'
 import { FlipbookMobile } from '@/components/flipbook/FlipbookMobile'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useMetaTags } from '@/hooks/use-meta-tags'
+import { SocialShare } from '@/components/SocialShare'
 import {
   Sheet,
   SheetContent,
@@ -157,16 +159,33 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
         <h2 className="text-2xl font-bold text-gray-800 text-center px-4">
           Nenhuma página encontrada
         </h2>
-        <Button asChild className="bg-orange-500 hover:bg-orange-600">
-          <Link to="/">Voltar para Home</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <SocialShare title={edition.title} url={window.location.href} />
+          <Button asChild className="bg-orange-500 hover:bg-orange-600">
+            <Link to="/">Voltar para Home</Link>
+          </Button>
+        </div>
       </div>
     )
   }
-
   const totalPages = pages.length
   const displayPage = isMobile ? currentPage : Math.min(currentSpread * 2, totalPages - 1)
   const progress = totalPages > 1 ? (displayPage / (totalPages - 1)) * 100 : 0
+
+  const metaConfig = useMemo(() => {
+    const coverImage = edition.cover_file
+      ? getFileUrl(edition, edition.cover_file)
+      : edition.cover_url || ''
+    return {
+      title: `Revista Moda Atual - ${edition.title}`,
+      description: edition.description || 'Edição da Revista Moda Atual',
+      image: coverImage,
+      url: window.location.href,
+      type: 'article',
+    }
+  }, [edition])
+
+  useMetaTags(metaConfig)
 
   const handleSpreadChange = (spread: number) => setCurrentSpread(spread)
   const handlePageChange = (page: number) => setCurrentPage(page)
@@ -197,6 +216,9 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
           </h1>
         </div>
         <div className="flex items-center gap-2 md:gap-4">
+          <div className="hidden md:block">
+            <SocialShare title={edition.title} url={window.location.href} />
+          </div>
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2 text-gray-700">
@@ -277,6 +299,9 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
       </main>
 
       <footer className="h-12 bg-white border-t flex flex-col shrink-0 relative z-40 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+        <div className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 z-50">
+          <SocialShare title={edition.title} url={window.location.href} />
+        </div>
         <div
           className="h-2 w-full cursor-pointer group"
           onClick={(e) => {
@@ -293,7 +318,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
             className="h-1 group-hover:h-2 bg-gray-200 rounded-none [&>div]:bg-orange-500 transition-all cursor-pointer"
           />
         </div>
-        <div className="flex-1 flex items-center justify-center px-6 text-xs md:text-sm font-medium text-gray-500 tracking-wide uppercase">
+        <div className="flex-1 flex items-center justify-center px-6 text-xs md:text-sm font-medium text-gray-500 tracking-wide uppercase md:px-6 px-20">
           Página {displayPage} de {totalPages - 1}
         </div>
       </footer>

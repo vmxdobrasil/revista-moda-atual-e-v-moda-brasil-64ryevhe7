@@ -1,7 +1,8 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { getEditions, Edition, getFileUrl } from '@/services/magazine'
 import { useRealtime } from '@/hooks/use-realtime'
+import { useMetaTags } from '@/hooks/use-meta-tags'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, BookOpen, Library, Settings, AlertCircle } from 'lucide-react'
@@ -31,6 +32,19 @@ export default function Index() {
   useRealtime('editions', () => {
     loadData()
   })
+
+  const homeMeta = useMemo(
+    () => ({
+      title: 'Revista Moda Atual',
+      description: 'A revista de moda brasileira que conecta estilo, tendências e informação.',
+      image: '/og-image.png',
+      url: window.location.origin,
+      type: 'website',
+    }),
+    [],
+  )
+
+  useMetaTags(homeMeta)
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
