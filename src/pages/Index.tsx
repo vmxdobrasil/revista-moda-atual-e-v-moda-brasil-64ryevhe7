@@ -1,34 +1,58 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { getEditions, Edition, getFileUrl } from '@/services/magazine'
+import { useRealtime } from '@/hooks/use-realtime'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, BookOpen } from 'lucide-react'
+import { ArrowRight, BookOpen, Library, Settings, AlertCircle } from 'lucide-react'
 
 export default function Index() {
   const [editions, setEditions] = useState<Edition[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+
+  const loadData = useCallback(async () => {
+    try {
+      const data = await getEditions()
+      setEditions(data)
+      setError(false)
+    } catch (err) {
+      console.error(err)
+      setError(true)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
-    getEditions()
-      .then((data) => {
-        setEditions(data)
-        setLoading(false)
-      })
-      .catch(console.error)
-  }, [])
+    loadData()
+  }, [loadData])
+
+  useRealtime('editions', () => {
+    loadData()
+  })
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       <header className="bg-white border-b py-5 px-6 md:px-12 flex items-center justify-between sticky top-0 z-30 shadow-sm">
-        <img
-          src="https://img.usecurling.com/i?q=v%20moda%20brasil%20logo&color=orange&shape=outline"
-          alt="V MODA BRASIL"
-          className="h-8 md:h-10"
-        />
-        <div className="flex items-center gap-2 text-orange-600 font-semibold text-sm md:text-base">
-          <BookOpen className="w-5 h-5" />
-          <span>Acervo Digital</span>
+        <Link to="/" className="shrink-0 hover:opacity-80 transition-opacity">
+          <img
+            src="https://img.usecurling.com/i?q=v%20moda%20brasil%20logo&color=orange&shape=outline"
+            alt="V MODA BRASIL"
+            className="h-8 md:h-10"
+          />
+        </Link>
+        <div className="flex items-center gap-4 md:gap-6">
+          <div className="flex items-center gap-2 text-orange-600 font-semibold text-sm md:text-base">
+            <BookOpen className="w-5 h-5" />
+            <span className="hidden sm:inline">Acervo Digital</span>
+          </div>
+          <Button asChild variant="ghost" size="sm" className="text-gray-600 hover:text-orange-600">
+            <Link to="/admin">
+              <Settings className="w-4 h-4 mr-1.5" />
+              <span className="hidden sm:inline">Admin</span>
+            </Link>
+          </Button>
         </div>
       </header>
 
@@ -58,6 +82,35 @@ export default function Index() {
             {[1, 2, 3].map((i) => (
               <div key={i} className="aspect-[0.7118] bg-gray-200 animate-pulse rounded-xl" />
             ))}
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mb-6">
+              <AlertCircle className="w-10 h-10 text-red-500" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-3">Erro ao carregar edições</h3>
+            <p className="text-gray-500 max-w-md text-lg mb-6">
+              Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.
+            </p>
+            <Button
+              onClick={() => {
+                setLoading(true)
+                loadData()
+              }}
+              className="bg-orange-600 hover:bg-orange-700 text-white rounded-full px-8"
+            >
+              Tentar Novamente
+            </Button>
+          </div>
+        ) : editions.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-20 h-20 rounded-full bg-orange-100 flex items-center justify-center mb-6">
+              <Library className="w-10 h-10 text-orange-500" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-3">Nenhuma edição disponível</h3>
+            <p className="text-gray-500 max-w-md text-lg">
+              Ainda não há edições publicadas. Volte em breve para conferir as novidades!
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-12">
@@ -96,6 +149,33 @@ export default function Index() {
           </div>
         )}
       </main>
+
+      <footer className="bg-gray-900 text-gray-400 py-12 px-6 md:px-12">
+        <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-3">
+            <img
+              src="https://img.usecurling.com/i?q=v%20moda%20brasil%20logo&color=orange&shape=outline"
+              alt="V MODA BRASIL"
+              className="h-8 opacity-80"
+            />
+            <span className="text-sm">Revista Moda Atual Digital</span>
+          </div>
+          <div className="flex items-center gap-6 text-sm">
+            <Link to="/" className="hover:text-orange-500 transition-colors">
+              Início
+            </Link>
+            <Link to="/reader/latest" className="hover:text-orange-500 transition-colors">
+              Ler Revista
+            </Link>
+            <Link to="/admin" className="hover:text-orange-500 transition-colors">
+              Admin
+            </Link>
+          </div>
+          <p className="text-xs text-gray-500">
+            © {new Date().getFullYear()} V Moda Brasil. Todos os direitos reservados.
+          </p>
+        </div>
+      </footer>
     </div>
   )
 }
