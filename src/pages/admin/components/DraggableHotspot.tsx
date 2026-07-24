@@ -62,7 +62,7 @@ export function DraggableHotspot({ hotspot, containerRef, onChange }: DraggableH
         setPos(lastSavedPos.current)
         toast({ title: 'Erro ao salvar posição do hotspot.', variant: 'destructive' })
       }
-    }, 500)
+    }, 300)
   }
 
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -156,8 +156,8 @@ export function DraggableHotspot({ hotspot, containerRef, onChange }: DraggableH
           className={cn(
             'absolute w-8 h-8 rounded-full flex items-center justify-center cursor-pointer shadow-lg transition-transform z-10 touch-none select-none',
             isDragging
-              ? 'bg-orange-600 scale-125 cursor-grabbing ring-4 ring-orange-300/50'
-              : 'bg-orange-500 hover:scale-110',
+              ? 'bg-orange-600 scale-125 cursor-grabbing ring-4 ring-orange-400/60 shadow-xl shadow-orange-500/50 will-change-transform'
+              : 'bg-orange-500 hover:scale-110 shadow-lg',
           )}
           style={{ left: `${pos.x}%`, top: `${pos.y}%`, transform: 'translate(-50%, -50%)' }}
           onPointerDown={handlePointerDown}
@@ -173,6 +173,11 @@ export function DraggableHotspot({ hotspot, containerRef, onChange }: DraggableH
           }}
         >
           <TagIcon className="w-4 h-4 text-white pointer-events-none" />
+          {isDragging && (
+            <span className="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-gray-900/90 px-1.5 py-0.5 text-[10px] font-medium text-white pointer-events-none">
+              {pos.x.toFixed(0)}%, {pos.y.toFixed(0)}%
+            </span>
+          )}
         </div>
       </PopoverTrigger>
       <PopoverContent className="w-80" side="right" onClick={(e) => e.stopPropagation()}>

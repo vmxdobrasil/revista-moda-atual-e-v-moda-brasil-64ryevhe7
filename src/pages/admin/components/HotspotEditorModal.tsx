@@ -81,13 +81,14 @@ export function HotspotEditorModal({
           ) : (
             <div
               ref={containerRef}
-              className="relative inline-block h-full shadow-lg"
+              className="relative inline-block h-full shadow-lg touch-none"
               style={{ aspectRatio: '0.7118' }}
             >
               <img
                 src={imageUrl}
                 alt="Página"
-                className="w-full h-full object-cover cursor-crosshair"
+                className="w-full h-full object-cover cursor-crosshair touch-none select-none"
+                draggable={false}
                 onClick={handleImageClick}
               />
               {hotspots.map((h) => (
