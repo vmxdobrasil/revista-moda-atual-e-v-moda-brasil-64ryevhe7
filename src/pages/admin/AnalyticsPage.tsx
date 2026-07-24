@@ -1,19 +1,21 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import {
   getEditions,
   getEditionPages,
-  getHotspotsByPage,
+  getHotspots,
   Edition,
   EditionPage,
   Hotspot,
 } from '@/services/magazine'
 import { useRealtime } from '@/hooks/use-realtime'
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion'
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Table,
   TableBody,
@@ -22,43 +24,44 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Loader2, Eye, MousePointerClick, BookOpen, BarChart3 } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Eye, MousePointerClick, BookOpen, BarChart3, ChevronRight } from 'lucide-react'
+
+interface EditionMetrics {
+  totalPageViews: number
+  totalHotspotClicks: number
+}
 
 export default function AnalyticsPage() {
   const [editions, setEditions] = useState<Edition[]>([])
   const [pagesMap, setPagesMap] = useState<Record<string, EditionPage[]>>({})
+  const [hotspotsMap, setHotspotsMap] = useState<Record<string, Hotspot[]>>({})
   const [loading, setLoading] = useState(true)
-  const [dialogPageId, setDialogPageId] = useState<string | null>(null)
-  const [dialogHotspots, setDialogHotspots] = useState<Hotspot[]>([])
-  const [dialogLoading, setDialogLoading] = useState(false)
+  const [filterEdition, setFilterEdition] = useState<string>('all')
 
   const loadData = async () => {
     try {
       const eds = await getEditions()
       setEditions(eds)
-      const map: Record<string, EditionPage[]> = {}
+      const pMap: Record<string, EditionPage[]> = {}
+      const hMap: Record<string, Hotspot[]> = {}
       for (const ed of eds) {
-        map[ed.id] = await getEditionPages(ed.id)
+        const pages = await getEditionPages(ed.id)
+        pMap[ed.id] = pages
+        const hotspots = await getHotspots(ed.id, pages)
+        for (const ht of hotspots) {
+          if (!hMap[ht.page]) hMap[ht.page] = []
+          hMap[ht.page].push(ht)
+        }
       }
-      setPagesMap(map)
+      setPagesMap(pMap)
+      setHotspotsMap(hMap)
     } catch (err) {
       console.error(err)
     } finally {
       setLoading(false)
-    }
-  }
-
-  const loadHotspots = async (pageId: string) => {
-    setDialogLoading(true)
-    try {
-      setDialogHotspots(await getHotspotsByPage(pageId))
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setDialogLoading(false)
     }
   }
 
@@ -67,27 +70,116 @@ export default function AnalyticsPage() {
   }, [])
   useRealtime('editions', () => loadData())
   useRealtime('edition_pages', () => loadData())
-  useRealtime('page_hotspots', () => {
-    if (dialogPageId) loadHotspots(dialogPageId)
-  })
+  useRealtime('page_hotspots', () => loadData())
+
+  const metrics: Record<string, EditionMetrics> = useMemo(() => {
+    const result: Record<string, EditionMetrics> = {}
+    for (const ed of editions) {
+      const pages = pagesMap[ed.id] || []
+      const totalPageViews = pages.reduce((s, p) => s + (p.view_count || 0), 0)
+      const totalHotspotClicks = pages.reduce((s, p) => {
+        const hts = hotspotsMap[p.id] || []
+        return s + hts.reduce((s2, h) => s2 + (h.click_count || 0), 0)
+      }, 0)
+      result[ed.id] = { totalPageViews, totalHotspotClicks }
+    }
+    return result
+  }, [editions, pagesMap, hotspotsMap])
+
+  const filteredEditions = useMemo(() => {
+    if (filterEdition === 'all') return editions
+    return editions.filter((e) => e.id === filterEdition)
+  }, [editions, filterEdition])
 
   const totalEditionViews = editions.reduce((s, e) => s + (e.view_count || 0), 0)
   const totalPageViews = Object.values(pagesMap)
     .flat()
     .reduce((s, p) => s + (p.view_count || 0), 0)
+  const totalHotspotClicks = Object.values(hotspotsMap)
+    .flat()
+    .reduce((s, h) => s + (h.click_count || 0), 0)
 
   if (loading) {
     return (
-      <div className="flex justify-center py-20">
-        <Loader2 className="w-10 h-10 animate-spin text-orange-500" />
+      <div className="space-y-8">
+        <div>
+          <Skeleton className="h-9 w-48" />
+          <Skeleton className="h-5 w-96 mt-2" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} className="rounded-xl border-none bg-white shadow-sm">
+              <CardContent className="flex items-center gap-4 p-5">
+                <Skeleton className="w-12 h-12 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-7 w-20" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <Card className="rounded-xl border-none bg-white shadow-sm">
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Edição</TableHead>
+                  <TableHead className="text-right">Views de Páginas</TableHead>
+                  <TableHead className="text-right">Cliques em Hotspots</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {[...Array(4)].map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell>
+                      <Skeleton className="h-5 w-48" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Skeleton className="h-5 w-12 ml-auto" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Skeleton className="h-5 w-12 ml-auto" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Skeleton className="h-8 w-28 ml-auto" />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (editions.length === 0) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-800 tracking-tight">Analytics</h2>
+          <p className="text-gray-500 mt-1">
+            Acompanhe o engajamento dos leitores com suas edições.
+          </p>
+        </div>
+        <div className="py-16 text-center bg-white rounded-xl border border-dashed">
+          <BarChart3 className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          <p className="text-gray-500 text-lg px-4 max-w-md mx-auto">
+            Nenhum dado de análise disponível. As métricas aparecerão assim que os leitores
+            começarem a interagir com a revista.
+          </p>
+        </div>
       </div>
     )
   }
 
   const summaryCards = [
     { label: 'Total de Edições', value: editions.length, icon: BookOpen },
-    { label: 'Visualizações de Edições', value: totalEditionViews, icon: Eye },
-    { label: 'Visualizações de Páginas', value: totalPageViews, icon: BarChart3 },
+    { label: 'Views de Edições', value: totalEditionViews, icon: Eye },
+    { label: 'Views de Páginas', value: totalPageViews, icon: BarChart3 },
+    { label: 'Cliques em Hotspots', value: totalHotspotClicks, icon: MousePointerClick },
   ]
 
   return (
@@ -97,7 +189,7 @@ export default function AnalyticsPage() {
         <p className="text-gray-500 mt-1">Acompanhe o engajamento dos leitores com suas edições.</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {summaryCards.map((card) => (
           <Card key={card.label} className="rounded-xl border-none bg-white shadow-sm">
             <CardContent className="flex items-center gap-4 p-5">
@@ -113,120 +205,70 @@ export default function AnalyticsPage() {
         ))}
       </div>
 
-      <Accordion type="multiple" className="space-y-3">
-        {editions.map((ed) => {
-          const pages = pagesMap[ed.id] || []
-          return (
-            <AccordionItem
-              key={ed.id}
-              value={ed.id}
-              className="bg-white rounded-xl border-none shadow-sm overflow-hidden"
-            >
-              <AccordionTrigger className="px-5 py-4 hover:no-underline">
-                <div className="flex items-center justify-between w-full pr-4">
-                  <span className="font-semibold text-gray-900 text-left">{ed.title}</span>
-                  <span className="flex items-center gap-1.5 text-sm text-orange-600 font-medium">
-                    <Eye className="w-4 h-4" />
-                    {ed.view_count || 0} views
-                  </span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-5 pb-4">
-                {pages.length === 0 ? (
-                  <p className="text-gray-400 text-sm py-4 text-center">
-                    Nenhuma página encontrada.
-                  </p>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-20">Pág.</TableHead>
-                        <TableHead>Título</TableHead>
-                        <TableHead className="w-28 text-right">Views</TableHead>
-                        <TableHead className="w-40 text-right">Hotspots</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {pages.map((pg) => (
-                        <TableRow key={pg.id}>
-                          <TableCell className="font-medium text-gray-700">
-                            {pg.page_number || '—'}
-                          </TableCell>
-                          <TableCell className="text-gray-600">
-                            {pg.toc_title || `Página ${pg.page_number}`}
-                          </TableCell>
-                          <TableCell className="text-right font-medium text-orange-600">
-                            {pg.view_count || 0}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setDialogPageId(pg.id)
-                                loadHotspots(pg.id)
-                              }}
-                              className="gap-1.5"
-                            >
-                              <MousePointerClick className="w-3.5 h-3.5" />
-                              Ver Hotspots
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </AccordionContent>
-            </AccordionItem>
-          )
-        })}
-      </Accordion>
-
-      {editions.length === 0 && (
-        <div className="py-16 text-center bg-white rounded-xl border border-dashed">
-          <BarChart3 className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 text-lg">Nenhuma edição encontrada.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h3 className="text-lg font-semibold text-gray-800">Edições</h3>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-500 whitespace-nowrap">Filtrar por edição</span>
+          <Select value={filterEdition} onValueChange={setFilterEdition}>
+            <SelectTrigger className="w-[240px]">
+              <SelectValue placeholder="Todas as edições" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas as edições</SelectItem>
+              {editions.map((ed) => (
+                <SelectItem key={ed.id} value={ed.id}>
+                  {ed.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-      )}
+      </div>
 
-      <Dialog open={!!dialogPageId} onOpenChange={(open) => !open && setDialogPageId(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Hotspots da Página</DialogTitle>
-          </DialogHeader>
-          {dialogLoading ? (
-            <div className="flex justify-center py-10">
-              <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
-            </div>
-          ) : dialogHotspots.length === 0 ? (
+      <Card className="rounded-xl border-none bg-white shadow-sm">
+        <CardContent className="p-0">
+          {filteredEditions.length === 0 ? (
             <p className="text-gray-400 text-sm py-10 text-center">
-              Nenhum hotspot encontrado nesta página.
+              Nenhuma edição encontrada para o filtro selecionado.
             </p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Título</TableHead>
-                  <TableHead>Preço</TableHead>
-                  <TableHead className="text-right">Cliques</TableHead>
+                  <TableHead>Edição</TableHead>
+                  <TableHead className="text-right">Views de Páginas</TableHead>
+                  <TableHead className="text-right">Cliques em Hotspots</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {dialogHotspots.map((ht) => (
-                  <TableRow key={ht.id}>
-                    <TableCell className="font-medium text-gray-700">{ht.title}</TableCell>
-                    <TableCell className="text-gray-600">{ht.price || '—'}</TableCell>
-                    <TableCell className="text-right font-medium text-orange-600">
-                      {ht.click_count || 0}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {filteredEditions.map((ed) => {
+                  const m = metrics[ed.id] || { totalPageViews: 0, totalHotspotClicks: 0 }
+                  return (
+                    <TableRow key={ed.id}>
+                      <TableCell className="font-medium text-gray-900">{ed.title}</TableCell>
+                      <TableCell className="text-right font-medium text-orange-600">
+                        {m.totalPageViews}
+                      </TableCell>
+                      <TableCell className="text-right font-medium text-orange-600">
+                        {m.totalHotspotClicks}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button asChild size="sm" variant="outline" className="gap-1.5">
+                          <Link to={`/admin/analytics/${ed.id}`}>
+                            Ver Detalhes
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </Link>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
           )}
-        </DialogContent>
-      </Dialog>
+        </CardContent>
+      </Card>
     </div>
   )
 }
