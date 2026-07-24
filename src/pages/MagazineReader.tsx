@@ -77,9 +77,15 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
     const loadPg = async () => {
       try {
         setLoadingPages(true)
-        const [pgs, hts] = await Promise.all([getEditionPages(edition.id), getHotspots(edition.id)])
+        const pgs = await getEditionPages(edition.id)
         setPages(pgs)
-        setHotspots(hts)
+        try {
+          const hts = await getHotspots(edition.id, pgs)
+          setHotspots(hts)
+        } catch (hotspotErr) {
+          console.error('Failed to load hotspots:', hotspotErr)
+          setHotspots([])
+        }
       } catch (err) {
         console.error(err)
       } finally {

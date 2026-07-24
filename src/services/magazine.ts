@@ -29,6 +29,8 @@ export interface EditionPage {
 
 export interface Hotspot {
   id: string
+  collectionId: string
+  collectionName: string
   page: string
   x: number
   y: number
@@ -36,6 +38,8 @@ export interface Hotspot {
   description: string
   price: string
   link: string
+  created: string
+  updated: string
 }
 
 export const getEditions = () =>
@@ -57,10 +61,13 @@ export const getEditionPages = (editionId: string) =>
 export const getEditionPage = (pageId: string) =>
   pb.collection('edition_pages').getOne<EditionPage>(pageId)
 
-export const getHotspots = (editionId: string) =>
-  pb.collection('page_hotspots').getFullList<Hotspot>({
-    filter: `page.edition = "${editionId}"`,
-  })
+export const getHotspots = async (editionId: string, existingPages?: EditionPage[]) => {
+  const pages = existingPages ?? (await getEditionPages(editionId))
+  const pageIds = pages.map((p) => p.id)
+  if (pageIds.length === 0) return []
+  const filter = pageIds.map((id) => `page = "${id}"`).join(' || ')
+  return pb.collection('page_hotspots').getFullList<Hotspot>({ filter })
+}
 
 export const getHotspotsByPage = (pageId: string) =>
   pb.collection('page_hotspots').getFullList<Hotspot>({

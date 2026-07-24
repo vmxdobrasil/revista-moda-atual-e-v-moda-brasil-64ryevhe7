@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-24T16:06:34.926Z",
+  "generatedAt": "2026-07-24T16:45:33.725Z",
   "collections": [
     {
       "name": "users",
@@ -166,7 +166,9 @@
           "system": false
         }
       ],
-      "indexes": []
+      "indexes": [
+        "CREATE INDEX `idx_pages_edition_pagenum` ON `edition_pages` (edition, page_number)"
+      ]
     },
     {
       "name": "page_hotspots",
@@ -237,7 +239,7 @@
           "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
-      "indexes": []
+      "indexes": ["CREATE INDEX `idx_hotspots_page` ON `page_hotspots` (page)"]
     }
   ]
 }
