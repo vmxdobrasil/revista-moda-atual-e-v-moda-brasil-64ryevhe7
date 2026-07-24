@@ -133,6 +133,12 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
 
   useMetaTags(metaConfig)
 
+  const handleSpreadChange = (spread: number) => setCurrentSpread(spread)
+  const handlePageChange = (page: number) => setCurrentPage(page)
+
+  const isValidEdition = !loadingEdition && !errorEmpty && !!edition
+  const isValidPages = isValidEdition && !loadingPages && pages.length > 0
+
   const currentVisiblePageIndex = isMobile
     ? currentPage
     : Math.min(currentSpread * 2, Math.max(pages.length - 1, 0))
@@ -142,12 +148,6 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
     if (!currentVisiblePageId || !isValidPages) return
     trackPageView(currentVisiblePageId).catch(() => {})
   }, [currentVisiblePageId, isValidPages])
-
-  const handleSpreadChange = (spread: number) => setCurrentSpread(spread)
-  const handlePageChange = (page: number) => setCurrentPage(page)
-
-  const isValidEdition = !loadingEdition && !errorEmpty && !!edition
-  const isValidPages = isValidEdition && !loadingPages && pages.length > 0
 
   if (loadingEdition) {
     return (
