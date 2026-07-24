@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-24T20:22:35.859Z",
+  "generatedAt": "2026-07-24T20:46:33.054Z",
   "collections": [
     {
       "name": "users",
@@ -258,6 +258,53 @@
         }
       ],
       "indexes": ["CREATE INDEX `idx_hotspots_page` ON `page_hotspots` (page)"]
+    },
+    {
+      "name": "generated_social_content",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "theme",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "original_edition",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "editions"
+        },
+        {
+          "name": "content_data",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": []
     }
   ]
 }

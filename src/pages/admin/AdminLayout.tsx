@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { Navigate, Outlet, Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
-import { Loader2, BookOpen, LogOut, Menu, BarChart3 } from 'lucide-react'
+import { Loader2, BookOpen, LogOut, Menu, BarChart3, Sparkles } from 'lucide-react'
 
 export function AdminLayout() {
   const { isAuthenticated, loading, signOut } = useAuth()
@@ -51,6 +51,13 @@ export function AdminLayout() {
           onClick={() => setSidebarOpen(false)}
         >
           <BarChart3 className="w-5 h-5" /> Analytics
+        </Link>
+        <Link
+          to="/admin/content-generator"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <Sparkles className="w-5 h-5" /> Gerador de Conteudo
         </Link>
       </nav>
       <div className="p-4 border-t">
