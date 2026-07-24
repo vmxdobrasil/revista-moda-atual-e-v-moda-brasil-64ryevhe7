@@ -97,6 +97,25 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
     loadPg()
   }, [edition])
 
+  const metaConfig = useMemo(() => {
+    if (!edition) return null
+    const coverImage = edition.cover_file
+      ? getFileUrl(edition, edition.cover_file)
+      : edition.cover_url || ''
+    return {
+      title: `Revista Moda Atual - ${edition.title}`,
+      description: edition.description || 'Edição da Revista Moda Atual',
+      image: coverImage,
+      url: window.location.href,
+      type: 'article',
+    }
+  }, [edition])
+
+  useMetaTags(metaConfig)
+
+  const handleSpreadChange = (spread: number) => setCurrentSpread(spread)
+  const handlePageChange = (page: number) => setCurrentPage(page)
+
   if (loadingEdition) {
     return (
       <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-50 gap-6">
@@ -171,24 +190,6 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
   const totalPages = pages.length
   const displayPage = isMobile ? currentPage : Math.min(currentSpread * 2, totalPages - 1)
   const progress = totalPages > 1 ? (displayPage / (totalPages - 1)) * 100 : 0
-
-  const metaConfig = useMemo(() => {
-    const coverImage = edition.cover_file
-      ? getFileUrl(edition, edition.cover_file)
-      : edition.cover_url || ''
-    return {
-      title: `Revista Moda Atual - ${edition.title}`,
-      description: edition.description || 'Edição da Revista Moda Atual',
-      image: coverImage,
-      url: window.location.href,
-      type: 'article',
-    }
-  }, [edition])
-
-  useMetaTags(metaConfig)
-
-  const handleSpreadChange = (spread: number) => setCurrentSpread(spread)
-  const handlePageChange = (page: number) => setCurrentPage(page)
 
   const jumpToPage = (pageNum: number) => {
     if (isMobile) {
