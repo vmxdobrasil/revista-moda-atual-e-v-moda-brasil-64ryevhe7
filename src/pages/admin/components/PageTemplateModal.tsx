@@ -35,15 +35,53 @@ export function PageTemplateModal({
   const [template, setTemplate] = useState<string>(page.template || 'default')
   const [templateData, setTemplateData] = useState<any>(page.template_data || {})
   const [saving, setSaving] = useState(false)
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
   const { toast } = useToast()
 
+  const validate = (): boolean => {
+    const errors: Record<string, string> = {}
+
+    if (template === 'entrevista') {
+      const qa = templateData.qa || []
+      if (qa.length === 0) {
+        errors.qa = 'Adicione pelo menos uma pergunta e resposta.'
+      } else {
+        const incomplete = qa.some((item: any) => !item.q?.trim() || !item.a?.trim())
+        if (incomplete) {
+          errors.qa = 'Preencha todas as perguntas e respostas.'
+        }
+      }
+    }
+
+    if (template === 'marketing') {
+      if (!templateData.cta_text?.trim()) {
+        errors.cta_text = 'O texto do CTA é obrigatório.'
+      }
+      if (!templateData.link?.trim()) {
+        errors.link = 'O link é obrigatório.'
+      }
+    }
+
+    setValidationErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
   const handleSave = async () => {
+    if (!validate()) {
+      toast({ title: 'Verifique os campos obrigatórios.', variant: 'destructive' })
+      return
+    }
+
     setSaving(true)
     try {
-      await updateEditionPage(page.id, {
-        template,
-        template_data: templateData,
-      })
+      const data: Record<string, any> = { template }
+      if (template === 'default') {
+        data.template_data = JSON.stringify(templateData)
+      } else {
+        data.template_data = JSON.stringify(templateData)
+      }
+
+      await updateEditionPage(page.id, data)
       toast({ title: 'Template salvo com sucesso.' })
       onSaved()
       onOpenChange(false)
@@ -71,6 +109,18 @@ export function PageTemplateModal({
     setTemplateData({ ...templateData, qa })
   }
 
+  const handleTemplateChange = (value: string) => {
+    setTemplate(value)
+    setValidationErrors({})
+    if (!templateData || Object.keys(templateData).length === 0) {
+      if (value === 'entrevista') {
+        setTemplateData({ qa: [{ q: '', a: '' }] })
+      } else {
+        setTemplateData({})
+      }
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -81,12 +131,12 @@ export function PageTemplateModal({
         <div className="space-y-6 py-4">
           <div className="space-y-2">
             <Label>Template da Página</Label>
-            <Select value={template} onValueChange={setTemplate}>
+            <Select value={template} onValueChange={handleTemplateChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione um template..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="default">Padrão (Apenas Imagem)</SelectItem>
+                <SelectItem value="default">Padrão (Título + Texto)</SelectItem>
                 <SelectItem value="editorial">Editorial</SelectItem>
                 <SelectItem value="marketing">Marketing de Moda</SelectItem>
                 <SelectItem value="holofote">Coluna Social Holofote</SelectItem>
@@ -95,14 +145,44 @@ export function PageTemplateModal({
             </Select>
           </div>
 
-          {template === 'editorial' && (
+          {template === 'default' && (
             <div className="space-y-4 border-t pt-4">
               <div className="space-y-2">
-                <Label>Título do Editorial</Label>
+                <Label>Título</Label>
                 <Input
                   value={templateData.title || ''}
                   onChange={(e) => setTemplateData({ ...templateData, title: e.target.value })}
-                  placeholder="Ex: Tendências de Verão..."
+                  placeholder="Ex: Mensagem do Editor"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Texto</Label>
+                <Textarea
+                  value={templateData.content || ''}
+                  onChange={(e) => setTemplateData({ ...templateData, content: e.target.value })}
+                  rows={6}
+                  placeholder="Conteúdo da página..."
+                />
+              </div>
+            </div>
+          )}
+
+          {template === 'editorial' && (
+            <div className="space-y-4 border-t pt-4">
+              <div className="space-y-2">
+                <Label>Manchete</Label>
+                <Input
+                  value={templateData.title || ''}
+                  onChange={(e) => setTemplateData({ ...templateData, title: e.target.value })}
+                  placeholder="Ex: Tendências de Verão 2026"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Subtítulo</Label>
+                <Input
+                  value={templateData.subtitle || ''}
+                  onChange={(e) => setTemplateData({ ...templateData, subtitle: e.target.value })}
+                  placeholder="Ex: As cores e estampas que vão dominar a estação"
                 />
               </div>
               <div className="space-y-2">
@@ -111,6 +191,15 @@ export function PageTemplateModal({
                   value={templateData.content || ''}
                   onChange={(e) => setTemplateData({ ...templateData, content: e.target.value })}
                   rows={8}
+                  placeholder="Texto completo do editorial..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Crédito do Autor</Label>
+                <Input
+                  value={templateData.author || ''}
+                  onChange={(e) => setTemplateData({ ...templateData, author: e.target.value })}
+                  placeholder="Ex: Maria Silva"
                 />
               </div>
             </div>
@@ -127,7 +216,7 @@ export function PageTemplateModal({
                 <Input
                   value={templateData.title || ''}
                   onChange={(e) => setTemplateData({ ...templateData, title: e.target.value })}
-                  placeholder="Ex: O Futuro do Varejo"
+                  placeholder="Ex: O Futuro do Varejo Atacadista"
                 />
               </div>
               <div className="space-y-2">
@@ -135,8 +224,47 @@ export function PageTemplateModal({
                 <Textarea
                   value={templateData.content || ''}
                   onChange={(e) => setTemplateData({ ...templateData, content: e.target.value })}
-                  rows={8}
+                  rows={6}
+                  placeholder="Descrição do produto ou serviço..."
                 />
+              </div>
+              <div className="space-y-2">
+                <Label>Detalhes da Oferta</Label>
+                <Input
+                  value={templateData.offer_details || ''}
+                  onChange={(e) =>
+                    setTemplateData({ ...templateData, offer_details: e.target.value })
+                  }
+                  placeholder="Ex: 30% OFF para pedidos acima de R$ 500"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>
+                    Texto do CTA <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    value={templateData.cta_text || ''}
+                    onChange={(e) => setTemplateData({ ...templateData, cta_text: e.target.value })}
+                    placeholder="Ex: Comprar Agora"
+                  />
+                  {validationErrors.cta_text && (
+                    <p className="text-sm text-red-500">{validationErrors.cta_text}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label>
+                    Link <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    value={templateData.link || ''}
+                    onChange={(e) => setTemplateData({ ...templateData, link: e.target.value })}
+                    placeholder="https://..."
+                  />
+                  {validationErrors.link && (
+                    <p className="text-sm text-red-500">{validationErrors.link}</p>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -148,12 +276,45 @@ export function PageTemplateModal({
                 <strong>"Coluna Social Holofote"</strong> e a assinatura{' '}
                 <strong>"Editora de Moda Fabia Mendonça"</strong>.
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Nome da Pessoa em Destaque</Label>
+                  <Input
+                    value={templateData.person_name || ''}
+                    onChange={(e) =>
+                      setTemplateData({ ...templateData, person_name: e.target.value })
+                    }
+                    placeholder="Ex: Ana Beltrão"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Título / Profissão</Label>
+                  <Input
+                    value={templateData.person_title || ''}
+                    onChange={(e) =>
+                      setTemplateData({ ...templateData, person_title: e.target.value })
+                    }
+                    placeholder="Ex: Estilista e Empresária"
+                  />
+                </div>
+              </div>
               <div className="space-y-2">
-                <Label>Texto da Coluna</Label>
+                <Label>Texto / Biografia</Label>
                 <Textarea
                   value={templateData.content || ''}
                   onChange={(e) => setTemplateData({ ...templateData, content: e.target.value })}
-                  rows={8}
+                  rows={6}
+                  placeholder="Texto da coluna social..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Crédito da Foto</Label>
+                <Input
+                  value={templateData.photo_credit || ''}
+                  onChange={(e) =>
+                    setTemplateData({ ...templateData, photo_credit: e.target.value })
+                  }
+                  placeholder="Ex: João Fotografias"
                 />
               </div>
             </div>
@@ -161,15 +322,27 @@ export function PageTemplateModal({
 
           {template === 'entrevista' && (
             <div className="space-y-4 border-t pt-4">
-              <div className="space-y-2">
-                <Label>Nome do Entrevistado</Label>
-                <Input
-                  value={templateData.interviewee || ''}
-                  onChange={(e) =>
-                    setTemplateData({ ...templateData, interviewee: e.target.value })
-                  }
-                  placeholder="Ex: Gisele Bündchen"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Nome do Entrevistado</Label>
+                  <Input
+                    value={templateData.interviewee || ''}
+                    onChange={(e) =>
+                      setTemplateData({ ...templateData, interviewee: e.target.value })
+                    }
+                    placeholder="Ex: Gisele Bündchen"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Nome do Entrevistador</Label>
+                  <Input
+                    value={templateData.interviewer_name || ''}
+                    onChange={(e) =>
+                      setTemplateData({ ...templateData, interviewer_name: e.target.value })
+                    }
+                    placeholder="Ex: Carlos Mendes"
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label>Introdução (Opcional)</Label>
@@ -177,16 +350,22 @@ export function PageTemplateModal({
                   value={templateData.intro || ''}
                   onChange={(e) => setTemplateData({ ...templateData, intro: e.target.value })}
                   rows={3}
+                  placeholder="Texto introdutório da entrevista..."
                 />
               </div>
 
               <div className="space-y-4 mt-6">
                 <div className="flex items-center justify-between">
-                  <Label>Perguntas e Respostas</Label>
+                  <Label>
+                    Perguntas e Respostas <span className="text-red-500">*</span>
+                  </Label>
                   <Button variant="outline" size="sm" onClick={addQA}>
                     <Plus className="w-4 h-4 mr-2" /> Adicionar P&R
                   </Button>
                 </div>
+                {validationErrors.qa && (
+                  <p className="text-sm text-red-500">{validationErrors.qa}</p>
+                )}
 
                 {(templateData.qa || []).map((item: any, i: number) => (
                   <div key={i} className="p-4 border rounded-md relative bg-gray-50 space-y-3">

@@ -56,8 +56,17 @@ export function PageRenderer({ page, hotspots = [], isLeft = false }: PageRender
 
         {/* Template Overlay */}
         {page.template && page.template !== 'default' && (
-          <div className="absolute inset-0 w-full h-full flex flex-col p-8 md:p-12 pointer-events-none overflow-hidden">
-            <TemplateRenderer page={page} />
+          <div className="absolute inset-0 w-full h-full flex flex-col p-6 md:p-10 pointer-events-none overflow-hidden">
+            <div className="w-full h-full pointer-events-auto">
+              <TemplateRenderer page={page} />
+            </div>
+          </div>
+        )}
+        {page.template === 'default' && page.template_data && (
+          <div className="absolute inset-0 w-full h-full flex flex-col p-6 md:p-10 pointer-events-none overflow-hidden">
+            <div className="w-full h-full pointer-events-auto">
+              <TemplateRenderer page={page} />
+            </div>
           </div>
         )}
 
