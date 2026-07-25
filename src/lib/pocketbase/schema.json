@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-25T14:19:11.493Z",
+  "generatedAt": "2026-07-25T14:39:51.836Z",
   "collections": [
     {
       "name": "users",
@@ -417,6 +417,62 @@
         "CREATE INDEX idx_social_posts_likes ON social_posts (likes)",
         "CREATE INDEX idx_social_posts_format ON social_posts (format)",
         "CREATE INDEX idx_social_posts_engagement ON social_posts (engagement_rate)"
+      ]
+    },
+    {
+      "name": "workflow_results",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "edition_id",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "editions"
+        },
+        {
+          "name": "theme",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "agent_outputs",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "final_content",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_workflow_results_edition ON workflow_results (edition_id)",
+        "CREATE INDEX idx_workflow_results_created ON workflow_results (created)"
       ]
     }
   ]

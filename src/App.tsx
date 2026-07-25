@@ -15,6 +15,7 @@ import PageEditPage from './pages/admin/PageEditPage'
 import AnalyticsPage from './pages/admin/AnalyticsPage'
 import EditionAnalyticsPage from './pages/admin/EditionAnalyticsPage'
 import ContentGeneratorPage from './pages/admin/ContentGeneratorPage'
+import ContentWorkflowPage from './pages/admin/ContentWorkflowPage'
 import SocialPostsPage from './pages/admin/SocialPostsPage'
 import SocialAnalyticsPage from './pages/admin/SocialAnalyticsPage'
 import AiPersonaChat from './pages/admin/AiPersonaChat'
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="analytics" element={<AnalyticsPage />} />
             <Route path="analytics/:editionId" element={<EditionAnalyticsPage />} />
             <Route path="content-generator" element={<ContentGeneratorPage />} />
+            <Route path="content-workflow" element={<ContentWorkflowPage />} />
             <Route path="social-posts" element={<SocialPostsPage />} />
             <Route path="social-analytics" element={<SocialAnalyticsPage />} />
             <Route path="ai-persona/chat" element={<AiPersonaChat />} />
