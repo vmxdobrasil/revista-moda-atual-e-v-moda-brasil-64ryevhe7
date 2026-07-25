@@ -363,3 +363,34 @@
     }
   }
 }
+
+.print-only {
+  display: none;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  body {
+    background: white !important;
+  }
+  main {
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+  .recharts-wrapper {
+    background: white !important;
+    page-break-inside: avoid;
+  }
+  .shadow-sm {
+    box-shadow: none !important;
+  }
+  aside,
+  header {
+    display: none !important;
+  }
+}
