@@ -1,76 +1,49 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Search, Terminal, CornerDownLeft, Hash, Sparkles, AlertCircle } from 'lucide-react'
-import { toast } from '@/hooks/use-toast'
-import { MODULES, getModuleByNumber } from '@/lib/commands/modules'
-import { SUPER_PROMPTS } from '@/lib/commands/superPrompts'
-import { setPendingPrompt } from '@/lib/commands/promptQueue'
+import { useRealtime } from '@/hooks/use-realtime'
+import { getAllPrompts, type PromptLibraryItem } from '@/services/prompt-library'
+import { buildItems, type CommandItem } from '@/lib/commands/itemBuilder'
+import { LEVEL_BADGES } from '@/lib/commands/examples'
 
-const STATIC_COMMANDS = [
-  { cmd: '/top60', label: 'Top 60 Marcas', path: '/admin/top60' },
-  { cmd: '/vmodebrasil', label: 'Marketplace V MODA BRASIL', path: '/admin/vmodebrasil' },
-  {
-    cmd: '/vmodebrasil/orders',
-    label: 'Pedidos do Marketplace',
-    path: '/admin/vmodebrasil/orders',
-  },
-]
-
-type ItemIcon = 'terminal' | 'hash' | 'sparkles' | 'alert'
-
-interface CommandItem {
-  id: string
-  primary: string
-  secondary: string
-  icon: ItemIcon
-  disabled?: boolean
-  action: () => void
-}
-
-function buildModuleItems(navigate: (path: string) => void, closeBar: () => void): CommandItem[] {
-  return MODULES.map((m) => ({
-    id: `modulo-${m.number}`,
-    primary: `/modulo ${m.number}`,
-    secondary: m.label,
-    icon: 'hash',
-    action: () => {
-      navigate(m.path)
-      closeBar()
-      toast({ title: `Navegando para Módulo ${m.number}`, description: m.label })
-    },
-  }))
-}
-
-function buildSuperItems(
-  navigate: (path: string) => void,
-  closeBar: () => void,
-  currentPath: string,
-): CommandItem[] {
-  return SUPER_PROMPTS.map((s) => ({
-    id: `super-${s.name}`,
-    primary: `/super ${s.name}`,
-    secondary: s.label,
-    icon: 'sparkles',
-    action: () => {
-      setPendingPrompt(s.systemPrompt)
-      if (currentPath !== '/admin/ai-persona/chat') {
-        navigate('/admin/ai-persona/chat')
-      }
-      closeBar()
-      toast({ title: `Super Prompt '${s.name}' ativado`, description: s.label })
-    },
-  }))
+function renderIcon(icon: string) {
+  switch (icon) {
+    case 'hash':
+      return <Hash className="w-4 h-4 text-orange-500 shrink-0" />
+    case 'sparkles':
+      return <Sparkles className="w-4 h-4 text-orange-500 shrink-0" />
+    case 'alert':
+      return <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+    default:
+      return <Terminal className="w-4 h-4 text-orange-500 shrink-0" />
+  }
 }
 
 export function CommandBar() {
   const [open, setOpen] = useState(false)
   const [input, setInput] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const [libraryPrompts, setLibraryPrompts] = useState<PromptLibraryItem[]>([])
   const navigate = useNavigate()
   const location = useLocation()
+
+  const closeBar = useCallback(() => {
+    setOpen(false)
+    setInput('')
+    setSelectedIndex(0)
+  }, [])
+
+  const loadLibrary = useCallback(async () => {
+    try {
+      const prompts = await getAllPrompts()
+      setLibraryPrompts(prompts)
+    } catch {
+      /* fallback to static */
+    }
+  }, [])
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -83,89 +56,22 @@ export function CommandBar() {
     return () => window.removeEventListener('keydown', handler)
   }, [])
 
-  const closeBar = () => {
-    setOpen(false)
-    setInput('')
+  useEffect(() => {
+    loadLibrary()
+  }, [loadLibrary])
+
+  useRealtime('prompt_library', () => {
+    loadLibrary()
+  })
+
+  const items = useMemo(
+    () => buildItems(input, navigate, closeBar, location.pathname, libraryPrompts),
+    [input, navigate, closeBar, location.pathname, libraryPrompts],
+  )
+
+  useEffect(() => {
     setSelectedIndex(0)
-  }
-
-  const items = useMemo<CommandItem[]>(() => {
-    const trimmed = input.trim().toLowerCase()
-
-    if (trimmed.startsWith('/modulo')) {
-      const numPart = trimmed.replace('/modulo', '').trim()
-      if (numPart === '' || !/^\d+$/.test(numPart)) {
-        return buildModuleItems(navigate, closeBar)
-      }
-      const num = parseInt(numPart, 10)
-      const mod = getModuleByNumber(num)
-      if (mod) {
-        return [
-          {
-            id: `modulo-${mod.number}`,
-            primary: `/modulo ${mod.number}`,
-            secondary: mod.label,
-            icon: 'hash',
-            action: () => {
-              navigate(mod.path)
-              closeBar()
-              toast({ title: `Navegando para Módulo ${mod.number}`, description: mod.label })
-            },
-          },
-        ]
-      }
-      return [
-        {
-          id: 'modulo-error',
-          primary: 'Módulo inválido',
-          secondary: 'Use 1 a 7.',
-          icon: 'alert',
-          disabled: true,
-          action: () => {},
-        },
-      ]
-    }
-
-    if (trimmed.startsWith('/super')) {
-      const namePart = trimmed.replace('/super', '').trim()
-      const matched = SUPER_PROMPTS.filter(
-        (s) =>
-          namePart === '' || s.name.includes(namePart) || s.label.toLowerCase().includes(namePart),
-      )
-      if (matched.length === 0) {
-        return [
-          {
-            id: 'super-error',
-            primary: 'Super prompt não encontrado',
-            secondary: 'Use /super para listar disponíveis.',
-            icon: 'alert',
-            disabled: true,
-            action: () => {
-              toast({
-                title: 'Super prompt não encontrado',
-                description: 'Use `/super` para listar disponíveis.',
-                variant: 'destructive',
-              })
-            },
-          },
-        ]
-      }
-      return buildSuperItems(navigate, closeBar, location.pathname)
-    }
-
-    return STATIC_COMMANDS.filter(
-      (c) => c.cmd.includes(trimmed) || c.label.toLowerCase().includes(trimmed),
-    ).map((c) => ({
-      id: c.cmd,
-      primary: c.cmd,
-      secondary: c.label,
-      icon: 'terminal' as ItemIcon,
-      action: () => {
-        navigate(c.path)
-        closeBar()
-      },
-    }))
-  }, [input, navigate, location.pathname])
+  }, [items.length])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && items.length > 0 && items[selectedIndex]) {
@@ -177,19 +83,6 @@ export function CommandBar() {
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
       setSelectedIndex((i) => Math.max(i - 1, 0))
-    }
-  }
-
-  const renderIcon = (icon: ItemIcon) => {
-    switch (icon) {
-      case 'hash':
-        return <Hash className="w-4 h-4 text-orange-500 shrink-0" />
-      case 'sparkles':
-        return <Sparkles className="w-4 h-4 text-orange-500 shrink-0" />
-      case 'alert':
-        return <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
-      default:
-        return <Terminal className="w-4 h-4 text-orange-500 shrink-0" />
     }
   }
 
@@ -212,7 +105,7 @@ export function CommandBar() {
                 setSelectedIndex(0)
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Digite um comando (ex: /modulo 5, /super capa, /top60)"
+              placeholder="Digite um comando (ex: /b tarefa, /a análise, /m objetivo, /super, /modulo 5)"
               className="border-none focus-visible:ring-0"
             />
           </div>
@@ -232,9 +125,16 @@ export function CommandBar() {
                 >
                   <div className="flex items-center gap-3">
                     {renderIcon(item.icon)}
-                    <div>
+                    <div className="flex items-center gap-2">
+                      {item.level && LEVEL_BADGES[item.level] && (
+                        <span
+                          className={`text-xs font-bold px-1.5 py-0.5 rounded ${LEVEL_BADGES[item.level].className}`}
+                        >
+                          {LEVEL_BADGES[item.level].label}
+                        </span>
+                      )}
                       <span className="font-mono text-sm font-medium">{item.primary}</span>
-                      <span className="text-xs text-gray-400 ml-2">{item.secondary}</span>
+                      <span className="text-xs text-gray-400">{item.secondary}</span>
                     </div>
                   </div>
                   {!item.disabled && i === selectedIndex && (

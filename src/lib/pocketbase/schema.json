@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-25T20:40:35.713Z",
+  "generatedAt": "2026-07-25T21:54:47.360Z",
   "collections": [
     {
       "name": "users",
@@ -767,6 +767,65 @@
         }
       ],
       "indexes": ["CREATE INDEX idx_marketplace_orders_status ON marketplace_orders (status)"]
+    },
+    {
+      "name": "prompt_library",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "name",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "prompt_content",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "slug",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "category",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["basic", "advanced", "super"]
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": ["CREATE UNIQUE INDEX idx_prompt_library_slug ON prompt_library (slug)"]
     }
   ]
 }
