@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Sparkles, Send, Trash2, ChevronDown, Loader2, Bot, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { consumePendingPrompt, subscribePendingPrompt } from '@/lib/commands/promptQueue'
 
 interface ChatMessage {
   id: string
@@ -115,6 +116,23 @@ export default function AiPersonaChat() {
     },
     [input, streaming, conversationId],
   )
+
+  useEffect(() => {
+    const prompt = consumePendingPrompt()
+    if (prompt) {
+      setInput(prompt)
+    }
+  }, [])
+
+  useEffect(() => {
+    const unsubscribe = subscribePendingPrompt((prompt) => {
+      if (prompt) {
+        consumePendingPrompt()
+        handleSend(prompt)
+      }
+    })
+    return unsubscribe
+  }, [handleSend])
 
   const handleClear = () => {
     setMessages([])
