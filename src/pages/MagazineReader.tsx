@@ -12,12 +12,14 @@ import {
   getFileUrl,
 } from '@/services/magazine'
 import { trackPageView } from '@/services/analytics'
+import { getAllSocialPosts, type SocialPost } from '@/services/social-posts'
 import { FlipbookDesktop } from '@/components/flipbook/FlipbookDesktop'
 import { FlipbookMobile } from '@/components/flipbook/FlipbookMobile'
 import { SmartImage } from '@/components/flipbook/SmartImage'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useMetaTags } from '@/hooks/use-meta-tags'
 import { SocialShare } from '@/components/SocialShare'
+import { SocialGallery } from '@/components/magazine/SocialGallery'
 import {
   Sheet,
   SheetContent,
@@ -28,7 +30,7 @@ import {
 } from '@/components/ui/sheet'
 import { Drawer, DrawerContent, DrawerTrigger, DrawerClose } from '@/components/ui/drawer'
 import { Button } from '@/components/ui/button'
-import { LayoutGrid, List, Loader2 } from 'lucide-react'
+import { LayoutGrid, List, Loader2, Store, Instagram } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 
 export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
@@ -39,6 +41,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
   const [edition, setEdition] = useState<Edition | null>(null)
   const [pages, setPages] = useState<EditionPage[]>([])
   const [hotspots, setHotspots] = useState<Hotspot[]>([])
+  const [socialPosts, setSocialPosts] = useState<SocialPost[]>([])
   const [loadingEdition, setLoadingEdition] = useState(true)
   const [loadingPages, setLoadingPages] = useState(true)
   const [errorEmpty, setErrorEmpty] = useState(false)
@@ -115,6 +118,13 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
       }
     }
     loadPg()
+  }, [edition])
+
+  useEffect(() => {
+    if (!edition) return
+    getAllSocialPosts()
+      .then(setSocialPosts)
+      .catch(() => setSocialPosts([]))
   }, [edition])
 
   const metaConfig = useMemo(() => {
@@ -272,6 +282,39 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
           </h1>
         </div>
         <div className="flex items-center gap-2 md:gap-4">
+          {edition.expand?.brand && (
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="gap-2 text-orange-600 border-orange-300 hover:bg-orange-50 active:scale-95 transition-transform duration-100"
+            >
+              <Link to={`/vmodebrasil?brand=${encodeURIComponent(edition.expand.brand.name)}`}>
+                <Store className="w-4 h-4" />
+                <span className="hidden lg:inline">Ver Catálogo</span>
+              </Link>
+            </Button>
+          )}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 text-gray-700 active:scale-95 transition-transform duration-100"
+              >
+                <Instagram className="w-4 h-4" />
+                <span className="hidden md:inline">Redes Sociais</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle>Redes Sociais</SheetTitle>
+              </SheetHeader>
+              <div className="mt-6">
+                <SocialGallery posts={socialPosts} />
+              </div>
+            </SheetContent>
+          </Sheet>
           <div className="hidden md:block">
             <SocialShare title={edition.title} url={window.location.href} />
           </div>

@@ -6,6 +6,7 @@ import Index from './pages/Index'
 import NotFound from './pages/NotFound'
 import Layout from './components/Layout'
 import MagazineReader from './pages/MagazineReader'
+import Marketplace from './pages/Marketplace'
 import Login from './pages/Login'
 import { AdminLayout } from './pages/admin/AdminLayout'
 import EditionsPage from './pages/admin/EditionsPage'
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/edition/:id" element={<MagazineReader />} />
             <Route path="/reader/latest" element={<MagazineReader isLatest />} />
             <Route path="/reader/:id" element={<MagazineReader />} />
+            <Route path="/vmodebrasil" element={<Marketplace />} />
           </Route>
 
           <Route path="/admin/login" element={<Login />} />

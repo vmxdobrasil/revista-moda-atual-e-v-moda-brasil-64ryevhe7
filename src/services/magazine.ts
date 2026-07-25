@@ -8,9 +8,23 @@ export interface Edition {
   cover_url: string
   cover_file?: string
   description: string
+  brand?: string
   view_count?: number
   created: string
   updated: string
+  expand?: {
+    brand?: {
+      id: string
+      name: string
+      category: string
+      position: number
+      description: string
+      website: string
+      social_handle: string
+      score: number
+      previous_position: number | null
+    }
+  }
 }
 
 export interface EditionPage {
@@ -40,20 +54,41 @@ export interface Hotspot {
   description: string
   price: string
   link: string
+  product?: string
   click_count?: number
   created: string
   updated: string
+  expand?: {
+    product?: {
+      id: string
+      collectionId: string
+      collectionName: string
+      name: string
+      description: string
+      price: number
+      currency: string
+      image_file: string
+      category: string
+      vendor: string
+      featured: boolean
+      link: string
+    }
+  }
 }
 
 export const getEditions = () =>
   pb.collection('editions').getFullList<Edition>({ sort: '-created' })
 
 export const getLatestEdition = async () => {
-  const result = await pb.collection('editions').getList<Edition>(1, 1, { sort: '-created' })
+  const result = await pb.collection('editions').getList<Edition>(1, 1, {
+    sort: '-created',
+    expand: 'brand',
+  })
   return result.items.length > 0 ? result.items[0] : null
 }
 
-export const getEdition = (id: string) => pb.collection('editions').getOne<Edition>(id)
+export const getEdition = (id: string) =>
+  pb.collection('editions').getOne<Edition>(id, { expand: 'brand' })
 
 export const getEditionPages = (editionId: string) =>
   pb.collection('edition_pages').getFullList<EditionPage>({
@@ -69,12 +104,13 @@ export const getHotspots = async (editionId: string, existingPages?: EditionPage
   const pageIds = pages.map((p) => p.id)
   if (pageIds.length === 0) return []
   const filter = pageIds.map((id) => `page = "${id}"`).join(' || ')
-  return pb.collection('page_hotspots').getFullList<Hotspot>({ filter })
+  return pb.collection('page_hotspots').getFullList<Hotspot>({ filter, expand: 'product' })
 }
 
 export const getHotspotsByPage = (pageId: string) =>
   pb.collection('page_hotspots').getFullList<Hotspot>({
     filter: `page = "${pageId}"`,
+    expand: 'product',
   })
 
 export const createEdition = (data: FormData) => pb.collection('editions').create<Edition>(data)

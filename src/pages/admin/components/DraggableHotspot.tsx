@@ -7,6 +7,14 @@ import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 import { Loader2, Tag as TagIcon, Trash2 } from 'lucide-react'
+import { getAllProducts, type MarketplaceProduct } from '@/services/marketplace'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface DraggableHotspotProps {
   hotspot: Hotspot
@@ -22,6 +30,8 @@ export function DraggableHotspot({ hotspot, containerRef, onChange }: DraggableH
   const [desc, setDesc] = useState(hotspot.description)
   const [price, setPrice] = useState(hotspot.price)
   const [link, setLink] = useState(hotspot.link)
+  const [productId, setProductId] = useState(hotspot.product || '')
+  const [products, setProducts] = useState<MarketplaceProduct[]>([])
   const [savingDetails, setSavingDetails] = useState(false)
   const { toast } = useToast()
   const dragState = useRef({ startX: 0, startY: 0, hasDragged: false, pointerId: -1 })
@@ -49,7 +59,14 @@ export function DraggableHotspot({ hotspot, containerRef, onChange }: DraggableH
     setDesc(hotspot.description)
     setPrice(hotspot.price)
     setLink(hotspot.link)
-  }, [hotspot.title, hotspot.description, hotspot.price, hotspot.link])
+    setProductId(hotspot.product || '')
+  }, [hotspot.title, hotspot.description, hotspot.price, hotspot.link, hotspot.product])
+
+  useEffect(() => {
+    getAllProducts()
+      .then(setProducts)
+      .catch(() => {})
+  }, [])
 
   const debouncedSave = (id: string, x: number, y: number) => {
     if (saveTimer.current) clearTimeout(saveTimer.current)
@@ -119,7 +136,13 @@ export function DraggableHotspot({ hotspot, containerRef, onChange }: DraggableH
   const handleSaveDetails = async () => {
     setSavingDetails(true)
     try {
-      await updateHotspot(hotspot.id, { title, description: desc, price, link })
+      await updateHotspot(hotspot.id, {
+        title,
+        description: desc,
+        price,
+        link,
+        product: productId || null,
+      })
       toast({ title: 'Tag atualizada.' })
       setOpen(false)
       onChange()
@@ -199,6 +222,22 @@ export function DraggableHotspot({ hotspot, containerRef, onChange }: DraggableH
               placeholder="Ex: R$ 99,90"
               className="h-8 text-sm"
             />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs">Produto do Marketplace</Label>
+            <Select value={productId} onValueChange={(v) => setProductId(v === 'none' ? '' : v)}>
+              <SelectTrigger className="h-8 text-sm">
+                <SelectValue placeholder="Selecione um produto..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Nenhum</SelectItem>
+                {products.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.name} — {p.vendor}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label className="text-xs">Link (URL)</Label>

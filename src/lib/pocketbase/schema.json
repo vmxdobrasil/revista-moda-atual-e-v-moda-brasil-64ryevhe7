@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-25T14:59:42.520Z",
+  "generatedAt": "2026-07-25T15:46:59.677Z",
   "collections": [
     {
       "name": "users",
@@ -98,9 +98,16 @@
           "type": "number",
           "required": false,
           "system": false
+        },
+        {
+          "name": "brand",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "top60_brands"
         }
       ],
-      "indexes": []
+      "indexes": ["CREATE INDEX `idx_editions_brand` ON `editions` (brand)"]
     },
     {
       "name": "edition_pages",
@@ -255,6 +262,13 @@
           "type": "number",
           "required": false,
           "system": false
+        },
+        {
+          "name": "product",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "marketplace_products"
         }
       ],
       "indexes": ["CREATE INDEX `idx_hotspots_page` ON `page_hotspots` (page)"]

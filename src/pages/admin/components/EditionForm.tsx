@@ -1,9 +1,17 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Edition, createEdition, updateEdition, getFileUrl } from '@/services/magazine'
+import { getBrands, type Top60Brand } from '@/services/top60'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import {
   AlertDialog,
@@ -30,9 +38,17 @@ export function EditionForm({ edition, onSaved, onDelete }: EditionFormProps) {
   const [title, setTitle] = useState(edition?.title || '')
   const [description, setDescription] = useState(edition?.description || '')
   const [file, setFile] = useState<File | null>(null)
+  const [brandId, setBrandId] = useState(edition?.brand || '')
+  const [brands, setBrands] = useState<Top60Brand[]>([])
   const [saving, setSaving] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const { toast } = useToast()
+
+  useEffect(() => {
+    getBrands()
+      .then(setBrands)
+      .catch(() => {})
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -42,6 +58,7 @@ export function EditionForm({ edition, onSaved, onDelete }: EditionFormProps) {
       const formData = new FormData()
       formData.append('title', title)
       formData.append('description', description)
+      formData.append('brand', brandId || '')
       if (file) formData.append('cover_file', file)
 
       const saved = edition
@@ -97,6 +114,22 @@ export function EditionForm({ edition, onSaved, onDelete }: EditionFormProps) {
             {fieldErrors.description && (
               <p className="text-sm text-red-500">{fieldErrors.description}</p>
             )}
+          </div>
+          <div className="space-y-2">
+            <Label>Marca (TOP 60)</Label>
+            <Select value={brandId} onValueChange={(v) => setBrandId(v === 'none' ? '' : v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione uma marca..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Nenhuma</SelectItem>
+                {brands.map((b) => (
+                  <SelectItem key={b.id} value={b.id}>
+                    {b.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label>Capa</Label>
