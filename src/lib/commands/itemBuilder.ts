@@ -155,7 +155,7 @@ export function buildItems(
     const matched = prompts.filter(
       (p) =>
         namePart === '' ||
-        p.name.includes(namePart) ||
+        p.name.toLowerCase().includes(namePart) ||
         p.description.toLowerCase().includes(namePart),
     )
     if (matched.length === 0) {

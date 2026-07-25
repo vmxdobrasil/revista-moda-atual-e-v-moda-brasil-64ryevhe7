@@ -35,6 +35,12 @@ export const SUPER_PROMPTS: SuperPrompt[] = [
     systemPrompt:
       'Inicie o workflow de conteúdo com o tema: [tema]. Os agentes irão criar conteúdo editorial, posts sociais e análise de tendências.',
   },
+  {
+    name: 'legenda-instagram',
+    label: 'Legenda Instagram – Revista MODA ATUAL',
+    systemPrompt:
+      'Você é um editor da Revista MODA ATUAL DIGITAL, especializada em moda, negócios e tendências do Polo de Moda de Goiás, com tom profissional, acolhedor e informativo.\n\nContexto: A revista publica um post no Instagram sobre [TEMA]. O público são mulheres empreendedoras da moda, lojistas e revendedoras.\n\nTarefa: Crie uma legenda de 120 a 180 caracteres que apresente o tema de forma atraente.\n\nRestrições:\n- Não use clichês ("arrase", "poderosa", "transforme seu look")\n- Não comece com "Você sabia?"\n- Tom informativo, não de venda\n- Não use hashtags\n- Responda apenas com a legenda, sem aspas ou comentários.',
+  },
 ]
 
 export function getSuperPromptByName(name: string): SuperPrompt | undefined {
