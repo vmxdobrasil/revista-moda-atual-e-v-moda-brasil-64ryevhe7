@@ -15,6 +15,8 @@ import PageEditPage from './pages/admin/PageEditPage'
 import AnalyticsPage from './pages/admin/AnalyticsPage'
 import EditionAnalyticsPage from './pages/admin/EditionAnalyticsPage'
 import ContentGeneratorPage from './pages/admin/ContentGeneratorPage'
+import SocialPostsPage from './pages/admin/SocialPostsPage'
+import SocialAnalyticsPage from './pages/admin/SocialAnalyticsPage'
 import { AuthProvider } from './hooks/use-auth'
 
 const App = () => (
@@ -41,6 +43,8 @@ const App = () => (
             <Route path="analytics" element={<AnalyticsPage />} />
             <Route path="analytics/:editionId" element={<EditionAnalyticsPage />} />
             <Route path="content-generator" element={<ContentGeneratorPage />} />
+            <Route path="social-posts" element={<SocialPostsPage />} />
+            <Route path="social-analytics" element={<SocialAnalyticsPage />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

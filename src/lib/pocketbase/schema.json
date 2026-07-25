@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-24T23:42:41.650Z",
+  "generatedAt": "2026-07-25T13:45:02.545Z",
   "collections": [
     {
       "name": "users",
@@ -305,6 +305,119 @@
         }
       ],
       "indexes": []
+    },
+    {
+      "name": "social_posts",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "hook",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "format",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["Reel", "Carousel", "Photo"]
+        },
+        {
+          "name": "post_date",
+          "type": "date",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "views",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "likes",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "comments",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "shares",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "saves",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "remixes",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "new_followers",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "is_top_performer",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "engagement_rate",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_social_posts_post_date ON social_posts (post_date)",
+        "CREATE INDEX idx_social_posts_views ON social_posts (views)",
+        "CREATE INDEX idx_social_posts_likes ON social_posts (likes)",
+        "CREATE INDEX idx_social_posts_format ON social_posts (format)",
+        "CREATE INDEX idx_social_posts_engagement ON social_posts (engagement_rate)"
+      ]
     }
   ]
 }
