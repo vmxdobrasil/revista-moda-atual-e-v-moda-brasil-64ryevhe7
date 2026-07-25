@@ -2,8 +2,18 @@ import { toast } from '@/hooks/use-toast'
 import { MODULES, getModuleByNumber } from '@/lib/commands/modules'
 import { SUPER_PROMPTS } from '@/lib/commands/superPrompts'
 import { setPendingPrompt } from '@/lib/commands/promptQueue'
-import { BASIC_EXAMPLES, ADVANCED_EXAMPLES, META_EXAMPLES } from '@/lib/commands/examples'
-import { executeBasic, executeAdvanced, executeMeta } from '@/lib/commands/commandExecutor'
+import {
+  BASIC_EXAMPLES,
+  ADVANCED_EXAMPLES,
+  META_EXAMPLES,
+  STORIES_EXAMPLES,
+} from '@/lib/commands/examples'
+import {
+  executeBasic,
+  executeAdvanced,
+  executeMeta,
+  executeStories,
+} from '@/lib/commands/commandExecutor'
 import type { PromptLibraryItem } from '@/services/prompt-library'
 
 type ItemIcon = 'terminal' | 'hash' | 'sparkles' | 'alert'
@@ -71,6 +81,41 @@ export function buildItems(
         level: 'B' as CommandLevel,
         action: () => {
           executeBasic(task, navigate)
+          closeBar()
+        },
+      },
+    ]
+  }
+
+  if (isCmd(input, '/s')) {
+    const subject = arg(input, '/s')
+    if (!subject) {
+      return STORIES_EXAMPLES.map((ex, i) => ({
+        id: `s-ex-${i}`,
+        primary: ex,
+        secondary: 'Stories On-Screen Text',
+        icon: 'sparkles' as ItemIcon,
+        level: 'S' as CommandLevel,
+        action: () => {
+          setPendingPrompt(ex)
+          navigate('/admin/ai-persona/chat')
+          closeBar()
+          toast({
+            title: 'Stories On-Screen Text',
+            description: 'Template enviado para o Fashion Trend Advisor',
+          })
+        },
+      }))
+    }
+    return [
+      {
+        id: 's-run',
+        primary: `/s ${subject}`,
+        secondary: 'Gerar 3 opções de texto para Stories',
+        icon: 'sparkles' as ItemIcon,
+        level: 'S' as CommandLevel,
+        action: () => {
+          executeStories(subject, navigate)
           closeBar()
         },
       },

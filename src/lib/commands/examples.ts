@@ -15,6 +15,29 @@ export const BASIC_EXAMPLES: string[] = [
   'Gere 3 ideias de posts para Instagram Reels sobre lançamento de coleção',
 ]
 
+const STORIES_TEMPLATE = [
+  'Você é um copywriter especialista em marcas de moda, com tom profissional, curioso e informativo.',
+  'Contexto: Crie textos on-screen para Instagram Stories de 15 segundos sobre [ASSUNTO].',
+  'Tarefa: Gere três opções de texto on-screen.',
+  'Formato: Responda exatamente no formato:',
+  'Opção 1: [texto]',
+  'Opção 2: [texto]',
+  'Opção 3: [texto]',
+  'Restrições:',
+  '- Cada opção deve ter no máximo 8 palavras',
+  '- Tom de curiosidade ou informação útil',
+  '- Não use clichês ("arrase", "poderosa", "transforme seu look")',
+  '- Não use linguagem de venda',
+  '- O texto deve ser informativo/curioso, não promocional',
+  '- Responda apenas com as três opções, sem aspas ou comentários',
+].join('\n')
+
+export const STORIES_EXAMPLES: string[] = [STORIES_TEMPLATE]
+
+export function buildStoriesPrompt(subject: string): string {
+  return STORIES_TEMPLATE.replace('[ASSUNTO]', subject)
+}
+
 export const ADVANCED_EXAMPLES: string[] = [
   'Análise de tendências de moda primavera verão',
   'Estratégia de conteúdo para Instagram Reels',
