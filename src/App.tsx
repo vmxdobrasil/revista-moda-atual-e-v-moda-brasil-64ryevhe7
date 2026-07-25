@@ -17,6 +17,7 @@ import EditionAnalyticsPage from './pages/admin/EditionAnalyticsPage'
 import ContentGeneratorPage from './pages/admin/ContentGeneratorPage'
 import SocialPostsPage from './pages/admin/SocialPostsPage'
 import SocialAnalyticsPage from './pages/admin/SocialAnalyticsPage'
+import AiPersonaChat from './pages/admin/AiPersonaChat'
 import { AuthProvider } from './hooks/use-auth'
 
 const App = () => (
@@ -45,6 +46,7 @@ const App = () => (
             <Route path="content-generator" element={<ContentGeneratorPage />} />
             <Route path="social-posts" element={<SocialPostsPage />} />
             <Route path="social-analytics" element={<SocialAnalyticsPage />} />
+            <Route path="ai-persona/chat" element={<AiPersonaChat />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

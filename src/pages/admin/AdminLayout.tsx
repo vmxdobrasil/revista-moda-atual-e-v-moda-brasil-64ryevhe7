@@ -12,6 +12,7 @@ import {
   Sparkles,
   Instagram,
   TrendingUp,
+  MessageCircle,
 } from 'lucide-react'
 
 export function AdminLayout() {
@@ -81,6 +82,13 @@ export function AdminLayout() {
           onClick={() => setSidebarOpen(false)}
         >
           <TrendingUp className="w-5 h-5" /> Social Analytics
+        </Link>
+        <Link
+          to="/admin/ai-persona/chat"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <MessageCircle className="w-5 h-5" /> AI Persona
         </Link>
       </nav>
       <div className="p-4 border-t">
