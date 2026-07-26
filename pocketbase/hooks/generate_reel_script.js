@@ -2,6 +2,75 @@ routerAdd(
   'POST',
   '/backend/v1/generate-reel-script',
   (e) => {
+    function extractField(content, fieldName) {
+      var regex = new RegExp(fieldName + '\\s*:\\s*(.+)', 'i')
+      var match = regex.exec(content)
+      if (match) return match[1].trim()
+      var altRegex = new RegExp(fieldName + '\\s*\\n\\s*(.+)', 'i')
+      match = altRegex.exec(content)
+      if (match) return match[1].trim()
+      return ''
+    }
+
+    function extractCena(content, cenaName) {
+      var regex = new RegExp(
+        cenaName + '\\s*\\(([^)]+)\\)\\s*:?\\s*\\n([\\s\\S]*?)(?=\\n\\n[A-Z]|$)',
+        'i',
+      )
+      var match = regex.exec(content)
+      if (!match) return { timing: '', visual: '', text: '' }
+      var timing = match[1] ? match[1].trim() : ''
+      var block = match[2] ? match[2].trim() : ''
+      var visual = ''
+      var text = ''
+      var visualMatch = /[-•*]\s*Visual\s*:\s*(.+)/i.exec(block)
+      if (visualMatch) visual = visualMatch[1].trim()
+      var textMatch = /[-•*]\s*Texto na tela\s*:\s*(.+)/i.exec(block)
+      if (textMatch) text = textMatch[1].trim()
+      return { timing: timing, visual: visual, text: text }
+    }
+
+    function extractCenaFinal(content, cenaName) {
+      var regex = new RegExp(
+        cenaName + '\\s*\\(([^)]+)\\)\\s*:?\\s*\\n([\\s\\S]*?)(?=\\n\\n[A-Z]|$)',
+        'i',
+      )
+      var match = regex.exec(content)
+      if (!match) return { timing: '', visual: '', text: '', cta: '' }
+      var timing = match[1] ? match[1].trim() : ''
+      var block = match[2] ? match[2].trim() : ''
+      var visual = ''
+      var text = ''
+      var cta = ''
+      var visualMatch = /[-•*]\s*Visual\s*:\s*(.+)/i.exec(block)
+      if (visualMatch) visual = visualMatch[1].trim()
+      var textMatch = /[-•*]\s*Texto na tela\s*:\s*(.+)/i.exec(block)
+      if (textMatch) text = textMatch[1].trim()
+      var ctaMatch = /[-•*]\s*CTA\s*:\s*(.+)/i.exec(block)
+      if (ctaMatch) cta = ctaMatch[1].trim()
+      return { timing: timing, visual: visual, text: text, cta: cta }
+    }
+
+    function extractHashtags(content) {
+      var match = /HASHTAGS\s*:\s*(.+)/i.exec(content)
+      if (!match) return []
+      var tagStr = match[1].trim()
+      var tags = tagStr.split(/\s+/).filter(function (t) {
+        return t.startsWith('#')
+      })
+      if (tags.length === 0) {
+        tags = tagStr
+          .split(/[,;]/)
+          .map(function (t) {
+            return t.trim()
+          })
+          .filter(function (t) {
+            return t.length > 0
+          })
+      }
+      return tags.slice(0, 10)
+    }
+
     const body = e.requestInfo().body || {}
     const tema = (body.tema || '').trim()
     if (!tema) {
@@ -77,72 +146,3 @@ routerAdd(
   },
   $apis.requireAuth(),
 )
-
-function extractField(content, fieldName) {
-  var regex = new RegExp(fieldName + '\\s*:\\s*(.+)', 'i')
-  var match = regex.exec(content)
-  if (match) return match[1].trim()
-  var altRegex = new RegExp(fieldName + '\\s*\\n\\s*(.+)', 'i')
-  match = altRegex.exec(content)
-  if (match) return match[1].trim()
-  return ''
-}
-
-function extractCena(content, cenaName) {
-  var regex = new RegExp(
-    cenaName + '\\s*\\(([^)]+)\\)\\s*:?\\s*\\n([\\s\\S]*?)(?=\\n\\n[A-Z]|$)',
-    'i',
-  )
-  var match = regex.exec(content)
-  if (!match) return { timing: '', visual: '', text: '' }
-  var timing = match[1] ? match[1].trim() : ''
-  var block = match[2] ? match[2].trim() : ''
-  var visual = ''
-  var text = ''
-  var visualMatch = /[-•*]\s*Visual\s*:\s*(.+)/i.exec(block)
-  if (visualMatch) visual = visualMatch[1].trim()
-  var textMatch = /[-•*]\s*Texto na tela\s*:\s*(.+)/i.exec(block)
-  if (textMatch) text = textMatch[1].trim()
-  return { timing: timing, visual: visual, text: text }
-}
-
-function extractCenaFinal(content, cenaName) {
-  var regex = new RegExp(
-    cenaName + '\\s*\\(([^)]+)\\)\\s*:?\\s*\\n([\\s\\S]*?)(?=\\n\\n[A-Z]|$)',
-    'i',
-  )
-  var match = regex.exec(content)
-  if (!match) return { timing: '', visual: '', text: '', cta: '' }
-  var timing = match[1] ? match[1].trim() : ''
-  var block = match[2] ? match[2].trim() : ''
-  var visual = ''
-  var text = ''
-  var cta = ''
-  var visualMatch = /[-•*]\s*Visual\s*:\s*(.+)/i.exec(block)
-  if (visualMatch) visual = visualMatch[1].trim()
-  var textMatch = /[-•*]\s*Texto na tela\s*:\s*(.+)/i.exec(block)
-  if (textMatch) text = textMatch[1].trim()
-  var ctaMatch = /[-•*]\s*CTA\s*:\s*(.+)/i.exec(block)
-  if (ctaMatch) cta = ctaMatch[1].trim()
-  return { timing: timing, visual: visual, text: text, cta: cta }
-}
-
-function extractHashtags(content) {
-  var match = /HASHTAGS\s*:\s*(.+)/i.exec(content)
-  if (!match) return []
-  var tagStr = match[1].trim()
-  var tags = tagStr.split(/\s+/).filter(function (t) {
-    return t.startsWith('#')
-  })
-  if (tags.length === 0) {
-    tags = tagStr
-      .split(/[,;]/)
-      .map(function (t) {
-        return t.trim()
-      })
-      .filter(function (t) {
-        return t.length > 0
-      })
-  }
-  return tags.slice(0, 10)
-}
