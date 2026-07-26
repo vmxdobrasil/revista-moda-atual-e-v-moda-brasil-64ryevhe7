@@ -374,8 +374,8 @@ body {
   margin: 0;
   font-family: Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  background-color: revert !important;
-  color: revert !important;
+  scroll-behavior: smooth;
+  line-height: inherit;
 }
 
 .print-only {

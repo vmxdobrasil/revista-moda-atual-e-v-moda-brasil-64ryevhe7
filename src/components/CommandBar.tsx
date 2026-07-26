@@ -29,6 +29,9 @@ import { generateTrendReport } from '@/services/trend-report'
 import type { TrendReport } from '@/services/trend-report'
 import { MateriaPanel, type MateriaPhase } from '@/components/commands/MateriaPanel'
 import { TrendReportPanel, type TrendReportPhase } from '@/components/commands/TrendReportPanel'
+import { MetaPromptPanel, type MetaPromptPhase } from '@/components/commands/MetaPromptPanel'
+import { generateMetaPrompt } from '@/services/meta-prompt'
+import type { MetaPromptResult } from '@/services/meta-prompt'
 import { generateWeeklyPlan } from '@/services/weekly-plan'
 import type { WeeklyPlanResult } from '@/services/weekly-plan'
 import { WeeklyPlanPanel, type WeeklyPlanPhase } from '@/components/commands/WeeklyPlanPanel'
@@ -83,6 +86,9 @@ export function CommandBar() {
   const [trendReportPhase, setTrendReportPhase] = useState<TrendReportPhase>('idle')
   const [trendReport, setTrendReport] = useState<TrendReport | null>(null)
   const [trendReportError, setTrendReportError] = useState('')
+  const [metaPromptPhase, setMetaPromptPhase] = useState<MetaPromptPhase>('idle')
+  const [metaPromptResult, setMetaPromptResult] = useState<MetaPromptResult | null>(null)
+  const [metaPromptError, setMetaPromptError] = useState('')
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -119,6 +125,9 @@ export function CommandBar() {
     setTrendReportPhase('idle')
     setTrendReport(null)
     setTrendReportError('')
+    setMetaPromptPhase('idle')
+    setMetaPromptResult(null)
+    setMetaPromptError('')
   }, [])
 
   const handleLegendaGenerate = useCallback(async (theme: string) => {
@@ -226,6 +235,22 @@ export function CommandBar() {
     }
   }, [])
 
+  const handleMetaPromptGenerate = useCallback(
+    async (objetivo: string, tipo: string, canal: string, publico: string) => {
+      setMetaPromptPhase('generating')
+      try {
+        const result = await generateMetaPrompt(objetivo, tipo, canal, publico)
+        setMetaPromptResult(result)
+        setMetaPromptPhase('result')
+        toast({ title: 'Meta-Prompt gerado e salvo!' })
+      } catch (err: any) {
+        setMetaPromptError(err?.message || 'Erro ao gerar meta-prompt')
+        setMetaPromptPhase('error')
+      }
+    },
+    [],
+  )
+
   const handleWeeklyPlanGenerate = useCallback(
     async (dataInicio: string, dataFim: string, tema1: string, tema2: string, tema3: string) => {
       setWeeklyPlanPhase('generating')
@@ -252,6 +277,21 @@ export function CommandBar() {
       const temas = parts.slice(2).map((p) => p.trim())
       if (!dataInicio || !dataFim || temas.length < 3 || temas.some((t) => !t)) return null
       return { dataInicio, dataFim, temas }
+    },
+    [],
+  )
+
+  const parseMetaPromptArgs = useCallback(
+    (args: string): { objetivo: string; tipo: string; canal: string; publico: string } | null => {
+      const parts = args.split(' - ')
+      if (parts.length < 4) return null
+      const objetivo = parts[0].trim()
+      const tipo = parts[1].trim()
+      const canal = parts[2].trim()
+      const publico = parts[3].trim().toUpperCase()
+      if (!objetivo || !tipo || !canal || !publico) return null
+      if (!['P1', 'P2', 'P3', 'P4', 'P5', 'P6'].includes(publico)) return null
+      return { objetivo, tipo, canal, publico }
     },
     [],
   )
@@ -371,6 +411,9 @@ export function CommandBar() {
       ? input.trim().slice('/reels'.length).trim()
       : input.trim().slice('/script'.length).trim()
     : ''
+  const isMetaPromptCmd = trimmedLower.startsWith('/engenheiro ') || trimmedLower === '/engenheiro'
+  const metaPromptArgs = isMetaPromptCmd ? input.trim().slice('/engenheiro'.length).trim() : ''
+  const metaPromptParsed = isMetaPromptCmd ? parseMetaPromptArgs(metaPromptArgs) : null
 
   useEffect(() => {
     if (!isLegendaCmd && legendaPhase !== 'generating') setLegendaPhase('idle')
@@ -408,6 +451,10 @@ export function CommandBar() {
   useEffect(() => {
     if (!isTrendReportCmd && trendReportPhase !== 'generating') setTrendReportPhase('idle')
   }, [isTrendReportCmd, trendReportPhase])
+
+  useEffect(() => {
+    if (!isMetaPromptCmd && metaPromptPhase !== 'generating') setMetaPromptPhase('idle')
+  }, [isMetaPromptCmd, metaPromptPhase])
 
   const items = useMemo<CommandItem[]>(() => {
     if (isReelCmd && reelPhase === 'idle') {
@@ -691,6 +738,42 @@ export function CommandBar() {
         },
       ]
     }
+    if (isMetaPromptCmd && metaPromptPhase === 'idle') {
+      if (metaPromptParsed) {
+        return [
+          {
+            id: 'meta-prompt-run',
+            primary: `/engenheiro ${metaPromptParsed.objetivo} - ${metaPromptParsed.tipo} - ${metaPromptParsed.canal} - ${metaPromptParsed.publico}`,
+            secondary: `Gerar Meta-Prompt para ${metaPromptParsed.publico}`,
+            icon: 'sparkles' as const,
+            level: 'S' as const,
+            action: () =>
+              handleMetaPromptGenerate(
+                metaPromptParsed.objetivo,
+                metaPromptParsed.tipo,
+                metaPromptParsed.canal,
+                metaPromptParsed.publico,
+              ),
+          },
+        ]
+      }
+      return [
+        {
+          id: 'meta-prompt-need-input',
+          primary: '/engenheiro',
+          secondary: 'Formato: /engenheiro OBJETIVO - TIPO - CANAL - P1...P6',
+          icon: 'terminal' as const,
+          level: null,
+          action: () => {
+            toast({
+              description:
+                'Use: /engenheiro OBJETIVO - TIPO - CANAL - P1 (ex: /engenheiro engajar - legenda - Instagram - P1)',
+            })
+            setMetaPromptPhase('need-input')
+          },
+        },
+      ]
+    }
     return buildItems(input, navigate, closeBar, location.pathname, libraryPrompts)
   }, [
     input,
@@ -736,6 +819,11 @@ export function CommandBar() {
     trendReportPhase,
     trendReportArg,
     handleTrendReportGenerate,
+    isMetaPromptCmd,
+    metaPromptPhase,
+    metaPromptParsed,
+    handleMetaPromptGenerate,
+    parseMetaPromptArgs,
   ])
 
   useEffect(() => {
@@ -752,7 +840,8 @@ export function CommandBar() {
       materiaPhase !== 'idle' ||
       weeklyPlanPhase !== 'idle' ||
       reelScriptPhase !== 'idle' ||
-      trendReportPhase !== 'idle'
+      trendReportPhase !== 'idle' ||
+      metaPromptPhase !== 'idle'
     )
       return
     if (
@@ -796,11 +885,23 @@ export function CommandBar() {
                 setSelectedIndex(0)
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Digite um comando (ex: /b tarefa, /a análise, /m objetivo, /super, /modulo 5, /legenda tema, /c tema, /s assunto, /stories tema, /reel tema, /r tema, /reels tema, /script tema, /titulos tema, /seo tema, /descricao título, /yt título, /atacado MARCA - PRODUTO, /materia tema, /artigo tema, /plano DATA - DATA - TEMA1 - TEMA2 - TEMA3, /semana DATA - DATA - TEMA1 - TEMA2 - TEMA3, /tendencia TENDÊNCIA, /relatorio TENDÊNCIA)"
+              placeholder="Digite um comando (ex: /b tarefa, /a análise, /m objetivo, /super, /modulo 5, /legenda tema, /c tema, /s assunto, /stories tema, /reel tema, /r tema, /reels tema, /script tema, /titulos tema, /seo tema, /descricao título, /yt título, /atacado MARCA - PRODUTO, /materia tema, /artigo tema, /plano DATA - DATA - TEMA1 - TEMA2 - TEMA3, /semana DATA - DATA - TEMA1 - TEMA2 - TEMA3, /tendencia TENDÊNCIA, /relatorio TENDÊNCIA, /engenheiro OBJETIVO - TIPO - CANAL - P1...P6)"
               className="border-none focus-visible:ring-0"
             />
           </div>
-          {trendReportPhase !== 'idle' ? (
+          {metaPromptPhase !== 'idle' ? (
+            <MetaPromptPanel
+              phase={metaPromptPhase}
+              result={metaPromptResult}
+              error={metaPromptError}
+              onGenerate={handleMetaPromptGenerate}
+              onNewSearch={() => {
+                setMetaPromptPhase('idle')
+                setInput('')
+              }}
+              onClose={closeBar}
+            />
+          ) : trendReportPhase !== 'idle' ? (
             <TrendReportPanel
               phase={trendReportPhase}
               report={trendReport}

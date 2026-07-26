@@ -21,9 +21,11 @@ import {
   Calendar,
   Clapperboard,
   TrendingUp,
+  Bot,
 } from 'lucide-react'
 import type { StoryText } from '@/services/story-texts'
 import { getScheduledStatus, truncate } from '@/services/story-texts'
+import { useScheduleNotification } from '@/hooks/use-schedule-notification'
 import type { ReelScript } from '@/services/reel-script'
 import type { TrendReport } from '@/services/trend-report'
 
@@ -31,6 +33,7 @@ export interface StoryTextFilters {
   dateFrom: string
   dateTo: string
   search: string
+  type?: string
 }
 
 interface StoryTextsPanelProps {
@@ -149,6 +152,30 @@ function getTrendReportData(options: unknown): TrendReportOptions | null {
   return null
 }
 
+interface MetaPromptData {
+  publico: string
+  publicoName: string
+  content: string
+  blocks: Array<{ title: string; content: string }>
+}
+
+function getMetaPromptData(options: unknown): MetaPromptData | null {
+  if (options && typeof options === 'object' && !Array.isArray(options)) {
+    const obj = options as Record<string, unknown>
+    if (obj.type === 'meta-prompt') {
+      return {
+        publico: (obj.publico as string) || '',
+        publicoName: (obj.publicoName as string) || '',
+        content: (obj.content as string) || '',
+        blocks: Array.isArray(obj.blocks)
+          ? (obj.blocks as Array<{ title: string; content: string }>)
+          : [],
+      }
+    }
+  }
+  return null
+}
+
 export function StoryTextsPanel({
   storyTexts,
   filters,
@@ -156,6 +183,21 @@ export function StoryTextsPanel({
   loading,
 }: StoryTextsPanelProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  useScheduleNotification(storyTexts)
+
+  const typeFilteredTexts = filters.type
+    ? storyTexts.filter((text) => {
+        const opts = text.options
+        if (!opts || typeof opts !== 'object' || Array.isArray(opts)) return false
+        const obj = opts as Record<string, unknown>
+        if (filters.type === 'materia')
+          return obj.type === 'materia_completa' || obj.type === 'materia-jornalistica'
+        if (filters.type === 'atacado') return obj.type === 'legenda-atacadista'
+        if (filters.type === 'tendencia') return obj.type === 'tendencia-relatorio'
+        if (filters.type === 'meta-prompt') return obj.type === 'meta-prompt'
+        return true
+      })
+    : storyTexts
 
   return (
     <div className="space-y-4">
@@ -189,6 +231,20 @@ export function StoryTextsPanel({
           </div>
         </div>
       </div>
+      <div className="flex items-center gap-2">
+        <Label className="text-xs text-muted-foreground whitespace-nowrap">Tipo:</Label>
+        <select
+          value={filters.type || ''}
+          onChange={(e) => onFiltersChange({ ...filters, type: e.target.value })}
+          className="px-3 py-1.5 rounded-md border bg-background text-sm"
+        >
+          <option value="">Todos</option>
+          <option value="materia">📰 Matéria</option>
+          <option value="atacado">🏭 Atacado</option>
+          <option value="tendencia">🔍 Relatório de Tendência</option>
+          <option value="meta-prompt">🤖 Meta-Prompt</option>
+        </select>
+      </div>
 
       <div className="rounded-md border">
         <Table>
@@ -209,14 +265,14 @@ export function StoryTextsPanel({
                   Carregando...
                 </TableCell>
               </TableRow>
-            ) : storyTexts.length === 0 ? (
+            ) : typeFilteredTexts.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                   Nenhum texto encontrado.
                 </TableCell>
               </TableRow>
             ) : (
-              storyTexts.map((text) => {
+              typeFilteredTexts.map((text) => {
                 const status = getScheduledStatus(text.scheduled_date)
                 const description = getDescriptionText(text.options)
                 const isDescricao = description !== null
@@ -231,6 +287,8 @@ export function StoryTextsPanel({
                 const isReelScript = reelScriptData !== null
                 const trendReportData = getTrendReportData(text.options)
                 const isTrendReport = trendReportData !== null
+                const metaPromptData = getMetaPromptData(text.options)
+                const isMetaPrompt = metaPromptData !== null
                 const options = Array.isArray(text.options) ? text.options : []
                 const isExpanded = expandedId === text.id
                 const isExpandable =
@@ -239,7 +297,8 @@ export function StoryTextsPanel({
                   isMateria ||
                   isPlanoSemanal ||
                   isReelScript ||
-                  isTrendReport
+                  isTrendReport ||
+                  isMetaPrompt
                 return (
                   <Fragment key={text.id}>
                     <TableRow>
@@ -247,7 +306,11 @@ export function StoryTextsPanel({
                         {truncate(text.subject, 60)}
                       </TableCell>
                       <TableCell>
-                        {isTrendReport ? (
+                        {isMetaPrompt ? (
+                          <Badge className="gap-1 bg-indigo-500 text-white hover:bg-indigo-600">
+                            <Bot className="w-3 h-3" />🤖 Meta-Prompt
+                          </Badge>
+                        ) : isTrendReport ? (
                           <Badge className="gap-1 bg-teal-500 text-white hover:bg-teal-600">
                             <TrendingUp className="w-3 h-3" />🔍 Tendência
                           </Badge>
@@ -291,19 +354,21 @@ export function StoryTextsPanel({
                             ) : (
                               <>
                                 <ChevronDown className="w-3 h-3" />{' '}
-                                {isTrendReport
-                                  ? 'Ver relatório'
-                                  : isReelScript
-                                    ? 'Ver roteiro'
-                                    : isPlanoSemanal
-                                      ? 'Ver plano'
-                                      : isMateria
-                                        ? 'Ver matéria'
-                                        : isAtacadista
-                                          ? 'Ver legenda'
-                                          : 'Ver descrição'}
+                                {isMetaPrompt
+                                  ? 'Ver prompt'
+                                  : isTrendReport
+                                    ? 'Ver relatório'
+                                    : isReelScript
+                                      ? 'Ver roteiro'
+                                      : isPlanoSemanal
+                                        ? 'Ver plano'
+                                        : isMateria
+                                          ? 'Ver matéria'
+                                          : isAtacadista
+                                            ? 'Ver legenda'
+                                            : 'Ver descrição'}
                               </>
-                            )}
+                            )}{' '}
                           </Button>
                         ) : (
                           `${options.length} opção(ões)`
@@ -639,6 +704,36 @@ export function StoryTextsPanel({
                                 ))}
                               </div>
                             </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    {isMetaPrompt && isExpanded && metaPromptData && (
+                      <TableRow key={`${text.id}-meta`}>
+                        <TableCell colSpan={6} className="bg-muted/30">
+                          <div className="max-h-64 overflow-y-auto space-y-2 p-2">
+                            <div className="text-sm">
+                              <span className="font-bold text-indigo-600 text-xs">
+                                PÚBLICO-ALVO: {metaPromptData.publico} —{' '}
+                                {metaPromptData.publicoName}
+                              </span>
+                            </div>
+                            {metaPromptData.blocks.length > 0 ? (
+                              metaPromptData.blocks.map((block, i) => (
+                                <div key={i} className="text-sm">
+                                  <span className="font-bold text-indigo-600 text-xs">
+                                    BLOCO {i + 1}: {block.title}
+                                  </span>
+                                  <p className="whitespace-pre-wrap leading-relaxed mt-1">
+                                    {block.content}
+                                  </p>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                                {metaPromptData.content}
+                              </p>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>

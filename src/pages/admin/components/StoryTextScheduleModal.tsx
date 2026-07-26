@@ -38,6 +38,9 @@ export function StoryTextScheduleModal({ open, onOpenChange, onSaved, editing }:
     if (!editing) return
     setSaving(true)
     setFieldErrors({})
+    if (dateValue && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission()
+    }
     try {
       await updateStoryText(editing.id, {
         scheduled_date: dateValue ? new Date(dateValue).toISOString() : null,
