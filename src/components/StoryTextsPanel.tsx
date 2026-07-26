@@ -22,18 +22,28 @@ import {
   Clapperboard,
   TrendingUp,
   Bot,
+  Check,
+  Tag as TagIcon,
 } from 'lucide-react'
 import type { StoryText } from '@/services/story-texts'
 import { getScheduledStatus, truncate } from '@/services/story-texts'
 import { useScheduleNotification } from '@/hooks/use-schedule-notification'
 import type { ReelScript } from '@/services/reel-script'
 import type { TrendReport } from '@/services/trend-report'
+import {
+  extractTags,
+  extractSimpleOptions,
+  collectAllTags,
+  getTagColor,
+} from '@/lib/story-text-utils'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 export interface StoryTextFilters {
   dateFrom: string
   dateTo: string
   search: string
   type?: string
+  tags?: string[]
 }
 
 interface StoryTextsPanelProps {
@@ -185,20 +195,30 @@ export function StoryTextsPanel({
   const [expandedId, setExpandedId] = useState<string | null>(null)
   useScheduleNotification(storyTexts)
 
-  const typeFilteredTexts = filters.type
-    ? storyTexts.filter((text) => {
-        const opts = text.options
-        if (!opts || typeof opts !== 'object' || Array.isArray(opts)) return false
-        const obj = opts as Record<string, unknown>
-        if (filters.type === 'materia')
-          return obj.type === 'materia_completa' || obj.type === 'materia-jornalistica'
-        if (filters.type === 'atacado') return obj.type === 'legenda-atacadista'
-        if (filters.type === 'tendencia') return obj.type === 'tendencia-relatorio'
-        if (filters.type === 'meta-prompt') return obj.type === 'meta-prompt'
-        return true
-      })
-    : storyTexts
+  const allTags = collectAllTags(storyTexts)
 
+  const filteredTexts = storyTexts
+    .filter((text) => {
+      if (!filters.type) return true
+      const opts = text.options
+      if (!opts || typeof opts !== 'object' || Array.isArray(opts)) return false
+      const obj = opts as Record<string, unknown>
+      if (filters.type === 'materia')
+        return obj.type === 'materia_completa' || obj.type === 'materia-jornalistica'
+      if (filters.type === 'atacadista') return obj.type === 'legenda-atacadista'
+      if (filters.type === 'tendencia') return obj.type === 'tendencia-relatorio'
+      if (filters.type === 'meta-prompt') return obj.type === 'meta-prompt'
+      return true
+    })
+    .filter((text) => {
+      if (!filters.search) return true
+      return text.subject.toLowerCase().includes(filters.search.toLowerCase())
+    })
+    .filter((text) => {
+      if (!filters.tags || filters.tags.length === 0) return true
+      const textTags = extractTags(text.options)
+      return filters.tags.every((tag) => textTags.includes(tag))
+    })
   return (
     <div className="space-y-4">
       <div className="grid sm:grid-cols-3 gap-4">
@@ -231,7 +251,7 @@ export function StoryTextsPanel({
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <Label className="text-xs text-muted-foreground whitespace-nowrap">Tipo:</Label>
         <select
           value={filters.type || ''}
@@ -244,6 +264,60 @@ export function StoryTextsPanel({
           <option value="tendencia">🔍 Relatório de Tendência</option>
           <option value="meta-prompt">🤖 Meta-Prompt</option>
         </select>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-1">
+              <TagIcon className="w-3 h-3" />
+              {filters.tags && filters.tags.length > 0
+                ? `${filters.tags.length} tag(s)`
+                : 'Filtrar por tag'}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56" align="start">
+            <div className="space-y-1">
+              {allTags.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-2 text-center">
+                  Nenhuma tag encontrada.
+                </p>
+              ) : (
+                allTags.map((tag) => {
+                  const isSelected = filters.tags?.includes(tag) ?? false
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      className={`flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-sm transition-colors hover:bg-accent ${isSelected ? '' : 'opacity-50'}`}
+                      onClick={() => {
+                        const currentTags = filters.tags ?? []
+                        const newTags = isSelected
+                          ? currentTags.filter((t) => t !== tag)
+                          : [...currentTags, tag]
+                        onFiltersChange({ ...filters, tags: newTags })
+                      }}
+                    >
+                      <span
+                        className={`flex-1 text-left px-2 py-0.5 rounded-full ${getTagColor(tag)}`}
+                      >
+                        {tag}
+                      </span>
+                      {isSelected && <Check className="w-3 h-3 text-green-600" />}
+                    </button>
+                  )
+                })
+              )}
+              {filters.tags && filters.tags.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full mt-2 text-xs"
+                  onClick={() => onFiltersChange({ ...filters, tags: [] })}
+                >
+                  Limpar filtros
+                </Button>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
 
       <div className="rounded-md border">
@@ -265,14 +339,14 @@ export function StoryTextsPanel({
                   Carregando...
                 </TableCell>
               </TableRow>
-            ) : typeFilteredTexts.length === 0 ? (
+            ) : filteredTexts.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                   Nenhum texto encontrado.
                 </TableCell>
               </TableRow>
             ) : (
-              typeFilteredTexts.map((text) => {
+              filteredTexts.map((text) => {
                 const status = getScheduledStatus(text.scheduled_date)
                 const description = getDescriptionText(text.options)
                 const isDescricao = description !== null
@@ -289,7 +363,8 @@ export function StoryTextsPanel({
                 const isTrendReport = trendReportData !== null
                 const metaPromptData = getMetaPromptData(text.options)
                 const isMetaPrompt = metaPromptData !== null
-                const options = Array.isArray(text.options) ? text.options : []
+                const options = extractSimpleOptions(text.options)
+                const textTags = extractTags(text.options)
                 const isExpanded = expandedId === text.id
                 const isExpandable =
                   isDescricao ||
@@ -303,7 +378,21 @@ export function StoryTextsPanel({
                   <Fragment key={text.id}>
                     <TableRow>
                       <TableCell className="font-medium max-w-xs">
-                        {truncate(text.subject, 60)}
+                        <div className="space-y-1">
+                          <div>{truncate(text.subject, 60)}</div>
+                          {textTags.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {textTags.map((tag) => (
+                                <span
+                                  key={tag}
+                                  className={`text-xs px-1.5 py-0.5 rounded-full ${getTagColor(tag)}`}
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         {isMetaPrompt ? (

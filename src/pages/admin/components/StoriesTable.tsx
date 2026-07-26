@@ -29,6 +29,7 @@ import {
   Clapperboard,
 } from 'lucide-react'
 import { type StoryText, getScheduledStatus, truncate } from '@/services/story-texts'
+import { extractTags, getTagColor } from '@/lib/story-text-utils'
 
 function getDescriptionText(options: unknown): string | null {
   if (options && typeof options === 'object' && !Array.isArray(options)) {
@@ -122,8 +123,20 @@ export function StoriesTable({ items, onEdit, onSchedule, onDelete, showSchedule
             const options = Array.isArray(item.options) ? item.options : []
             return (
               <TableRow key={item.id}>
-                <TableCell className="font-medium text-gray-900 max-w-[180px] truncate">
-                  {item.subject}
+                <TableCell className="font-medium text-gray-900 max-w-[180px]">
+                  <div className="truncate">{item.subject}</div>
+                  {extractTags(item.options).length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {extractTags(item.options).map((tag) => (
+                        <span
+                          key={tag}
+                          className={`text-xs px-1.5 py-0.5 rounded-full ${getTagColor(tag)}`}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </TableCell>
                 <TableCell>
                   {isReelScript ? (
