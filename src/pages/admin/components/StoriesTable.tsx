@@ -19,7 +19,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { Pencil, Trash2, CalendarClock, Youtube, Newspaper } from 'lucide-react'
+import { Pencil, Trash2, CalendarClock, Youtube, Newspaper, Factory } from 'lucide-react'
 import { type StoryText, getScheduledStatus, truncate } from '@/services/story-texts'
 
 function getDescriptionText(options: unknown): string | null {
@@ -34,6 +34,19 @@ function getMateriaContent(options: unknown): string | null {
   if (options && typeof options === 'object' && !Array.isArray(options)) {
     const obj = options as Record<string, unknown>
     if (obj.type === 'materia-jornalistica' && typeof obj.content === 'string') return obj.content
+  }
+  return null
+}
+
+function getAtacadistaCaption(options: unknown): { caption: string; hashtags: string[] } | null {
+  if (options && typeof options === 'object' && !Array.isArray(options)) {
+    const obj = options as Record<string, unknown>
+    if (obj.type === 'legenda-atacadista' && typeof obj.caption === 'string') {
+      const hashtags = Array.isArray(obj.hashtags)
+        ? obj.hashtags.filter((h): h is string => typeof h === 'string')
+        : []
+      return { caption: obj.caption, hashtags }
+    }
   }
   return null
 }
@@ -84,6 +97,8 @@ export function StoriesTable({ items, onEdit, onSchedule, onDelete, showSchedule
             const isDescricao = description !== null
             const materiaContent = getMateriaContent(item.options)
             const isMateria = materiaContent !== null
+            const atacadistaData = getAtacadistaCaption(item.options)
+            const isAtacadista = atacadistaData !== null
             const options = Array.isArray(item.options) ? item.options : []
             return (
               <TableRow key={item.id}>
@@ -91,7 +106,11 @@ export function StoriesTable({ items, onEdit, onSchedule, onDelete, showSchedule
                   {item.subject}
                 </TableCell>
                 <TableCell>
-                  {isMateria ? (
+                  {isAtacadista ? (
+                    <Badge className="gap-1 bg-orange-500 text-white hover:bg-orange-600">
+                      <Factory className="w-3 h-3" />🏭 Atacado
+                    </Badge>
+                  ) : isMateria ? (
                     <Badge className="gap-1 bg-blue-500 text-white hover:bg-blue-600">
                       <Newspaper className="w-3 h-3" />
                       Matéria
@@ -106,7 +125,11 @@ export function StoriesTable({ items, onEdit, onSchedule, onDelete, showSchedule
                   )}
                 </TableCell>
                 <TableCell>
-                  {isMateria ? (
+                  {isAtacadista ? (
+                    <span className="text-xs text-gray-600 italic">
+                      {truncate(atacadistaData!.caption, 40)}
+                    </span>
+                  ) : isMateria ? (
                     <span className="text-xs text-gray-600 italic">
                       {truncate(materiaContent, 40)}
                     </span>

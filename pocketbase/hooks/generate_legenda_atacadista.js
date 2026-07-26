@@ -3,10 +3,10 @@ routerAdd(
   '/backend/v1/generate-legenda-atacadista',
   (e) => {
     const body = e.requestInfo().body || {}
-    const nomeMarca = (body.nomeMarca || '').trim()
+    const marca = (body.marca || '').trim()
     const produto = (body.produto || '').trim()
 
-    if (!nomeMarca) return e.badRequestError('nomeMarca é obrigatório')
+    if (!marca) return e.badRequestError('marca é obrigatório')
     if (!produto) return e.badRequestError('produto é obrigatório')
 
     var promptRecord
@@ -18,7 +18,7 @@ routerAdd(
 
     var promptTemplate = promptRecord.getString('prompt_content')
     var prompt = promptTemplate
-      .replace(/\[NOME DA MARCA\]/g, nomeMarca)
+      .replace(/\[NOME DA MARCA\]/g, marca)
       .replace(/\[PRODUTO\]/g, produto)
 
     try {
@@ -78,13 +78,13 @@ routerAdd(
       try {
         var col = $app.findCollectionByNameOrId('story_texts')
         var record = new Record(col)
-        record.set('subject', nomeMarca + ' - Legenda Atacadista')
+        record.set('subject', marca)
         record.set('options', {
+          marca: marca,
+          produto: produto,
+          type: 'legenda-atacadista',
           caption: caption,
           hashtags: hashtags,
-          brand: nomeMarca,
-          product: produto,
-          type: 'legenda-atacadista',
         })
         record.set('scheduled_date', null)
         $app.save(record)

@@ -7,12 +7,12 @@ export interface LegendaAtacadistaResult {
 }
 
 export async function generateLegendaAtacadista(
-  nomeMarca: string,
+  marca: string,
   produto: string,
 ): Promise<LegendaAtacadistaResult> {
   const res = await pb.send('/backend/v1/generate-legenda-atacadista', {
     method: 'POST',
-    body: JSON.stringify({ nomeMarca, produto }),
+    body: JSON.stringify({ marca, produto }),
     headers: { 'Content-Type': 'application/json' },
   })
   return {

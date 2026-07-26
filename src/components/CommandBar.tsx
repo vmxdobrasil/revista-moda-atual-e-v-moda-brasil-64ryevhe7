@@ -145,22 +145,19 @@ export function CommandBar() {
     }
   }, [])
 
-  const handleLegendaAtacadistaGenerate = useCallback(
-    async (nomeMarca: string, produto: string) => {
-      setLegendaAtacadistaPhase('generating')
-      try {
-        const result = await generateLegendaAtacadista(nomeMarca, produto)
-        setLegendaAtacadistaCaption(result.caption)
-        setLegendaAtacadistaHashtags(result.hashtags)
-        setLegendaAtacadistaPhase('result')
-        toast({ title: 'Legenda salva no Dashboard!' })
-      } catch (err: any) {
-        setLegendaAtacadistaError(err?.message || 'Erro ao gerar legenda atacadista')
-        setLegendaAtacadistaPhase('error')
-      }
-    },
-    [],
-  )
+  const handleLegendaAtacadistaGenerate = useCallback(async (marca: string, produto: string) => {
+    setLegendaAtacadistaPhase('generating')
+    try {
+      const result = await generateLegendaAtacadista(marca, produto)
+      setLegendaAtacadistaCaption(result.caption)
+      setLegendaAtacadistaHashtags(result.hashtags)
+      setLegendaAtacadistaPhase('result')
+      toast({ title: 'Legenda salva no Dashboard!' })
+    } catch (err: any) {
+      setLegendaAtacadistaError(err?.message || 'Erro ao gerar legenda atacadista')
+      setLegendaAtacadistaPhase('error')
+    }
+  }, [])
 
   const handleMateriaGenerate = useCallback(async (tema: string) => {
     setMateriaPhase('generating')
@@ -419,16 +416,16 @@ export function CommandBar() {
             },
           ]
         }
-        const nomeMarca = legendaAtacadistaArgs.slice(0, sepIndex).trim()
+        const marca = legendaAtacadistaArgs.slice(0, sepIndex).trim()
         const produto = legendaAtacadistaArgs.slice(sepIndex + 3).trim()
         return [
           {
             id: 'atacado-run',
-            primary: `/${trimmedLower.startsWith('/legenda-atacadista') ? 'legenda-atacadista' : 'atacado'} ${nomeMarca} - ${produto}`,
+            primary: `/${trimmedLower.startsWith('/legenda-atacadista') ? 'legenda-atacadista' : 'atacado'} ${marca} - ${produto}`,
             secondary: 'Gerar legenda atacadista para Instagram',
             icon: 'sparkles' as const,
             level: 'S' as const,
-            action: () => handleLegendaAtacadistaGenerate(nomeMarca, produto),
+            action: () => handleLegendaAtacadistaGenerate(marca, produto),
           },
         ]
       }
