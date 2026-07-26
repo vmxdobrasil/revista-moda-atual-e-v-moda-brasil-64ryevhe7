@@ -24,6 +24,9 @@ import { generateDescricao } from '@/services/descricao'
 import { generateMateria } from '@/services/materia'
 import type { MateriaArticle } from '@/services/materia'
 import { MateriaPanel, type MateriaPhase } from '@/components/commands/MateriaPanel'
+import { generateWeeklyPlan } from '@/services/weekly-plan'
+import type { WeeklyPlanResult } from '@/services/weekly-plan'
+import { WeeklyPlanPanel, type WeeklyPlanPhase } from '@/components/commands/WeeklyPlanPanel'
 import { toast } from '@/hooks/use-toast'
 
 function renderIcon(icon: string) {
@@ -65,6 +68,9 @@ export function CommandBar() {
   const [materiaContent, setMateriaContent] = useState('')
   const [materiaArticle, setMateriaArticle] = useState<MateriaArticle | null>(null)
   const [materiaError, setMateriaError] = useState('')
+  const [weeklyPlanPhase, setWeeklyPlanPhase] = useState<WeeklyPlanPhase>('idle')
+  const [weeklyPlanResult, setWeeklyPlanResult] = useState<WeeklyPlanResult | null>(null)
+  const [weeklyPlanError, setWeeklyPlanError] = useState('')
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -92,6 +98,9 @@ export function CommandBar() {
     setMateriaContent('')
     setMateriaArticle(null)
     setMateriaError('')
+    setWeeklyPlanPhase('idle')
+    setWeeklyPlanResult(null)
+    setWeeklyPlanError('')
   }, [])
 
   const handleLegendaGenerate = useCallback(async (theme: string) => {
@@ -172,6 +181,36 @@ export function CommandBar() {
       setMateriaPhase('error')
     }
   }, [])
+
+  const handleWeeklyPlanGenerate = useCallback(
+    async (dataInicio: string, dataFim: string, tema1: string, tema2: string, tema3: string) => {
+      setWeeklyPlanPhase('generating')
+      try {
+        const result = await generateWeeklyPlan(dataInicio, dataFim, tema1, tema2, tema3)
+        setWeeklyPlanResult(result)
+        setWeeklyPlanPhase('result')
+        toast({ title: 'Plano semanal gerado e salvo!' })
+      } catch (err: any) {
+        console.error('Weekly plan generation error:', err)
+        setWeeklyPlanError(err?.message || 'Erro ao gerar plano. Tente novamente.')
+        setWeeklyPlanPhase('error')
+      }
+    },
+    [],
+  )
+
+  const parseWeeklyPlanArgs = useCallback(
+    (args: string): { dataInicio: string; dataFim: string; temas: string[] } | null => {
+      const parts = args.split(' - ')
+      if (parts.length < 5) return null
+      const dataInicio = parts[0].trim()
+      const dataFim = parts[1].trim()
+      const temas = parts.slice(2).map((p) => p.trim())
+      if (!dataInicio || !dataFim || temas.length < 3 || temas.some((t) => !t)) return null
+      return { dataInicio, dataFim, temas }
+    },
+    [],
+  )
 
   const loadLibrary = useCallback(async () => {
     try {
@@ -255,6 +294,17 @@ export function CommandBar() {
       ? input.trim().slice('/materia'.length).trim()
       : input.trim().slice('/artigo'.length).trim()
     : ''
+  const isWeeklyPlanCmd =
+    trimmedLower.startsWith('/plano ') ||
+    trimmedLower === '/plano' ||
+    trimmedLower.startsWith('/semana ') ||
+    trimmedLower === '/semana'
+  const weeklyPlanArgs = isWeeklyPlanCmd
+    ? trimmedLower.startsWith('/plano')
+      ? input.trim().slice('/plano'.length).trim()
+      : input.trim().slice('/semana'.length).trim()
+    : ''
+  const weeklyPlanParsed = isWeeklyPlanCmd ? parseWeeklyPlanArgs(weeklyPlanArgs) : null
 
   useEffect(() => {
     if (!isLegendaCmd && legendaPhase !== 'generating') setLegendaPhase('idle')
@@ -280,6 +330,10 @@ export function CommandBar() {
   useEffect(() => {
     if (!isMateriaCmd && materiaPhase !== 'generating') setMateriaPhase('idle')
   }, [isMateriaCmd, materiaPhase])
+
+  useEffect(() => {
+    if (!isWeeklyPlanCmd && weeklyPlanPhase !== 'generating') setWeeklyPlanPhase('idle')
+  }, [isWeeklyPlanCmd, weeklyPlanPhase])
 
   const items = useMemo<CommandItem[]>(() => {
     if (isReelCmd && reelPhase === 'idle') {
@@ -471,6 +525,38 @@ export function CommandBar() {
         },
       ]
     }
+    if (isWeeklyPlanCmd && weeklyPlanPhase === 'idle') {
+      if (weeklyPlanParsed) {
+        const cmdLabel = trimmedLower.startsWith('/plano') ? 'plano' : 'semana'
+        return [
+          {
+            id: 'weekly-plan-run',
+            primary: `/${cmdLabel} ${weeklyPlanArgs}`,
+            secondary: 'Gerar plano de conteúdo semanal',
+            icon: 'sparkles' as const,
+            level: 'S' as const,
+            action: () =>
+              handleWeeklyPlanGenerate(
+                weeklyPlanParsed.dataInicio,
+                weeklyPlanParsed.dataFim,
+                weeklyPlanParsed.temas[0],
+                weeklyPlanParsed.temas[1],
+                weeklyPlanParsed.temas[2],
+              ),
+          },
+        ]
+      }
+      return [
+        {
+          id: 'weekly-plan-need-input',
+          primary: trimmedLower.startsWith('/plano') ? '/plano' : '/semana',
+          secondary: 'Formato: /plano DATA_INÍCIO - DATA_FIM - TEMA1 - TEMA2 - TEMA3',
+          icon: 'terminal' as const,
+          level: null,
+          action: () => setWeeklyPlanPhase('need-input'),
+        },
+      ]
+    }
     return buildItems(input, navigate, closeBar, location.pathname, libraryPrompts)
   }, [
     input,
@@ -502,6 +588,12 @@ export function CommandBar() {
     materiaPhase,
     materiaTemaArg,
     handleMateriaGenerate,
+    isWeeklyPlanCmd,
+    weeklyPlanPhase,
+    weeklyPlanArgs,
+    weeklyPlanParsed,
+    handleWeeklyPlanGenerate,
+    parseWeeklyPlanArgs,
   ])
 
   useEffect(() => {
@@ -515,7 +607,8 @@ export function CommandBar() {
       titulosPhase !== 'idle' ||
       descricaoPhase !== 'idle' ||
       legendaAtacadistaPhase !== 'idle' ||
-      materiaPhase !== 'idle'
+      materiaPhase !== 'idle' ||
+      weeklyPlanPhase !== 'idle'
     )
       return
     if (
@@ -559,11 +652,23 @@ export function CommandBar() {
                 setSelectedIndex(0)
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Digite um comando (ex: /b tarefa, /a análise, /m objetivo, /super, /modulo 5, /legenda tema, /c tema, /s assunto, /stories tema, /reel tema, /r tema, /titulos tema, /seo tema, /descricao título, /yt título, /atacado MARCA - PRODUTO, /materia tema, /artigo tema)"
+              placeholder="Digite um comando (ex: /b tarefa, /a análise, /m objetivo, /super, /modulo 5, /legenda tema, /c tema, /s assunto, /stories tema, /reel tema, /r tema, /titulos tema, /seo tema, /descricao título, /yt título, /atacado MARCA - PRODUTO, /materia tema, /artigo tema, /plano DATA - DATA - TEMA1 - TEMA2 - TEMA3, /semana DATA - DATA - TEMA1 - TEMA2 - TEMA3)"
               className="border-none focus-visible:ring-0"
             />
           </div>
-          {materiaPhase !== 'idle' ? (
+          {weeklyPlanPhase !== 'idle' ? (
+            <WeeklyPlanPanel
+              phase={weeklyPlanPhase}
+              result={weeklyPlanResult}
+              error={weeklyPlanError}
+              onGenerate={handleWeeklyPlanGenerate}
+              onNewSearch={() => {
+                setWeeklyPlanPhase('idle')
+                setInput('')
+              }}
+              onClose={closeBar}
+            />
+          ) : materiaPhase !== 'idle' ? (
             <MateriaPanel
               phase={materiaPhase}
               content={materiaContent}

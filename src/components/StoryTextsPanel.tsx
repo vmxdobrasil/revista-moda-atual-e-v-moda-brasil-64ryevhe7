@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Search, ChevronDown, ChevronUp, Youtube, Factory, Newspaper } from 'lucide-react'
+import { Search, ChevronDown, ChevronUp, Youtube, Factory, Newspaper, Calendar } from 'lucide-react'
 import type { StoryText } from '@/services/story-texts'
 import { getScheduledStatus, truncate } from '@/services/story-texts'
 
@@ -96,6 +96,16 @@ function getMateriaCompletaData(options: unknown): MateriaCompletaContent | null
   return null
 }
 
+function getPlanoSemanalData(options: unknown): { plan: string } | null {
+  if (options && typeof options === 'object' && !Array.isArray(options)) {
+    const obj = options as Record<string, unknown>
+    if (obj.type === 'plano-semanal' && typeof obj.plan === 'string') {
+      return { plan: obj.plan }
+    }
+  }
+  return null
+}
+
 export function StoryTextsPanel({
   storyTexts,
   filters,
@@ -172,9 +182,11 @@ export function StoryTextsPanel({
                 const materiaData = getMateriaData(text.options)
                 const materiaCompletaData = getMateriaCompletaData(text.options)
                 const isMateria = materiaData !== null || materiaCompletaData !== null
+                const planoSemanalData = getPlanoSemanalData(text.options)
+                const isPlanoSemanal = planoSemanalData !== null
                 const options = Array.isArray(text.options) ? text.options : []
                 const isExpanded = expandedId === text.id
-                const isExpandable = isDescricao || isAtacadista || isMateria
+                const isExpandable = isDescricao || isAtacadista || isMateria || isPlanoSemanal
                 return (
                   <Fragment key={text.id}>
                     <TableRow>
@@ -182,7 +194,11 @@ export function StoryTextsPanel({
                         {truncate(text.subject, 60)}
                       </TableCell>
                       <TableCell>
-                        {isAtacadista ? (
+                        {isPlanoSemanal ? (
+                          <Badge className="gap-1 bg-purple-500 text-white hover:bg-purple-600">
+                            <Calendar className="w-3 h-3" />📅 Plano Semanal
+                          </Badge>
+                        ) : isAtacadista ? (
                           <Badge className="gap-1 bg-orange-500 text-white hover:bg-orange-600">
                             <Factory className="w-3 h-3" />🏭 Atacado
                           </Badge>
@@ -214,11 +230,13 @@ export function StoryTextsPanel({
                             ) : (
                               <>
                                 <ChevronDown className="w-3 h-3" />{' '}
-                                {isMateria
-                                  ? 'Ver matéria'
-                                  : isAtacadista
-                                    ? 'Ver legenda'
-                                    : 'Ver descrição'}
+                                {isPlanoSemanal
+                                  ? 'Ver plano'
+                                  : isMateria
+                                    ? 'Ver matéria'
+                                    : isAtacadista
+                                      ? 'Ver legenda'
+                                      : 'Ver descrição'}
                               </>
                             )}
                           </Button>
@@ -367,6 +385,15 @@ export function StoryTextsPanel({
                                 {materiaCompletaData.sugestao_redes.arte_description}
                               </p>
                             </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    {isPlanoSemanal && isExpanded && planoSemanalData && (
+                      <TableRow key={`${text.id}-plano`}>
+                        <TableCell colSpan={6} className="bg-muted/30">
+                          <div className="max-h-64 overflow-y-auto whitespace-pre-wrap text-sm leading-relaxed p-2">
+                            {planoSemanalData.plan}
                           </div>
                         </TableCell>
                       </TableRow>
