@@ -69,3 +69,55 @@ export function collectAllTags(texts: Array<{ options: unknown }>): string[] {
   }
   return Array.from(tagSet).sort()
 }
+
+export interface DisplayContent {
+  content: string
+  type: string
+  typeLabel: string
+}
+
+export function extractDisplayContent(options: unknown): DisplayContent {
+  if (!options || typeof options !== 'object' || Array.isArray(options)) {
+    return { content: '', type: 'texto', typeLabel: 'Texto' }
+  }
+  const obj = options as Record<string, unknown>
+  if (obj.type === 'meta-prompt') {
+    const blocks = Array.isArray(obj.blocks) ? (obj.blocks as Array<{ content?: string }>) : []
+    const content = blocks.map((b) => b.content || '').join('\n\n') || (obj.content as string) || ''
+    return { content, type: 'meta-prompt', typeLabel: 'Meta-Prompt' }
+  }
+  if (obj.type === 'materia_completa' && obj.content && typeof obj.content === 'object') {
+    const c = obj.content as Record<string, unknown>
+    return { content: (c.corpo as string) || '', type: 'materia_completa', typeLabel: 'Matéria' }
+  }
+  if (obj.type === 'materia-jornalistica' && typeof obj.content === 'string') {
+    return { content: obj.content, type: 'materia-jornalistica', typeLabel: 'Matéria' }
+  }
+  if (obj.type === 'legenda-atacadista' && typeof obj.caption === 'string') {
+    return { content: obj.caption, type: 'legenda-atacadista', typeLabel: 'Atacado' }
+  }
+  if (obj.type === 'tendencia-relatorio' && obj.report && typeof obj.report === 'object') {
+    const r = obj.report as Record<string, unknown>
+    return {
+      content: (r.descricao as string) || '',
+      type: 'tendencia-relatorio',
+      typeLabel: 'Tendência',
+    }
+  }
+  if (obj.type === 'reels-script' && typeof obj.legenda === 'string') {
+    return { content: obj.legenda, type: 'reels-script', typeLabel: 'Reels' }
+  }
+  if (obj.type === 'plano-semanal' && typeof obj.plan === 'string') {
+    return { content: obj.plan, type: 'plano-semanal', typeLabel: 'Plano Semanal' }
+  }
+  if (typeof obj.description === 'string') {
+    return { content: obj.description, type: 'descricao', typeLabel: 'Descrição YouTube' }
+  }
+  if (typeof obj.content === 'string') {
+    return { content: obj.content, type: 'texto', typeLabel: 'Texto' }
+  }
+  if (typeof obj.caption === 'string') {
+    return { content: obj.caption, type: 'texto', typeLabel: 'Texto' }
+  }
+  return { content: JSON.stringify(obj), type: 'texto', typeLabel: 'Texto' }
+}

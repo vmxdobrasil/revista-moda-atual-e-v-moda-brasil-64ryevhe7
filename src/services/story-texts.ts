@@ -17,6 +17,10 @@ export interface StoryTextInput {
 
 const COLLECTION = 'story_texts'
 
+export async function getStoryText(id: string): Promise<StoryText> {
+  return (await pb.collection(COLLECTION).getOne(id)) as unknown as StoryText
+}
+
 export async function getAllStoryTexts(sort = '-created'): Promise<StoryText[]> {
   const result = await pb.collection(COLLECTION).getFullList({ sort })
   return result as unknown as StoryText[]

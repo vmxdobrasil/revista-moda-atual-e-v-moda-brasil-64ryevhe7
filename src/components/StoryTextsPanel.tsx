@@ -24,6 +24,7 @@ import {
   Bot,
   Check,
   Tag as TagIcon,
+  Palette,
 } from 'lucide-react'
 import type { StoryText } from '@/services/story-texts'
 import { getScheduledStatus, truncate } from '@/services/story-texts'
@@ -37,6 +38,8 @@ import {
   getTagColor,
 } from '@/lib/story-text-utils'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { ShareButton } from '@/components/ShareButton'
+import { VisualTemplateDialog } from '@/components/VisualTemplateDialog'
 
 export interface StoryTextFilters {
   dateFrom: string
@@ -193,6 +196,7 @@ export function StoryTextsPanel({
   loading,
 }: StoryTextsPanelProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [visualTemplateText, setVisualTemplateText] = useState<StoryText | null>(null)
   useScheduleNotification(storyTexts)
 
   const allTags = collectAllTags(storyTexts)
@@ -845,6 +849,24 @@ export function StoryTextsPanel({
                         </TableCell>
                       </TableRow>
                     )}
+                    {isExpanded && (
+                      <TableRow key={`${text.id}-actions`}>
+                        <TableCell colSpan={6} className="bg-muted/30 py-2">
+                          <div className="flex items-center gap-2 px-2">
+                            <ShareButton textId={text.id} />
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="gap-1.5 h-7"
+                              onClick={() => setVisualTemplateText(text)}
+                            >
+                              <Palette className="w-3.5 h-3.5" />
+                              <span className="text-xs">Template Visual</span>
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </Fragment>
                 )
               })
@@ -852,6 +874,13 @@ export function StoryTextsPanel({
           </TableBody>
         </Table>
       </div>
+      {visualTemplateText && (
+        <VisualTemplateDialog
+          storyText={visualTemplateText}
+          open={!!visualTemplateText}
+          onOpenChange={(open) => !open && setVisualTemplateText(null)}
+        />
+      )}
     </div>
   )
 }

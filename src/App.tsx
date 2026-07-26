@@ -22,6 +22,7 @@ import SocialAnalyticsPage from './pages/admin/SocialAnalyticsPage'
 import AiPersonaChat from './pages/admin/AiPersonaChat'
 import DashboardPage from './pages/admin/DashboardPage'
 import Dashboard from './pages/Dashboard'
+import StoryTextView from './pages/StoryTextView'
 import Top60Page from './pages/admin/Top60Page'
 import VmodeBrasilPage from './pages/admin/VmodeBrasilPage'
 import MarketplaceOrdersPage from './pages/admin/MarketplaceOrdersPage'
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/reader/:id" element={<MagazineReader />} />
             <Route path="/vmodebrasil" element={<Marketplace />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/texto/:id" element={<StoryTextView />} />
           </Route>
 
           <Route path="/admin/login" element={<Login />} />
