@@ -3,6 +3,7 @@ import { setPendingPrompt } from '@/lib/commands/promptQueue'
 import { fetchAdvancedContext } from '@/services/advanced-context'
 import { generateMetaPrompt } from '@/services/prompt-library'
 import { buildStoriesPrompt } from '@/lib/commands/examples'
+import { setPendingStoriesSubject } from '@/lib/commands/stories-save'
 
 export function executeBasic(task: string, navigate: (p: string) => void): void {
   setPendingPrompt(task)
@@ -29,6 +30,7 @@ export async function executeAdvanced(task: string, navigate: (p: string) => voi
 export function executeStories(subject: string, navigate: (p: string) => void): void {
   const prompt = buildStoriesPrompt(subject)
   setPendingPrompt(prompt)
+  setPendingStoriesSubject(subject)
   navigate('/admin/ai-persona/chat')
   toast({ title: 'Stories On-Screen Text ativado', description: `Assunto: ${subject}` })
 }

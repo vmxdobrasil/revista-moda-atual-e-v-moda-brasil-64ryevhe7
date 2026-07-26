@@ -1,0 +1,131 @@
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+import { Pencil, Trash2, CalendarClock } from 'lucide-react'
+import { type StoryText, getScheduledStatus, truncate } from '@/services/story-texts'
+
+interface Props {
+  items: StoryText[]
+  onEdit: (item: StoryText) => void
+  onSchedule: (item: StoryText) => void
+  onDelete: (id: string) => void
+  showScheduled?: boolean
+}
+
+function ScheduledBadge({ date }: { date: string | null }) {
+  const status = getScheduledStatus(date)
+  if (status === 'none') return null
+  if (status === 'today')
+    return (
+      <Badge className="bg-orange-500 text-white hover:bg-orange-600">Previsto para hoje</Badge>
+    )
+  if (status === 'past')
+    return <Badge variant="destructive">{new Date(date!).toLocaleDateString('pt-BR')}</Badge>
+  return <Badge variant="secondary">{new Date(date!).toLocaleDateString('pt-BR')}</Badge>
+}
+
+export function StoriesTable({ items, onEdit, onSchedule, onDelete, showScheduled }: Props) {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Assunto</TableHead>
+          <TableHead>Opções</TableHead>
+          <TableHead>Criado</TableHead>
+          {showScheduled && <TableHead>Agendado</TableHead>}
+          <TableHead className="text-right">Ações</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {items.length === 0 ? (
+          <TableRow>
+            <TableCell colSpan={showScheduled ? 5 : 4} className="text-center text-gray-400 py-10">
+              Nenhum registro encontrado.
+            </TableCell>
+          </TableRow>
+        ) : (
+          items.map((item) => (
+            <TableRow key={item.id}>
+              <TableCell className="font-medium text-gray-900 max-w-[180px] truncate">
+                {item.subject}
+              </TableCell>
+              <TableCell>
+                <div className="flex flex-col gap-0.5">
+                  {(item.options || []).map((opt, i) => (
+                    <span key={i} className="text-xs text-gray-600">
+                      {i + 1}. {truncate(opt, 15)}
+                    </span>
+                  ))}
+                </div>
+              </TableCell>
+              <TableCell className="text-gray-600 text-sm">
+                {new Date(item.created).toLocaleDateString('pt-BR')}
+              </TableCell>
+              {showScheduled && (
+                <TableCell>
+                  <ScheduledBadge date={item.scheduled_date} />
+                </TableCell>
+              )}
+              <TableCell className="text-right">
+                <div className="flex justify-end gap-1">
+                  <Button size="icon" variant="ghost" onClick={() => onEdit(item)}>
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button size="icon" variant="ghost" onClick={() => onSchedule(item)}>
+                    <CalendarClock className="w-4 h-4" />
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="text-red-500 hover:text-red-600"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Excluir texto?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Esta ação não pode ser desfeita.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => onDelete(item.id)}
+                          className="bg-red-500 hover:bg-red-600"
+                        >
+                          Excluir
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))
+        )}
+      </TableBody>
+    </Table>
+  )
+}

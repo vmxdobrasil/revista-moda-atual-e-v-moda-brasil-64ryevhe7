@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-26T00:44:58.992Z",
+  "generatedAt": "2026-07-26T01:17:50.999Z",
   "collections": [
     {
       "name": "users",
@@ -826,6 +826,52 @@
         }
       ],
       "indexes": ["CREATE UNIQUE INDEX idx_prompt_library_slug ON prompt_library (slug)"]
+    },
+    {
+      "name": "story_texts",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "subject",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "options",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "scheduled_date",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": ["CREATE INDEX idx_story_texts_created ON story_texts (created)"]
     }
   ]
 }

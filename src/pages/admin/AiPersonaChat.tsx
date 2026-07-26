@@ -4,6 +4,12 @@ import { toast } from '@/hooks/use-toast'
 import { streamFashionAdvisorChat } from '@/services/fashion-advisor'
 import { streamAgentChat, type AgentCitation } from '@/lib/skipAi'
 import { consumePendingPrompt, subscribePendingPrompt } from '@/lib/commands/promptQueue'
+import {
+  getPendingStoriesSubject,
+  setPendingStoriesSubject,
+  parseStoriesOptions,
+} from '@/lib/commands/stories-save'
+import { createStoryText } from '@/services/story-texts'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
@@ -56,6 +62,24 @@ export default function AiPersonaChat() {
           },
         })
         setConversationId(result.conversation_id)
+
+        const storiesSubject = getPendingStoriesSubject()
+        if (storiesSubject) {
+          setPendingStoriesSubject(null)
+          const opts = parseStoriesOptions(result.content)
+          if (opts.length > 0) {
+            try {
+              await createStoryText({ subject: storiesSubject, options: opts })
+              toast({ title: 'Texto salvo com sucesso!' })
+            } catch (saveErr: any) {
+              toast({
+                title: 'Erro ao salvar texto',
+                description: saveErr?.message || 'Falha ao salvar',
+                variant: 'destructive',
+              })
+            }
+          }
+        }
       } catch (err: unknown) {
         const errorObj = err as { name?: string; message?: string }
         if (errorObj?.name === 'AbortError') return

@@ -20,6 +20,7 @@ import ContentWorkflowPage from './pages/admin/ContentWorkflowPage'
 import SocialPostsPage from './pages/admin/SocialPostsPage'
 import SocialAnalyticsPage from './pages/admin/SocialAnalyticsPage'
 import AiPersonaChat from './pages/admin/AiPersonaChat'
+import DashboardPage from './pages/admin/DashboardPage'
 import Top60Page from './pages/admin/Top60Page'
 import VmodeBrasilPage from './pages/admin/VmodeBrasilPage'
 import MarketplaceOrdersPage from './pages/admin/MarketplaceOrdersPage'
@@ -53,6 +54,7 @@ const App = () => (
             <Route path="content-workflow" element={<ContentWorkflowPage />} />
             <Route path="social-posts" element={<SocialPostsPage />} />
             <Route path="social-analytics" element={<SocialAnalyticsPage />} />
+            <Route path="dashboard" element={<DashboardPage />} />
             <Route path="ai-persona/chat" element={<AiPersonaChat />} />
             <Route path="top60" element={<Top60Page />} />
             <Route path="vmodebrasil" element={<VmodeBrasilPage />} />
