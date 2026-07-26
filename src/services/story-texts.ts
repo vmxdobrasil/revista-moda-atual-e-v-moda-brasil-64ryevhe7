@@ -3,7 +3,7 @@ import pb from '@/lib/pocketbase/client'
 export interface StoryText {
   id: string
   subject: string
-  options: string[]
+  options: unknown
   scheduled_date: string | null
   created: string
   updated: string
@@ -11,7 +11,7 @@ export interface StoryText {
 
 export interface StoryTextInput {
   subject: string
-  options: string[]
+  options: unknown
   scheduled_date?: string | null
 }
 

@@ -13,7 +13,12 @@ import { LegendaPanel, type LegendaPhase } from '@/components/commands/LegendaPa
 import { ReelPanel, type ReelPhase } from '@/components/commands/ReelPanel'
 import { TitulosPanel, type TitulosPhase } from '@/components/commands/TitulosPanel'
 import { DescricaoPanel, type DescricaoPhase } from '@/components/commands/DescricaoPanel'
+import {
+  LegendaAtacadistaPanel,
+  type LegendaAtacadistaPhase,
+} from '@/components/commands/LegendaAtacadistaPanel'
 import { generateReel } from '@/services/reel'
+import { generateLegendaAtacadista } from '@/services/legenda-atacadista'
 import { generateTitulos } from '@/services/titulos'
 import { generateDescricao } from '@/services/descricao'
 import { toast } from '@/hooks/use-toast'
@@ -48,6 +53,11 @@ export function CommandBar() {
   const [descricaoPhase, setDescricaoPhase] = useState<DescricaoPhase>('idle')
   const [descricaoText, setDescricaoText] = useState('')
   const [descricaoError, setDescricaoError] = useState('')
+  const [legendaAtacadistaPhase, setLegendaAtacadistaPhase] =
+    useState<LegendaAtacadistaPhase>('idle')
+  const [legendaAtacadistaCaption, setLegendaAtacadistaCaption] = useState('')
+  const [legendaAtacadistaHashtags, setLegendaAtacadistaHashtags] = useState<string[]>([])
+  const [legendaAtacadistaError, setLegendaAtacadistaError] = useState('')
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -67,6 +77,10 @@ export function CommandBar() {
     setDescricaoPhase('idle')
     setDescricaoText('')
     setDescricaoError('')
+    setLegendaAtacadistaPhase('idle')
+    setLegendaAtacadistaCaption('')
+    setLegendaAtacadistaHashtags([])
+    setLegendaAtacadistaError('')
   }, [])
 
   const handleLegendaGenerate = useCallback(async (theme: string) => {
@@ -120,6 +134,23 @@ export function CommandBar() {
     }
   }, [])
 
+  const handleLegendaAtacadistaGenerate = useCallback(
+    async (nomeMarca: string, produto: string) => {
+      setLegendaAtacadistaPhase('generating')
+      try {
+        const result = await generateLegendaAtacadista(nomeMarca, produto)
+        setLegendaAtacadistaCaption(result.caption)
+        setLegendaAtacadistaHashtags(result.hashtags)
+        setLegendaAtacadistaPhase('result')
+        toast({ title: 'Legenda salva no Dashboard!' })
+      } catch (err: any) {
+        setLegendaAtacadistaError(err?.message || 'Erro ao gerar legenda atacadista')
+        setLegendaAtacadistaPhase('error')
+      }
+    },
+    [],
+  )
+
   const loadLibrary = useCallback(async () => {
     try {
       const prompts = await getAllPrompts()
@@ -149,7 +180,9 @@ export function CommandBar() {
 
   const trimmedLower = input.trim().toLowerCase()
   const isLegendaCmd =
-    trimmedLower.startsWith('/legenda') || trimmedLower.startsWith('/c ') || trimmedLower === '/c'
+    (trimmedLower.startsWith('/legenda') && !trimmedLower.startsWith('/legenda-atacadista')) ||
+    trimmedLower.startsWith('/c ') ||
+    trimmedLower === '/c'
   const legendaThemeArg = isLegendaCmd
     ? trimmedLower.startsWith('/legenda')
       ? input.trim().slice('/legenda'.length).trim()
@@ -181,6 +214,16 @@ export function CommandBar() {
       : input.trim().slice('/yt'.length).trim()
     : ''
 
+  const isLegendaAtacadistaCmd =
+    trimmedLower.startsWith('/legenda-atacadista') ||
+    trimmedLower.startsWith('/atacado ') ||
+    trimmedLower === '/atacado'
+  const legendaAtacadistaArgs = isLegendaAtacadistaCmd
+    ? trimmedLower.startsWith('/legenda-atacadista')
+      ? input.trim().slice('/legenda-atacadista'.length).trim()
+      : input.trim().slice('/atacado'.length).trim()
+    : ''
+
   useEffect(() => {
     if (!isLegendaCmd && legendaPhase !== 'generating') setLegendaPhase('idle')
   }, [isLegendaCmd, legendaPhase])
@@ -196,6 +239,11 @@ export function CommandBar() {
   useEffect(() => {
     if (!isDescricaoCmd && descricaoPhase !== 'generating') setDescricaoPhase('idle')
   }, [isDescricaoCmd, descricaoPhase])
+
+  useEffect(() => {
+    if (!isLegendaAtacadistaCmd && legendaAtacadistaPhase !== 'generating')
+      setLegendaAtacadistaPhase('idle')
+  }, [isLegendaAtacadistaCmd, legendaAtacadistaPhase])
 
   const items = useMemo<CommandItem[]>(() => {
     if (isReelCmd && reelPhase === 'idle') {
@@ -311,6 +359,53 @@ export function CommandBar() {
         },
       ]
     }
+    if (isLegendaAtacadistaCmd && legendaAtacadistaPhase === 'idle') {
+      if (legendaAtacadistaArgs) {
+        const sepIndex = legendaAtacadistaArgs.indexOf(' - ')
+        if (sepIndex === -1) {
+          return [
+            {
+              id: 'atacado-need-sep',
+              primary: `/${trimmedLower.startsWith('/legenda-atacadista') ? 'legenda-atacadista' : 'atacado'} ${legendaAtacadistaArgs}`,
+              secondary: 'Use o formato: MARCA - PRODUTO (ex: Dona Fifi - vestidos)',
+              icon: 'alert' as const,
+              level: null,
+              disabled: true,
+              action: () => {
+                toast({
+                  description:
+                    'Use o formato: /atacado MARCA - PRODUTO (ex: /atacado Dona Fifi - vestidos)',
+                })
+              },
+            },
+          ]
+        }
+        const nomeMarca = legendaAtacadistaArgs.slice(0, sepIndex).trim()
+        const produto = legendaAtacadistaArgs.slice(sepIndex + 3).trim()
+        return [
+          {
+            id: 'atacado-run',
+            primary: `/${trimmedLower.startsWith('/legenda-atacadista') ? 'legenda-atacadista' : 'atacado'} ${nomeMarca} - ${produto}`,
+            secondary: 'Gerar legenda atacadista para Instagram',
+            icon: 'sparkles' as const,
+            level: 'S' as const,
+            action: () => handleLegendaAtacadistaGenerate(nomeMarca, produto),
+          },
+        ]
+      }
+      return [
+        {
+          id: 'atacado-need-args',
+          primary: trimmedLower.startsWith('/legenda-atacadista')
+            ? '/legenda-atacadista'
+            : '/atacado',
+          secondary: 'Digite: MARCA - PRODUTO (ex: Dona Fifi - vestidos)',
+          icon: 'terminal' as const,
+          level: null,
+          action: () => setLegendaAtacadistaPhase('need-input'),
+        },
+      ]
+    }
     return buildItems(input, navigate, closeBar, location.pathname, libraryPrompts)
   }, [
     input,
@@ -334,6 +429,10 @@ export function CommandBar() {
     descricaoPhase,
     descricaoTemaArg,
     handleDescricaoGenerate,
+    isLegendaAtacadistaCmd,
+    legendaAtacadistaPhase,
+    legendaAtacadistaArgs,
+    handleLegendaAtacadistaGenerate,
   ])
 
   useEffect(() => {
@@ -345,7 +444,8 @@ export function CommandBar() {
       legendaPhase !== 'idle' ||
       reelPhase !== 'idle' ||
       titulosPhase !== 'idle' ||
-      descricaoPhase !== 'idle'
+      descricaoPhase !== 'idle' ||
+      legendaAtacadistaPhase !== 'idle'
     )
       return
     if (
@@ -389,11 +489,24 @@ export function CommandBar() {
                 setSelectedIndex(0)
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Digite um comando (ex: /b tarefa, /a análise, /m objetivo, /super, /modulo 5, /legenda tema, /c tema, /s assunto, /stories tema, /reel tema, /r tema, /titulos tema, /seo tema, /descricao título, /yt título)"
+              placeholder="Digite um comando (ex: /b tarefa, /a análise, /m objetivo, /super, /modulo 5, /legenda tema, /c tema, /s assunto, /stories tema, /reel tema, /r tema, /titulos tema, /seo tema, /descricao título, /yt título, /atacado MARCA - PRODUTO)"
               className="border-none focus-visible:ring-0"
             />
           </div>
-          {descricaoPhase !== 'idle' ? (
+          {legendaAtacadistaPhase !== 'idle' ? (
+            <LegendaAtacadistaPanel
+              phase={legendaAtacadistaPhase}
+              caption={legendaAtacadistaCaption}
+              hashtags={legendaAtacadistaHashtags}
+              error={legendaAtacadistaError}
+              onGenerate={handleLegendaAtacadistaGenerate}
+              onNewSearch={() => {
+                setLegendaAtacadistaPhase('idle')
+                setInput('')
+              }}
+              onClose={closeBar}
+            />
+          ) : descricaoPhase !== 'idle' ? (
             <DescricaoPanel
               phase={descricaoPhase}
               description={descricaoText}
