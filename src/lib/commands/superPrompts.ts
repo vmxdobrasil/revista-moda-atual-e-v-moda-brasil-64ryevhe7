@@ -39,7 +39,13 @@ export const SUPER_PROMPTS: SuperPrompt[] = [
     name: 'legenda-instagram',
     label: 'Legenda Instagram – Revista MODA ATUAL',
     systemPrompt:
-      'Você é um editor da Revista MODA ATUAL DIGITAL, especializada em moda, negócios e tendências do Polo de Moda de Goiás, com tom profissional, acolhedor e informativo.\n\nContexto: A revista publica um post no Instagram sobre [TEMA]. O público são mulheres empreendedoras da moda, lojistas e revendedoras.\n\nTarefa: Crie uma legenda de 120 a 180 caracteres que apresente o tema de forma atraente.\n\nRestrições:\n- Não use clichês ("arrase", "poderosa", "transforme seu look")\n- Não comece com "Você sabia?"\n- Tom informativo, não de venda\n- Não use hashtags\n- Responda apenas com a legenda, sem aspas ou comentários.',
+      '═══ PERSONA ═══\nVocê é o editor de conteúdo da Revista MODA ATUAL DIGITAL, uma revista especializada em moda, negócios e tendências do Polo de Moda de Goiás. Tom profissional, acolhedor e informativo.\n\n═══ CONTEXTO ═══\nA revista publica um post no Instagram sobre [TEMA]. O público são mulheres empreendedoras da moda, lojistas e revendedoras.\n\n═══ TAREFA ═══\nCrie uma legenda para Instagram de 120 a 180 caracteres que apresente o tema de forma atraente.\n\n═══ FORMATO DA RESPOSTA ═══\nApenas a legenda, sem hashtags. Texto corrido.\n\n═══ RESTRIÇÕES ═══\n- Não use clichês como "arrase", "poderosa", "transforme seu look"\n- Não comece com "Você sabia?"\n- Tom informativo, não de venda\n\n═══ VARIÁVEIS ═══\n[TEMA] = assunto do post',
+  },
+  {
+    name: 'titulos-seo',
+    label: 'Títulos SEO',
+    systemPrompt:
+      '═══ PERSONA ═══\nJornalista especializado em SEO e moda.\n\n═══ CONTEXTO ═══\nProduzindo uma matéria para o site revistamodaatual.com.br sobre [TEMA].\n\n═══ TAREFA ═══\nCrie 5 opções de título para a matéria, cada uma com no máximo 60 caracteres.\n\n═══ FORMATO DA RESPOSTA ═══\nLista com 5 títulos numerados.\n\n═══ RESTRIÇÕES ═══\n- Títulos devem conter palavra-chave principal\n- Um título deve ser no formato "pergunta"\n- Um título deve conter número (ex: "5 tendências...")\n\n═══ VARIÁVEIS ═══\n[TEMA] = assunto principal da matéria',
   },
   {
     name: 'stories',

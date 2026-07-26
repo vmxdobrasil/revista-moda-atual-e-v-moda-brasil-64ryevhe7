@@ -6,21 +6,20 @@ routerAdd(
     const theme = (body.theme || '').trim()
     if (!theme) return e.badRequestError('Tema é obrigatório')
 
-    const promptTemplate =
-      'Você é um editor da Revista MODA ATUAL DIGITAL, especializada em moda, negócios e tendências do Polo de Moda de Goiás, com tom profissional, acolhedor e informativo.\n\n' +
-      'Contexto: A revista publica um post no Instagram sobre [TEMA]. O público são mulheres empreendedoras da moda, lojistas e revendedoras.\n\n' +
-      'Tarefa: Crie uma legenda de 120 a 180 caracteres que apresente o tema de forma atraente.\n\n' +
-      'Restrições:\n' +
-      '- Não use clichês ("arrase", "poderosa", "transforme seu look")\n' +
-      '- Não comece com "Você sabia?"\n' +
-      '- Tom informativo, não de venda\n' +
-      '- Não use hashtags\n' +
-      '- Responda apenas com a legenda, sem aspas ou comentários'
+    var fallbackPrompt =
+      '═══ PERSONA ═══\nVocê é o editor de conteúdo da Revista MODA ATUAL DIGITAL, uma revista especializada em moda, negócios e tendências do Polo de Moda de Goiás. Tom profissional, acolhedor e informativo.\n\n═══ CONTEXTO ═══\nA revista publica um post no Instagram sobre [TEMA]. O público são mulheres empreendedoras da moda, lojistas e revendedoras.\n\n═══ TAREFA ═══\nCrie uma legenda para Instagram de 120 a 180 caracteres que apresente o tema de forma atraente.\n\n═══ FORMATO DA RESPOSTA ═══\nApenas a legenda, sem hashtags. Texto corrido.\n\n═══ RESTRIÇÕES ═══\n- Não use clichês como "arrase", "poderosa", "transforme seu look"\n- Não comece com "Você sabia?"\n- Tom informativo, não de venda\n\n═══ VARIÁVEIS ═══\n[TEMA] = assunto do post'
 
-    const prompt = promptTemplate.replace('[TEMA]', theme)
+    var promptTemplate = fallbackPrompt
+    try {
+      var promptRecord = $app.findFirstRecordByData('prompt_library', 'slug', 'legenda-instagram')
+      var dbContent = promptRecord.getString('prompt_content')
+      if (dbContent) promptTemplate = dbContent
+    } catch (_) {}
+
+    var prompt = promptTemplate.replace(/\[TEMA\]/g, theme)
 
     try {
-      const reply = $ai.chat({
+      var reply = $ai.chat({
         model: 'fast',
         messages: [
           {
@@ -50,19 +49,6 @@ routerAdd(
               ' caracteres. O ideal é entre 120 e 180. Tente novamente.',
           })
         }
-      }
-
-      try {
-        $app.findFirstRecordByData('prompt_library', 'slug', 'legenda-instagram')
-      } catch (_) {
-        var col = $app.findCollectionByNameOrId('prompt_library')
-        var r = new Record(col)
-        r.set('name', 'Legenda Instagram – Revista MODA ATUAL')
-        r.set('description', 'Gera legendas no estilo da Revista MODA ATUAL DIGITAL para Instagram')
-        r.set('prompt_content', promptTemplate)
-        r.set('slug', 'legenda-instagram')
-        r.set('category', 'super')
-        $app.save(r)
       }
 
       return e.json(200, { caption: caption })

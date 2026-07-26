@@ -11,7 +11,9 @@ import { buildItems, type CommandItem } from '@/lib/commands/itemBuilder'
 import { LEVEL_BADGES } from '@/lib/commands/examples'
 import { LegendaPanel, type LegendaPhase } from '@/components/commands/LegendaPanel'
 import { ReelPanel, type ReelPhase } from '@/components/commands/ReelPanel'
+import { TitulosPanel, type TitulosPhase } from '@/components/commands/TitulosPanel'
 import { generateReel } from '@/services/reel'
+import { generateTitulos } from '@/services/titulos'
 import { toast } from '@/hooks/use-toast'
 
 function renderIcon(icon: string) {
@@ -38,6 +40,9 @@ export function CommandBar() {
   const [reelPhase, setReelPhase] = useState<ReelPhase>('idle')
   const [reelOptions, setReelOptions] = useState<string[]>([])
   const [reelError, setReelError] = useState('')
+  const [titulosPhase, setTitulosPhase] = useState<TitulosPhase>('idle')
+  const [titulosOptions, setTitulosOptions] = useState<string[]>([])
+  const [titulosError, setTitulosError] = useState('')
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -51,6 +56,9 @@ export function CommandBar() {
     setReelPhase('idle')
     setReelOptions([])
     setReelError('')
+    setTitulosPhase('idle')
+    setTitulosOptions([])
+    setTitulosError('')
   }, [])
 
   const handleLegendaGenerate = useCallback(async (theme: string) => {
@@ -75,6 +83,19 @@ export function CommandBar() {
     } catch (err: any) {
       setReelError(err?.message || 'Erro ao gerar roteiro. Tente novamente.')
       setReelPhase('error')
+    }
+  }, [])
+
+  const handleTitulosGenerate = useCallback(async (tema: string) => {
+    setTitulosPhase('generating')
+    try {
+      const result = await generateTitulos(tema)
+      setTitulosOptions(result.titulos)
+      setTitulosPhase('result')
+      toast({ title: 'Títulos SEO gerados e salvos!' })
+    } catch (err: any) {
+      setTitulosError(err?.message || 'Erro ao gerar títulos. Tente novamente.')
+      setTitulosPhase('error')
     }
   }, [])
 
@@ -105,15 +126,29 @@ export function CommandBar() {
     loadLibrary()
   })
 
-  const isLegendaCmd = input.trim().toLowerCase().startsWith('/legenda')
-  const legendaThemeArg = isLegendaCmd ? input.trim().slice('/legenda'.length).trim() : ''
   const trimmedLower = input.trim().toLowerCase()
+  const isLegendaCmd =
+    trimmedLower.startsWith('/legenda') || trimmedLower.startsWith('/c ') || trimmedLower === '/c'
+  const legendaThemeArg = isLegendaCmd
+    ? trimmedLower.startsWith('/legenda')
+      ? input.trim().slice('/legenda'.length).trim()
+      : input.trim().slice('/c'.length).trim()
+    : ''
   const isReelCmd =
     trimmedLower.startsWith('/reel') || trimmedLower.startsWith('/r ') || trimmedLower === '/r'
   const reelSubjectArg = isReelCmd
     ? trimmedLower.startsWith('/reel')
       ? input.trim().slice(5).trim()
       : input.trim().slice(2).trim()
+    : ''
+  const isTitulosCmd =
+    trimmedLower.startsWith('/titulos') ||
+    trimmedLower.startsWith('/seo ') ||
+    trimmedLower === '/seo'
+  const titulosTemaArg = isTitulosCmd
+    ? trimmedLower.startsWith('/titulos')
+      ? input.trim().slice('/titulos'.length).trim()
+      : input.trim().slice('/seo'.length).trim()
     : ''
 
   useEffect(() => {
@@ -123,6 +158,10 @@ export function CommandBar() {
   useEffect(() => {
     if (!isReelCmd && reelPhase !== 'generating') setReelPhase('idle')
   }, [isReelCmd, reelPhase])
+
+  useEffect(() => {
+    if (!isTitulosCmd && titulosPhase !== 'generating') setTitulosPhase('idle')
+  }, [isTitulosCmd, titulosPhase])
 
   const items = useMemo<CommandItem[]>(() => {
     if (isReelCmd && reelPhase === 'idle') {
@@ -178,6 +217,36 @@ export function CommandBar() {
         },
       ]
     }
+    if (isTitulosCmd && titulosPhase === 'idle') {
+      if (titulosTemaArg) {
+        return [
+          {
+            id: 'titulos-run',
+            primary: `/titulos ${titulosTemaArg}`,
+            secondary: 'Gerar 5 títulos SEO para matéria',
+            icon: 'sparkles' as const,
+            level: 'S' as const,
+            action: () => handleTitulosGenerate(titulosTemaArg),
+          },
+        ]
+      }
+      return [
+        {
+          id: 'titulos-need-tema',
+          primary: '/titulos',
+          secondary: 'Qual o tema da matéria?',
+          icon: 'terminal' as const,
+          level: null,
+          action: () => {
+            toast({
+              description:
+                'Por favor, informe o tema da matéria (ex: /titulos tendências de moda outono)',
+            })
+            setTitulosPhase('need-tema')
+          },
+        },
+      ]
+    }
     return buildItems(input, navigate, closeBar, location.pathname, libraryPrompts)
   }, [
     input,
@@ -193,6 +262,10 @@ export function CommandBar() {
     reelPhase,
     reelSubjectArg,
     handleReelGenerate,
+    isTitulosCmd,
+    titulosPhase,
+    titulosTemaArg,
+    handleTitulosGenerate,
   ])
 
   useEffect(() => {
@@ -200,7 +273,7 @@ export function CommandBar() {
   }, [items.length])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (legendaPhase !== 'idle' || reelPhase !== 'idle') return
+    if (legendaPhase !== 'idle' || reelPhase !== 'idle' || titulosPhase !== 'idle') return
     if (
       e.key === 'Enter' &&
       items.length > 0 &&
@@ -242,11 +315,22 @@ export function CommandBar() {
                 setSelectedIndex(0)
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Digite um comando (ex: /b tarefa, /a análise, /m objetivo, /super, /modulo 5, /legenda tema, /s assunto, /stories tema, /reel tema, /r tema)"
+              placeholder="Digite um comando (ex: /b tarefa, /a análise, /m objetivo, /super, /modulo 5, /legenda tema, /c tema, /s assunto, /stories tema, /reel tema, /r tema, /titulos tema, /seo tema)"
               className="border-none focus-visible:ring-0"
             />
           </div>
-          {reelPhase !== 'idle' ? (
+          {titulosPhase !== 'idle' ? (
+            <TitulosPanel
+              phase={titulosPhase}
+              titulos={titulosOptions}
+              error={titulosError}
+              onGenerate={handleTitulosGenerate}
+              onNewSearch={() => {
+                setTitulosPhase('idle')
+                setInput('')
+              }}
+            />
+          ) : reelPhase !== 'idle' ? (
             <ReelPanel
               phase={reelPhase}
               options={reelOptions}
