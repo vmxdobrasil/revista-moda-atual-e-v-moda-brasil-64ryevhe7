@@ -21,6 +21,9 @@ import { generateReel } from '@/services/reel'
 import { generateLegendaAtacadista } from '@/services/legenda-atacadista'
 import { generateTitulos } from '@/services/titulos'
 import { generateDescricao } from '@/services/descricao'
+import { generateMateria } from '@/services/materia'
+import type { MateriaSections } from '@/services/materia'
+import { MateriaPanel, type MateriaPhase } from '@/components/commands/MateriaPanel'
 import { toast } from '@/hooks/use-toast'
 
 function renderIcon(icon: string) {
@@ -58,6 +61,10 @@ export function CommandBar() {
   const [legendaAtacadistaCaption, setLegendaAtacadistaCaption] = useState('')
   const [legendaAtacadistaHashtags, setLegendaAtacadistaHashtags] = useState<string[]>([])
   const [legendaAtacadistaError, setLegendaAtacadistaError] = useState('')
+  const [materiaPhase, setMateriaPhase] = useState<MateriaPhase>('idle')
+  const [materiaContent, setMateriaContent] = useState('')
+  const [materiaSections, setMateriaSections] = useState<MateriaSections | null>(null)
+  const [materiaError, setMateriaError] = useState('')
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -81,6 +88,10 @@ export function CommandBar() {
     setLegendaAtacadistaCaption('')
     setLegendaAtacadistaHashtags([])
     setLegendaAtacadistaError('')
+    setMateriaPhase('idle')
+    setMateriaContent('')
+    setMateriaSections(null)
+    setMateriaError('')
   }, [])
 
   const handleLegendaGenerate = useCallback(async (theme: string) => {
@@ -150,6 +161,20 @@ export function CommandBar() {
     },
     [],
   )
+
+  const handleMateriaGenerate = useCallback(async (tema: string) => {
+    setMateriaPhase('generating')
+    try {
+      const result = await generateMateria(tema)
+      setMateriaContent(result.content)
+      setMateriaSections(result.sections)
+      setMateriaPhase('result')
+      toast({ title: 'Matéria salva com sucesso!' })
+    } catch (err: any) {
+      setMateriaError(err?.message || 'Erro ao gerar matéria. Tente novamente.')
+      setMateriaPhase('error')
+    }
+  }, [])
 
   const loadLibrary = useCallback(async () => {
     try {
@@ -223,6 +248,16 @@ export function CommandBar() {
       ? input.trim().slice('/legenda-atacadista'.length).trim()
       : input.trim().slice('/atacado'.length).trim()
     : ''
+  const isMateriaCmd =
+    trimmedLower.startsWith('/materia ') ||
+    trimmedLower === '/materia' ||
+    trimmedLower.startsWith('/artigo ') ||
+    trimmedLower === '/artigo'
+  const materiaTemaArg = isMateriaCmd
+    ? trimmedLower.startsWith('/materia')
+      ? input.trim().slice('/materia'.length).trim()
+      : input.trim().slice('/artigo'.length).trim()
+    : ''
 
   useEffect(() => {
     if (!isLegendaCmd && legendaPhase !== 'generating') setLegendaPhase('idle')
@@ -244,6 +279,10 @@ export function CommandBar() {
     if (!isLegendaAtacadistaCmd && legendaAtacadistaPhase !== 'generating')
       setLegendaAtacadistaPhase('idle')
   }, [isLegendaAtacadistaCmd, legendaAtacadistaPhase])
+
+  useEffect(() => {
+    if (!isMateriaCmd && materiaPhase !== 'generating') setMateriaPhase('idle')
+  }, [isMateriaCmd, materiaPhase])
 
   const items = useMemo<CommandItem[]>(() => {
     if (isReelCmd && reelPhase === 'idle') {
@@ -406,6 +445,35 @@ export function CommandBar() {
         },
       ]
     }
+    if (isMateriaCmd && materiaPhase === 'idle') {
+      if (materiaTemaArg) {
+        return [
+          {
+            id: 'materia-run',
+            primary: `/${trimmedLower.startsWith('/materia') ? 'materia' : 'artigo'} ${materiaTemaArg}`,
+            secondary: 'Gerar matéria jornalística completa',
+            icon: 'sparkles' as const,
+            level: 'S' as const,
+            action: () => handleMateriaGenerate(materiaTemaArg),
+          },
+        ]
+      }
+      return [
+        {
+          id: 'materia-need-tema',
+          primary: trimmedLower.startsWith('/materia') ? '/materia' : '/artigo',
+          secondary: 'Qual o tema da matéria?',
+          icon: 'terminal' as const,
+          level: null,
+          action: () => {
+            toast({
+              description: 'Informe o tema da matéria (ex: /materia tendências de moda verão 2026)',
+            })
+            setMateriaPhase('need-tema')
+          },
+        },
+      ]
+    }
     return buildItems(input, navigate, closeBar, location.pathname, libraryPrompts)
   }, [
     input,
@@ -433,6 +501,10 @@ export function CommandBar() {
     legendaAtacadistaPhase,
     legendaAtacadistaArgs,
     handleLegendaAtacadistaGenerate,
+    isMateriaCmd,
+    materiaPhase,
+    materiaTemaArg,
+    handleMateriaGenerate,
   ])
 
   useEffect(() => {
@@ -445,7 +517,8 @@ export function CommandBar() {
       reelPhase !== 'idle' ||
       titulosPhase !== 'idle' ||
       descricaoPhase !== 'idle' ||
-      legendaAtacadistaPhase !== 'idle'
+      legendaAtacadistaPhase !== 'idle' ||
+      materiaPhase !== 'idle'
     )
       return
     if (
@@ -489,11 +562,24 @@ export function CommandBar() {
                 setSelectedIndex(0)
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Digite um comando (ex: /b tarefa, /a análise, /m objetivo, /super, /modulo 5, /legenda tema, /c tema, /s assunto, /stories tema, /reel tema, /r tema, /titulos tema, /seo tema, /descricao título, /yt título, /atacado MARCA - PRODUTO)"
+              placeholder="Digite um comando (ex: /b tarefa, /a análise, /m objetivo, /super, /modulo 5, /legenda tema, /c tema, /s assunto, /stories tema, /reel tema, /r tema, /titulos tema, /seo tema, /descricao título, /yt título, /atacado MARCA - PRODUTO, /materia tema, /artigo tema)"
               className="border-none focus-visible:ring-0"
             />
           </div>
-          {legendaAtacadistaPhase !== 'idle' ? (
+          {materiaPhase !== 'idle' ? (
+            <MateriaPanel
+              phase={materiaPhase}
+              content={materiaContent}
+              sections={materiaSections}
+              error={materiaError}
+              onGenerate={handleMateriaGenerate}
+              onNewSearch={() => {
+                setMateriaPhase('idle')
+                setInput('')
+              }}
+              onClose={closeBar}
+            />
+          ) : legendaAtacadistaPhase !== 'idle' ? (
             <LegendaAtacadistaPanel
               phase={legendaAtacadistaPhase}
               caption={legendaAtacadistaCaption}

@@ -19,13 +19,21 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { Pencil, Trash2, CalendarClock, Youtube } from 'lucide-react'
+import { Pencil, Trash2, CalendarClock, Youtube, Newspaper } from 'lucide-react'
 import { type StoryText, getScheduledStatus, truncate } from '@/services/story-texts'
 
 function getDescriptionText(options: unknown): string | null {
   if (options && typeof options === 'object' && !Array.isArray(options)) {
     const obj = options as Record<string, unknown>
     if (typeof obj.description === 'string') return obj.description
+  }
+  return null
+}
+
+function getMateriaContent(options: unknown): string | null {
+  if (options && typeof options === 'object' && !Array.isArray(options)) {
+    const obj = options as Record<string, unknown>
+    if (obj.type === 'materia-jornalistica' && typeof obj.content === 'string') return obj.content
   }
   return null
 }
@@ -74,6 +82,8 @@ export function StoriesTable({ items, onEdit, onSchedule, onDelete, showSchedule
           items.map((item) => {
             const description = getDescriptionText(item.options)
             const isDescricao = description !== null
+            const materiaContent = getMateriaContent(item.options)
+            const isMateria = materiaContent !== null
             const options = Array.isArray(item.options) ? item.options : []
             return (
               <TableRow key={item.id}>
@@ -81,7 +91,12 @@ export function StoriesTable({ items, onEdit, onSchedule, onDelete, showSchedule
                   {item.subject}
                 </TableCell>
                 <TableCell>
-                  {isDescricao ? (
+                  {isMateria ? (
+                    <Badge className="gap-1 bg-blue-500 text-white hover:bg-blue-600">
+                      <Newspaper className="w-3 h-3" />
+                      Matéria
+                    </Badge>
+                  ) : isDescricao ? (
                     <Badge className="gap-1 bg-red-500 text-white hover:bg-red-600">
                       <Youtube className="w-3 h-3" />
                       YouTube
@@ -91,7 +106,11 @@ export function StoriesTable({ items, onEdit, onSchedule, onDelete, showSchedule
                   )}
                 </TableCell>
                 <TableCell>
-                  {isDescricao ? (
+                  {isMateria ? (
+                    <span className="text-xs text-gray-600 italic">
+                      {truncate(materiaContent, 40)}
+                    </span>
+                  ) : isDescricao ? (
                     <span className="text-xs text-gray-600 italic">
                       {truncate(description, 40)}
                     </span>

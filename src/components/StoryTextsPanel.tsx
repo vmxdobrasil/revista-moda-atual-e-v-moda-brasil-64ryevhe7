@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Search, ChevronDown, ChevronUp, Youtube, Factory } from 'lucide-react'
+import { Search, ChevronDown, ChevronUp, Youtube, Factory, Newspaper } from 'lucide-react'
 import type { StoryText } from '@/services/story-texts'
 import { getScheduledStatus, truncate } from '@/services/story-texts'
 
@@ -44,6 +44,33 @@ function getAtacadistaData(options: unknown): { caption: string; hashtags: strin
         ? obj.hashtags.filter((h): h is string => typeof h === 'string')
         : []
       return { caption: obj.caption, hashtags }
+    }
+  }
+  return null
+}
+
+const MATERIA_SECTION_LABELS: Record<string, string> = {
+  titulo: 'TÍTULO PRINCIPAL',
+  subtitulo: 'SUBTÍTULO',
+  olho: 'OLHO',
+  corpo: 'CORPO DA MATÉRIA',
+  cta: 'CALL TO ACTION',
+  tags: 'TAGS DE SEO',
+  social: 'SUGESTÃO DE REDES SOCIAIS',
+}
+
+function getMateriaData(
+  options: unknown,
+): { content: string; sections: Record<string, string> } | null {
+  if (options && typeof options === 'object' && !Array.isArray(options)) {
+    const obj = options as Record<string, unknown>
+    if (obj.type === 'materia-jornalistica' && typeof obj.content === 'string') {
+      const sectionsRaw = obj.sections
+      const sections =
+        sectionsRaw && typeof sectionsRaw === 'object' && !Array.isArray(sectionsRaw)
+          ? (sectionsRaw as Record<string, string>)
+          : {}
+      return { content: obj.content, sections }
     }
   }
   return null
@@ -122,9 +149,11 @@ export function StoryTextsPanel({
                 const isDescricao = description !== null
                 const atacadistaData = getAtacadistaData(text.options)
                 const isAtacadista = atacadistaData !== null
+                const materiaData = getMateriaData(text.options)
+                const isMateria = materiaData !== null
                 const options = Array.isArray(text.options) ? text.options : []
                 const isExpanded = expandedId === text.id
-                const isExpandable = isDescricao || isAtacadista
+                const isExpandable = isDescricao || isAtacadista || isMateria
                 return (
                   <Fragment key={text.id}>
                     <TableRow>
@@ -135,6 +164,11 @@ export function StoryTextsPanel({
                         {isAtacadista ? (
                           <Badge className="gap-1 bg-orange-500 text-white hover:bg-orange-600">
                             <Factory className="w-3 h-3" />🏭 Atacado
+                          </Badge>
+                        ) : isMateria ? (
+                          <Badge className="gap-1 bg-blue-500 text-white hover:bg-blue-600">
+                            <Newspaper className="w-3 h-3" />
+                            Matéria
                           </Badge>
                         ) : isDescricao ? (
                           <Badge className="gap-1 bg-red-500 text-white hover:bg-red-600">
@@ -160,7 +194,11 @@ export function StoryTextsPanel({
                             ) : (
                               <>
                                 <ChevronDown className="w-3 h-3" />{' '}
-                                {isAtacadista ? 'Ver legenda' : 'Ver descrição'}
+                                {isMateria
+                                  ? 'Ver matéria'
+                                  : isAtacadista
+                                    ? 'Ver legenda'
+                                    : 'Ver descrição'}
                               </>
                             )}
                           </Button>
@@ -213,6 +251,26 @@ export function StoryTextsPanel({
                                 ))}
                               </div>
                             )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    {isMateria && isExpanded && materiaData && (
+                      <TableRow key={`${text.id}-mat`}>
+                        <TableCell colSpan={6} className="bg-muted/30">
+                          <div className="max-h-64 overflow-y-auto space-y-3 p-2">
+                            {Object.entries(MATERIA_SECTION_LABELS).map(([key, label]) => {
+                              const value = materiaData.sections[key]
+                              if (!value) return null
+                              return (
+                                <div key={key} className="text-sm">
+                                  <span className="font-bold text-orange-600 text-xs">{label}</span>
+                                  <p className="whitespace-pre-wrap leading-relaxed mt-1">
+                                    {value}
+                                  </p>
+                                </div>
+                              )
+                            })}
                           </div>
                         </TableCell>
                       </TableRow>
