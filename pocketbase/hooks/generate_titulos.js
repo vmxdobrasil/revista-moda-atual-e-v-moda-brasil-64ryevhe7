@@ -59,7 +59,7 @@ routerAdd(
       try {
         var col = $app.findCollectionByNameOrId('story_texts')
         var record = new Record(col)
-        record.set('subject', 'SEO Titles: ' + tema)
+        record.set('subject', tema)
         record.set('options', titulos)
         $app.save(record)
       } catch (saveErr) {
