@@ -175,7 +175,7 @@ export function CommandBar() {
                 setSelectedIndex(0)
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Digite um comando (ex: /b tarefa, /a análise, /m objetivo, /super, /modulo 5, /legenda tema, /s assunto)"
+              placeholder="Digite um comando (ex: /b tarefa, /a análise, /m objetivo, /super, /modulo 5, /legenda tema, /s assunto, /stories tema)"
               className="border-none focus-visible:ring-0"
             />
           </div>

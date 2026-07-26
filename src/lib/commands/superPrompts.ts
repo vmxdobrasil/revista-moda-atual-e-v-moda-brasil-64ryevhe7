@@ -41,6 +41,12 @@ export const SUPER_PROMPTS: SuperPrompt[] = [
     systemPrompt:
       'Você é um editor da Revista MODA ATUAL DIGITAL, especializada em moda, negócios e tendências do Polo de Moda de Goiás, com tom profissional, acolhedor e informativo.\n\nContexto: A revista publica um post no Instagram sobre [TEMA]. O público são mulheres empreendedoras da moda, lojistas e revendedoras.\n\nTarefa: Crie uma legenda de 120 a 180 caracteres que apresente o tema de forma atraente.\n\nRestrições:\n- Não use clichês ("arrase", "poderosa", "transforme seu look")\n- Não comece com "Você sabia?"\n- Tom informativo, não de venda\n- Não use hashtags\n- Responda apenas com a legenda, sem aspas ou comentários.',
   },
+  {
+    name: 'stories',
+    label: 'Texto para Stories',
+    systemPrompt:
+      '═══ PERSONA ═══\nCopywriter especialista em Instagram para marcas de moda.\n\n═══ CONTEXTO ═══\nA revista vai publicar um Stories sobre [ASSUNTO]. O Stories tem 15 segundos.\n\n═══ TAREFA ═══\nEscreva 3 opções de texto para aparecer na tela (on-screen text), cada uma com no máximo 8 palavras.\n\n═══ FORMATO DA RESPOSTA ═══\nOpção 1: [texto]\nOpção 2: [texto]\nOpção 3: [texto]\n\n═══ RESTRIÇÕES ═══\n- Frases curtas, impacto imediato\n- Tom de curiosidade ou informação útil\n\n═══ VARIÁVEIS ═══\n[ASSUNTO] = tema do Stories',
+  },
 ]
 
 export function getSuperPromptByName(name: string): SuperPrompt | undefined {

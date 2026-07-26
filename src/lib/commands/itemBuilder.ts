@@ -182,6 +182,66 @@ export function buildItems(
     ]
   }
 
+  if (trimmed.startsWith('/stories')) {
+    const subject = arg(input, '/stories')
+    if (!subject) {
+      return [
+        {
+          id: 'stories-err',
+          primary: '/stories',
+          secondary: 'Informe o assunto (ex: /stories nova coleção de verão)',
+          icon: 'alert' as ItemIcon,
+          level: null,
+          disabled: true,
+          action: () => {
+            toast({
+              title: 'Assunto obrigatório',
+              description:
+                'Por favor, informe o assunto do Stories (ex: /super stories nova coleção de verão)',
+              variant: 'destructive',
+            })
+          },
+        },
+      ]
+    }
+    const storiesPrompt =
+      libraryPrompts.find((p) => p.slug === 'stories') ??
+      SUPER_PROMPTS.find((s) => s.name === 'stories')
+    const template = storiesPrompt
+      ? 'prompt_content' in storiesPrompt
+        ? storiesPrompt.prompt_content
+        : storiesPrompt.systemPrompt
+      : ''
+    const filledPrompt = template.replace(/\[ASSUNTO\]/g, subject)
+    return [
+      {
+        id: 'stories-run',
+        primary: `/stories ${subject}`,
+        secondary: 'Gerar 3 opções de texto on-screen para Stories',
+        icon: 'sparkles' as ItemIcon,
+        level: 'S' as CommandLevel,
+        action: () => {
+          if (!template) {
+            toast({
+              title: 'Super prompt não encontrado',
+              description: 'O prompt "stories" não foi encontrado na biblioteca.',
+              variant: 'destructive',
+            })
+            closeBar()
+            return
+          }
+          setPendingPrompt(filledPrompt)
+          if (currentPath !== '/admin/ai-persona/chat') navigate('/admin/ai-persona/chat')
+          closeBar()
+          toast({
+            title: "Super Prompt 'Texto para Stories' ativado",
+            description: `Assunto: ${subject}`,
+          })
+        },
+      },
+    ]
+  }
+
   if (trimmed.startsWith('/super')) {
     const namePart = trimmed.replace('/super', '').trim()
     const prompts =
