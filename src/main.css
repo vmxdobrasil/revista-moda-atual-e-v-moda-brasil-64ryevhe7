@@ -108,6 +108,12 @@
     --chart-5: 10 100% 50%;
   }
 
+  body {
+    margin: 0;
+    font-family: Inter, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
   /* NEVER REMOVE THIS */
   section[aria-label='Notifications alt+T'] {
     padding: 0 !important;
@@ -362,6 +368,14 @@
       opacity: 0;
     }
   }
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background-color: revert !important;
+  color: revert !important;
 }
 
 .print-only {
