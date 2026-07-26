@@ -12,8 +12,10 @@ import { LEVEL_BADGES } from '@/lib/commands/examples'
 import { LegendaPanel, type LegendaPhase } from '@/components/commands/LegendaPanel'
 import { ReelPanel, type ReelPhase } from '@/components/commands/ReelPanel'
 import { TitulosPanel, type TitulosPhase } from '@/components/commands/TitulosPanel'
+import { DescricaoPanel, type DescricaoPhase } from '@/components/commands/DescricaoPanel'
 import { generateReel } from '@/services/reel'
 import { generateTitulos } from '@/services/titulos'
+import { generateDescricao } from '@/services/descricao'
 import { toast } from '@/hooks/use-toast'
 
 function renderIcon(icon: string) {
@@ -43,6 +45,9 @@ export function CommandBar() {
   const [titulosPhase, setTitulosPhase] = useState<TitulosPhase>('idle')
   const [titulosOptions, setTitulosOptions] = useState<string[]>([])
   const [titulosError, setTitulosError] = useState('')
+  const [descricaoPhase, setDescricaoPhase] = useState<DescricaoPhase>('idle')
+  const [descricaoText, setDescricaoText] = useState('')
+  const [descricaoError, setDescricaoError] = useState('')
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -59,6 +64,9 @@ export function CommandBar() {
     setTitulosPhase('idle')
     setTitulosOptions([])
     setTitulosError('')
+    setDescricaoPhase('idle')
+    setDescricaoText('')
+    setDescricaoError('')
   }, [])
 
   const handleLegendaGenerate = useCallback(async (theme: string) => {
@@ -96,6 +104,19 @@ export function CommandBar() {
     } catch (err: any) {
       setTitulosError(err?.message || 'Erro ao gerar títulos. Tente novamente.')
       setTitulosPhase('error')
+    }
+  }, [])
+
+  const handleDescricaoGenerate = useCallback(async (tema: string) => {
+    setDescricaoPhase('generating')
+    try {
+      const result = await generateDescricao(tema)
+      setDescricaoText(result.description)
+      setDescricaoPhase('result')
+      toast({ title: 'Descrição gerada com sucesso!' })
+    } catch (err: any) {
+      setDescricaoError(err?.message || 'Erro ao gerar descrição. Tente novamente.')
+      setDescricaoPhase('error')
     }
   }, [])
 
@@ -150,6 +171,15 @@ export function CommandBar() {
       ? input.trim().slice('/titulos'.length).trim()
       : input.trim().slice('/seo'.length).trim()
     : ''
+  const isDescricaoCmd =
+    trimmedLower.startsWith('/descricao') ||
+    trimmedLower.startsWith('/yt ') ||
+    trimmedLower === '/yt'
+  const descricaoTemaArg = isDescricaoCmd
+    ? trimmedLower.startsWith('/descricao')
+      ? input.trim().slice('/descricao'.length).trim()
+      : input.trim().slice('/yt'.length).trim()
+    : ''
 
   useEffect(() => {
     if (!isLegendaCmd && legendaPhase !== 'generating') setLegendaPhase('idle')
@@ -162,6 +192,10 @@ export function CommandBar() {
   useEffect(() => {
     if (!isTitulosCmd && titulosPhase !== 'generating') setTitulosPhase('idle')
   }, [isTitulosCmd, titulosPhase])
+
+  useEffect(() => {
+    if (!isDescricaoCmd && descricaoPhase !== 'generating') setDescricaoPhase('idle')
+  }, [isDescricaoCmd, descricaoPhase])
 
   const items = useMemo<CommandItem[]>(() => {
     if (isReelCmd && reelPhase === 'idle') {
@@ -217,6 +251,36 @@ export function CommandBar() {
         },
       ]
     }
+    if (isDescricaoCmd && descricaoPhase === 'idle') {
+      if (descricaoTemaArg) {
+        return [
+          {
+            id: 'descricao-run',
+            primary: `/descricao ${descricaoTemaArg}`,
+            secondary: 'Gerar descrição SEO para YouTube',
+            icon: 'sparkles' as const,
+            level: 'S' as const,
+            action: () => handleDescricaoGenerate(descricaoTemaArg),
+          },
+        ]
+      }
+      return [
+        {
+          id: 'descricao-need-tema',
+          primary: '/descricao',
+          secondary: 'Qual o título do vídeo?',
+          icon: 'terminal' as const,
+          level: null,
+          action: () => {
+            toast({
+              description:
+                'Por favor, informe o título do vídeo (ex: /descricao Tendências de moda inverno 2026)',
+            })
+            setDescricaoPhase('need-tema')
+          },
+        },
+      ]
+    }
     if (isTitulosCmd && titulosPhase === 'idle') {
       if (titulosTemaArg) {
         return [
@@ -266,6 +330,10 @@ export function CommandBar() {
     titulosPhase,
     titulosTemaArg,
     handleTitulosGenerate,
+    isDescricaoCmd,
+    descricaoPhase,
+    descricaoTemaArg,
+    handleDescricaoGenerate,
   ])
 
   useEffect(() => {
@@ -273,7 +341,13 @@ export function CommandBar() {
   }, [items.length])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (legendaPhase !== 'idle' || reelPhase !== 'idle' || titulosPhase !== 'idle') return
+    if (
+      legendaPhase !== 'idle' ||
+      reelPhase !== 'idle' ||
+      titulosPhase !== 'idle' ||
+      descricaoPhase !== 'idle'
+    )
+      return
     if (
       e.key === 'Enter' &&
       items.length > 0 &&
@@ -315,11 +389,22 @@ export function CommandBar() {
                 setSelectedIndex(0)
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Digite um comando (ex: /b tarefa, /a análise, /m objetivo, /super, /modulo 5, /legenda tema, /c tema, /s assunto, /stories tema, /reel tema, /r tema, /titulos tema, /seo tema)"
+              placeholder="Digite um comando (ex: /b tarefa, /a análise, /m objetivo, /super, /modulo 5, /legenda tema, /c tema, /s assunto, /stories tema, /reel tema, /r tema, /titulos tema, /seo tema, /descricao título, /yt título)"
               className="border-none focus-visible:ring-0"
             />
           </div>
-          {titulosPhase !== 'idle' ? (
+          {descricaoPhase !== 'idle' ? (
+            <DescricaoPanel
+              phase={descricaoPhase}
+              description={descricaoText}
+              error={descricaoError}
+              onGenerate={handleDescricaoGenerate}
+              onNewSearch={() => {
+                setDescricaoPhase('idle')
+                setInput('')
+              }}
+            />
+          ) : titulosPhase !== 'idle' ? (
             <TitulosPanel
               phase={titulosPhase}
               titulos={titulosOptions}

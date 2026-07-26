@@ -19,8 +19,17 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { Pencil, Trash2, CalendarClock } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Pencil, Trash2, CalendarClock, Youtube } from 'lucide-react'
 import { type StoryText, getScheduledStatus, truncate } from '@/services/story-texts'
+
+function getDescriptionText(options: unknown): string | null {
+  if (options && typeof options === 'object' && !Array.isArray(options)) {
+    const obj = options as Record<string, unknown>
+    if (typeof obj.description === 'string') return obj.description
+  }
+  return null
+}
 
 interface Props {
   items: StoryText[]
@@ -48,6 +57,7 @@ export function StoriesTable({ items, onEdit, onSchedule, onDelete, showSchedule
       <TableHeader>
         <TableRow>
           <TableHead>Assunto</TableHead>
+          <TableHead>Tipo</TableHead>
           <TableHead>Opções</TableHead>
           <TableHead>Criado</TableHead>
           {showScheduled && <TableHead>Agendado</TableHead>}
@@ -57,73 +67,96 @@ export function StoriesTable({ items, onEdit, onSchedule, onDelete, showSchedule
       <TableBody>
         {items.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={showScheduled ? 5 : 4} className="text-center text-gray-400 py-10">
+            <TableCell colSpan={showScheduled ? 6 : 5} className="text-center text-gray-400 py-10">
               Nenhum registro encontrado.
             </TableCell>
           </TableRow>
         ) : (
-          items.map((item) => (
-            <TableRow key={item.id}>
-              <TableCell className="font-medium text-gray-900 max-w-[180px] truncate">
-                {item.subject}
-              </TableCell>
-              <TableCell>
-                <div className="flex flex-col gap-0.5">
-                  {(item.options || []).map((opt, i) => (
-                    <span key={i} className="text-xs text-gray-600">
-                      {i + 1}. {truncate(opt, 15)}
-                    </span>
-                  ))}
-                </div>
-              </TableCell>
-              <TableCell className="text-gray-600 text-sm">
-                {new Date(item.created).toLocaleDateString('pt-BR')}
-              </TableCell>
-              {showScheduled && (
-                <TableCell>
-                  <ScheduledBadge date={item.scheduled_date} />
+          items.map((item) => {
+            const description = getDescriptionText(item.options)
+            const isDescricao = description !== null
+            const options = Array.isArray(item.options) ? item.options : []
+            return (
+              <TableRow key={item.id}>
+                <TableCell className="font-medium text-gray-900 max-w-[180px] truncate">
+                  {item.subject}
                 </TableCell>
-              )}
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-1">
-                  <Button size="icon" variant="ghost" onClick={() => onEdit(item)}>
-                    <Pencil className="w-4 h-4" />
-                  </Button>
-                  <Button size="icon" variant="ghost" onClick={() => onSchedule(item)}>
-                    <CalendarClock className="w-4 h-4" />
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="text-red-500 hover:text-red-600"
-                      >
-                        <Trash2 className="w-4 h-4" />
+                <TableCell>
+                  {isDescricao ? (
+                    <Badge className="gap-1 bg-red-500 text-white hover:bg-red-600">
+                      <Youtube className="w-3 h-3" />
+                      YouTube
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline">Texto</Badge>
+                  )}
+                </TableCell>
+                <TableCell>
+                  {isDescricao ? (
+                    <span className="text-xs text-gray-600 italic">
+                      {truncate(description, 40)}
+                    </span>
+                  ) : (
+                    <div className="flex flex-col gap-0.5">
+                      {options.map((opt, i) => (
+                        <span key={i} className="text-xs text-gray-600">
+                          {i + 1}. {truncate(opt, 15)}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </TableCell>
+                <TableCell className="text-gray-600 text-sm">
+                  {new Date(item.created).toLocaleDateString('pt-BR')}
+                </TableCell>
+                {showScheduled && (
+                  <TableCell>
+                    <ScheduledBadge date={item.scheduled_date} />
+                  </TableCell>
+                )}
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-1">
+                    {!isDescricao && (
+                      <Button size="icon" variant="ghost" onClick={() => onEdit(item)}>
+                        <Pencil className="w-4 h-4" />
                       </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Excluir texto?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Esta ação não pode ser desfeita.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => onDelete(item.id)}
-                          className="bg-red-500 hover:bg-red-600"
+                    )}
+                    <Button size="icon" variant="ghost" onClick={() => onSchedule(item)}>
+                      <CalendarClock className="w-4 h-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="text-red-500 hover:text-red-600"
                         >
-                          Excluir
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Excluir texto?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Esta ação não pode ser desfeita.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => onDelete(item.id)}
+                            className="bg-red-500 hover:bg-red-600"
+                          >
+                            Excluir
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )
+          })
         )}
       </TableBody>
     </Table>
