@@ -17,6 +17,7 @@ import {
   Trophy,
   Store,
   LayoutDashboard,
+  Wand2,
 } from 'lucide-react'
 import { CommandBar } from '@/components/CommandBar'
 
@@ -115,6 +116,13 @@ export function AdminLayout() {
           onClick={() => setSidebarOpen(false)}
         >
           <Trophy className="w-5 h-5" /> Top 60 Marcas
+        </Link>
+        <Link
+          to="/admin/arquiteto-workflow"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <Wand2 className="w-5 h-5" /> Arquiteto de Workflow
         </Link>
         <Link
           to="/admin/vmodebrasil"

@@ -26,6 +26,7 @@ import StoryTextView from './pages/StoryTextView'
 import Top60Page from './pages/admin/Top60Page'
 import VmodeBrasilPage from './pages/admin/VmodeBrasilPage'
 import MarketplaceOrdersPage from './pages/admin/MarketplaceOrdersPage'
+import ArquitetoWorkflowPage from './pages/admin/ArquitetoWorkflowPage'
 import { AuthProvider } from './hooks/use-auth'
 
 const App = () => (
@@ -63,6 +64,7 @@ const App = () => (
             <Route path="top60" element={<Top60Page />} />
             <Route path="vmodebrasil" element={<VmodeBrasilPage />} />
             <Route path="vmodebrasil/orders" element={<MarketplaceOrdersPage />} />
+            <Route path="arquiteto-workflow" element={<ArquitetoWorkflowPage />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
