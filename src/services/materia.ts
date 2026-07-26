@@ -1,18 +1,23 @@
 import pb from '@/lib/pocketbase/client'
 
-export interface MateriaSections {
-  titulo: string
+export interface MateriaSugestaoRedes {
+  instagram_text: string
+  arte_description: string
+}
+
+export interface MateriaArticle {
+  titulo_principal: string
   subtitulo: string
   olho: string
   corpo: string
-  cta: string
-  tags: string
-  social: string
+  call_to_action: string[]
+  tags_seo: string[]
+  sugestao_redes: MateriaSugestaoRedes
 }
 
 export interface MateriaResult {
   content: string
-  sections: MateriaSections
+  article: MateriaArticle
   recordId: string
 }
 
@@ -24,7 +29,15 @@ export async function generateMateria(tema: string): Promise<MateriaResult> {
   })
   return {
     content: res.content,
-    sections: res.sections,
+    article: {
+      titulo_principal: res.titulo_principal,
+      subtitulo: res.subtitulo,
+      olho: res.olho,
+      corpo: res.corpo,
+      call_to_action: res.call_to_action,
+      tags_seo: res.tags_seo,
+      sugestao_redes: res.sugestao_redes,
+    },
     recordId: res.recordId,
   }
 }

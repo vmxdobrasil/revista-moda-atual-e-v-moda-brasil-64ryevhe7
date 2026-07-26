@@ -2,38 +2,58 @@ import { useState, useCallback } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Copy, Check, Loader2, AlertCircle, RotateCcw, Search, Newspaper, X } from 'lucide-react'
-import type { MateriaSections } from '@/services/materia'
+import type { MateriaArticle } from '@/services/materia'
 
 export type MateriaPhase = 'idle' | 'need-tema' | 'generating' | 'result' | 'error'
 
 interface MateriaPanelProps {
   phase: MateriaPhase
   content: string
-  sections: MateriaSections | null
+  article: MateriaArticle | null
   error: string
   onGenerate: (tema: string) => void
   onNewSearch: () => void
   onClose: () => void
 }
 
-const SECTION_LABELS: { key: keyof MateriaSections; label: string }[] = [
-  { key: 'titulo', label: 'TÍTULO PRINCIPAL' },
+interface SectionDef {
+  key: string
+  label: string
+}
+
+const STRING_SECTIONS: SectionDef[] = [
+  { key: 'titulo_principal', label: 'TÍTULO PRINCIPAL' },
   { key: 'subtitulo', label: 'SUBTÍTULO' },
   { key: 'olho', label: 'OLHO' },
   { key: 'corpo', label: 'CORPO DA MATÉRIA' },
-  { key: 'cta', label: 'CALL TO ACTION' },
-  { key: 'tags', label: 'TAGS DE SEO' },
-  { key: 'social', label: 'SUGESTÃO DE REDES SOCIAIS' },
 ]
 
-function formatFullArticle(sections: MateriaSections): string {
-  return SECTION_LABELS.map((s) => `${s.label}:\n${sections[s.key]}`).join('\n\n')
+function formatFullArticle(article: MateriaArticle): string {
+  const lines: string[] = []
+  lines.push(`TÍTULO PRINCIPAL: ${article.titulo_principal}`)
+  lines.push(`SUBTÍTULO: ${article.subtitulo}`)
+  lines.push(`OLHO: ${article.olho}`)
+  lines.push('')
+  lines.push('CORPO DA MATÉRIA:')
+  lines.push(article.corpo)
+  lines.push('')
+  lines.push('CALL TO ACTION:')
+  article.call_to_action.forEach((cta, i) => {
+    lines.push(`${i + 1}. ${cta}`)
+  })
+  lines.push('')
+  lines.push(`TAGS DE SEO: ${article.tags_seo.join(', ')}`)
+  lines.push('')
+  lines.push('SUGESTÃO DE REDES SOCIAIS:')
+  lines.push(`Texto Instagram: ${article.sugestao_redes.instagram_text}`)
+  lines.push(`Sugestão de arte: ${article.sugestao_redes.arte_description}`)
+  return lines.join('\n')
 }
 
 export function MateriaPanel({
   phase,
   content,
-  sections,
+  article,
   error,
   onGenerate,
   onNewSearch,
@@ -84,26 +104,27 @@ export function MateriaPanel({
     )
   }
 
-  if (phase === 'result' && sections) {
+  if (phase === 'result' && article) {
     return (
       <div className="p-4 space-y-3 max-h-[60vh] overflow-y-auto">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Newspaper className="w-4 h-4 text-orange-500" />
-            <p className="text-sm font-medium">Matéria Jornalística</p>
+            <p className="text-sm font-medium">📰 Matéria Completa</p>
           </div>
           <Button
             size="sm"
             variant="outline"
-            onClick={() => handleCopy(formatFullArticle(sections), 'full')}
+            onClick={() => handleCopy(formatFullArticle(article), 'full')}
             className="gap-2"
           >
             {copiedKey === 'full' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-            {copiedKey === 'full' ? 'Copiado!' : 'Copiar artigo completo'}
+            {copiedKey === 'full' ? 'Copiado!' : 'Copiar tudo'}
           </Button>
         </div>
-        {SECTION_LABELS.map((sec) => {
-          const text = sections[sec.key]
+
+        {STRING_SECTIONS.map((sec) => {
+          const text = article[sec.key as keyof MateriaArticle] as string
           if (!text) return null
           return (
             <div key={sec.key} className="bg-muted rounded-lg p-3">
@@ -126,6 +147,97 @@ export function MateriaPanel({
             </div>
           )
         })}
+
+        <div className="bg-muted rounded-lg p-3">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs font-bold text-orange-600">CALL TO ACTION</span>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-6 w-6"
+              onClick={() =>
+                handleCopy(article.call_to_action.map((c, i) => `${i + 1}. ${c}`).join('\n'), 'cta')
+              }
+            >
+              {copiedKey === 'cta' ? (
+                <Check className="w-3 h-3 text-green-500" />
+              ) : (
+                <Copy className="w-3 h-3" />
+              )}
+            </Button>
+          </div>
+          <ol className="text-sm leading-relaxed list-decimal list-inside space-y-1">
+            {article.call_to_action.map((cta, i) => (
+              <li key={i}>{cta}</li>
+            ))}
+          </ol>
+        </div>
+
+        <div className="bg-muted rounded-lg p-3">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs font-bold text-orange-600">TAGS DE SEO</span>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-6 w-6"
+              onClick={() => handleCopy(article.tags_seo.join(', '), 'tags')}
+            >
+              {copiedKey === 'tags' ? (
+                <Check className="w-3 h-3 text-green-500" />
+              ) : (
+                <Copy className="w-3 h-3" />
+              )}
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {article.tags_seo.map((tag, i) => (
+              <span
+                key={i}
+                className="text-xs bg-orange-50 text-orange-700 px-2 py-0.5 rounded-full"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-muted rounded-lg p-3">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs font-bold text-orange-600">SUGESTÃO DE REDES SOCIAIS</span>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-6 w-6"
+              onClick={() =>
+                handleCopy(
+                  `Texto Instagram: ${article.sugestao_redes.instagram_text}\nSugestão de arte: ${article.sugestao_redes.arte_description}`,
+                  'social',
+                )
+              }
+            >
+              {copiedKey === 'social' ? (
+                <Check className="w-3 h-3 text-green-500" />
+              ) : (
+                <Copy className="w-3 h-3" />
+              )}
+            </Button>
+          </div>
+          <div className="space-y-2">
+            <div>
+              <span className="text-xs font-semibold text-gray-500">Texto Instagram:</span>
+              <p className="text-sm leading-relaxed mt-0.5">
+                {article.sugestao_redes.instagram_text}
+              </p>
+            </div>
+            <div>
+              <span className="text-xs font-semibold text-gray-500">Sugestão de arte:</span>
+              <p className="text-sm leading-relaxed mt-0.5">
+                {article.sugestao_redes.arte_description}
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="flex gap-2 pt-2">
           <Button size="sm" variant="outline" onClick={onNewSearch} className="gap-2">
             <Search className="w-3 h-3" /> Nova busca
@@ -138,12 +250,12 @@ export function MateriaPanel({
     )
   }
 
-  if (phase === 'result' && !sections && content) {
+  if (phase === 'result' && !article && content) {
     return (
       <div className="p-4 space-y-3">
         <div className="flex items-center gap-2">
           <Newspaper className="w-4 h-4 text-orange-500" />
-          <p className="text-sm font-medium">Matéria Jornalística</p>
+          <p className="text-sm font-medium">📰 Matéria Completa</p>
         </div>
         <div className="bg-muted rounded-lg p-3 text-sm leading-relaxed whitespace-pre-wrap max-h-[50vh] overflow-y-auto">
           {content}

@@ -8,9 +8,9 @@ routerAdd(
 
     var promptRecord
     try {
-      promptRecord = $app.findFirstRecordByData('prompt_library', 'slug', 'materia-jornalistica')
+      promptRecord = $app.findFirstRecordByData('prompt_library', 'slug', 'materia-completa')
     } catch (_) {
-      return e.json(404, { message: 'Prompt "materia-jornalistica" não encontrado na biblioteca' })
+      return e.json(404, { message: 'Prompt "materia-completa" não encontrado na biblioteca' })
     }
 
     var promptTemplate = promptRecord.getString('prompt_content')
@@ -23,7 +23,7 @@ routerAdd(
           {
             role: 'system',
             content:
-              'Você é um repórter de moda especializado em criar matérias jornalísticas para o site da Revista MODA ATUAL DIGITAL. Siga o formato solicitado exatamente, usando os marcadores de seção. Responda apenas com a matéria, sem aspas ou comentários adicionais.',
+              'Você é uma equipe editorial completa (Repórter, Coolhunter, SEO, Revisor) especializada em criar matérias jornalísticas para o site da Revista MODA ATUAL DIGITAL. Siga o formato solicitado exatamente, usando os marcadores de seção. Responda apenas com a matéria, sem aspas ou comentários adicionais.',
           },
           { role: 'user', content: prompt },
         ],
@@ -50,43 +50,108 @@ routerAdd(
           .trim()
       }
 
-      var sections = {
-        titulo: extractSection(content, 'TÍTULO PRINCIPAL:', [
-          'SUBTÍTULO:',
-          'OLHO:',
-          'CORPO DA MATÉRIA:',
-          'CALL TO ACTION',
-          'TAGS DE SEO',
-          'SUGESTÃO DE REDES SOCIAIS:',
-        ]),
-        subtitulo: extractSection(content, 'SUBTÍTULO:', [
-          'OLHO:',
-          'CORPO DA MATÉRIA:',
-          'CALL TO ACTION',
-          'TAGS DE SEO',
-          'SUGESTÃO DE REDES SOCIAIS:',
-        ]),
-        olho: extractSection(content, 'OLHO:', [
-          'CORPO DA MATÉRIA:',
-          'CALL TO ACTION',
-          'TAGS DE SEO',
-          'SUGESTÃO DE REDES SOCIAIS:',
-        ]),
-        corpo: extractSection(content, 'CORPO DA MATÉRIA:', [
-          'CALL TO ACTION',
-          'TAGS DE SEO',
-          'SUGESTÃO DE REDES SOCIAIS:',
-        ]),
-        cta: cleanLeading(
-          extractSection(content, 'CALL TO ACTION', ['TAGS DE SEO', 'SUGESTÃO DE REDES SOCIAIS:']),
-        ),
-        tags: cleanLeading(extractSection(content, 'TAGS DE SEO', ['SUGESTÃO DE REDES SOCIAIS:'])),
-        social: extractSection(content, 'SUGESTÃO DE REDES SOCIAIS:', []),
+      var tituloPrincipal = extractSection(content, 'TÍTULO PRINCIPAL:', [
+        'SUBTÍTULO:',
+        'OLHO:',
+        'CORPO DA MATÉRIA:',
+        'CALL TO ACTION',
+        'TAGS DE SEO',
+        'SUGESTÃO DE REDES SOCIAIS',
+      ])
+
+      var subtitulo = extractSection(content, 'SUBTÍTULO:', [
+        'OLHO:',
+        'CORPO DA MATÉRIA:',
+        'CALL TO ACTION',
+        'TAGS DE SEO',
+        'SUGESTÃO DE REDES SOCIAIS',
+      ])
+
+      var olho = extractSection(content, 'OLHO:', [
+        'CORPO DA MATÉRIA:',
+        'CALL TO ACTION',
+        'TAGS DE SEO',
+        'SUGESTÃO DE REDES SOCIAIS',
+      ])
+
+      var corpo = extractSection(content, 'CORPO DA MATÉRIA:', [
+        'CALL TO ACTION',
+        'TAGS DE SEO',
+        'SUGESTÃO DE REDES SOCIAIS',
+      ])
+
+      var ctaRaw = cleanLeading(
+        extractSection(content, 'CALL TO ACTION', ['TAGS DE SEO', 'SUGESTÃO DE REDES SOCIAIS']),
+      )
+      var callToAction = []
+      var ctaLines = ctaRaw.split('\n').filter(function (l) {
+        return l.trim()
+      })
+      for (var i = 0; i < ctaLines.length; i++) {
+        var m = ctaLines[i].match(/^\d+\s*[.)\-:]?\s*(.+)/)
+        if (m) callToAction.push(m[1].trim())
       }
 
-      if (!sections.titulo && !sections.corpo) {
-        sections.titulo = tema
-        sections.corpo = content
+      var tagsRaw = cleanLeading(
+        extractSection(content, 'TAGS DE SEO', ['SUGESTÃO DE REDES SOCIAIS']),
+      )
+      var tagsSeo = tagsRaw
+        .split(/[,;]/)
+        .map(function (t) {
+          return t.trim()
+        })
+        .filter(function (t) {
+          return t
+        })
+
+      var socialSection = extractSection(content, 'SUGESTÃO DE REDES SOCIAIS', [])
+      var instagramMatch = socialSection.match(/Texto Instagram:\s*(.+)/i)
+      var arteMatch = socialSection.match(/Sugest[ãa]o de arte:\s*(.+)/i)
+      var sugestaoRedes = {
+        instagram_text: instagramMatch ? instagramMatch[1].trim() : '',
+        arte_description: arteMatch ? arteMatch[1].trim() : '',
+      }
+
+      if (!tituloPrincipal && !corpo) {
+        return e.json(500, {
+          message:
+            'A resposta da IA está incompleta — título e corpo não encontrados. Tente novamente.',
+        })
+      }
+      if (!tituloPrincipal) {
+        return e.json(500, {
+          message: 'Título principal não encontrado na resposta. Tente novamente.',
+        })
+      }
+      if (!corpo) {
+        return e.json(500, {
+          message: 'Corpo da matéria não encontrado na resposta. Tente novamente.',
+        })
+      }
+      if (callToAction.length < 2) {
+        return e.json(500, {
+          message: 'A resposta não contém 2 opções de Call to Action. Tente novamente.',
+        })
+      }
+      if (tagsSeo.length < 5) {
+        return e.json(500, {
+          message: 'A resposta não contém tags de SEO suficientes (mínimo 5). Tente novamente.',
+        })
+      }
+      if (!sugestaoRedes.instagram_text || !sugestaoRedes.arte_description) {
+        return e.json(500, {
+          message: 'A sugestão de redes sociais está incompleta. Tente novamente.',
+        })
+      }
+
+      var article = {
+        titulo_principal: tituloPrincipal,
+        subtitulo: subtitulo,
+        olho: olho,
+        corpo: corpo,
+        call_to_action: callToAction,
+        tags_seo: tagsSeo,
+        sugestao_redes: sugestaoRedes,
       }
 
       var recordId = ''
@@ -95,20 +160,25 @@ routerAdd(
         var record = new Record(col)
         record.set('subject', tema)
         record.set('options', {
-          type: 'materia-jornalistica',
-          content: content,
-          sections: sections,
+          type: 'materia_completa',
+          content: article,
         })
         record.set('scheduled_date', null)
         $app.save(record)
         recordId = record.id
       } catch (saveErr) {
-        console.log('Failed to save materia to story_texts:', saveErr.message)
+        console.log('Failed to save materia_completa to story_texts:', saveErr.message)
       }
 
       return e.json(200, {
         content: content,
-        sections: sections,
+        titulo_principal: article.titulo_principal,
+        subtitulo: article.subtitulo,
+        olho: article.olho,
+        corpo: article.corpo,
+        call_to_action: article.call_to_action,
+        tags_seo: article.tags_seo,
+        sugestao_redes: article.sugestao_redes,
         recordId: recordId,
       })
     } catch (err) {

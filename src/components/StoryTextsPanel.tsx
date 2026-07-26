@@ -76,6 +76,26 @@ function getMateriaData(
   return null
 }
 
+interface MateriaCompletaContent {
+  titulo_principal: string
+  subtitulo: string
+  olho: string
+  corpo: string
+  call_to_action: string[]
+  tags_seo: string[]
+  sugestao_redes: { instagram_text: string; arte_description: string }
+}
+
+function getMateriaCompletaData(options: unknown): MateriaCompletaContent | null {
+  if (options && typeof options === 'object' && !Array.isArray(options)) {
+    const obj = options as Record<string, unknown>
+    if (obj.type === 'materia_completa' && obj.content && typeof obj.content === 'object') {
+      return obj.content as MateriaCompletaContent
+    }
+  }
+  return null
+}
+
 export function StoryTextsPanel({
   storyTexts,
   filters,
@@ -150,7 +170,8 @@ export function StoryTextsPanel({
                 const atacadistaData = getAtacadistaData(text.options)
                 const isAtacadista = atacadistaData !== null
                 const materiaData = getMateriaData(text.options)
-                const isMateria = materiaData !== null
+                const materiaCompletaData = getMateriaCompletaData(text.options)
+                const isMateria = materiaData !== null || materiaCompletaData !== null
                 const options = Array.isArray(text.options) ? text.options : []
                 const isExpanded = expandedId === text.id
                 const isExpandable = isDescricao || isAtacadista || isMateria
@@ -167,8 +188,7 @@ export function StoryTextsPanel({
                           </Badge>
                         ) : isMateria ? (
                           <Badge className="gap-1 bg-blue-500 text-white hover:bg-blue-600">
-                            <Newspaper className="w-3 h-3" />
-                            Matéria
+                            <Newspaper className="w-3 h-3" />📰 Matéria
                           </Badge>
                         ) : isDescricao ? (
                           <Badge className="gap-1 bg-red-500 text-white hover:bg-red-600">
@@ -271,6 +291,82 @@ export function StoryTextsPanel({
                                 </div>
                               )
                             })}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    {isMateria && isExpanded && !materiaData && materiaCompletaData && (
+                      <TableRow key={`${text.id}-matc`}>
+                        <TableCell colSpan={6} className="bg-muted/30">
+                          <div className="max-h-64 overflow-y-auto space-y-3 p-2">
+                            <div className="text-sm">
+                              <span className="font-bold text-orange-600 text-xs">
+                                TÍTULO PRINCIPAL
+                              </span>
+                              <p className="whitespace-pre-wrap leading-relaxed mt-1">
+                                {materiaCompletaData.titulo_principal}
+                              </p>
+                            </div>
+                            <div className="text-sm">
+                              <span className="font-bold text-orange-600 text-xs">SUBTÍTULO</span>
+                              <p className="whitespace-pre-wrap leading-relaxed mt-1">
+                                {materiaCompletaData.subtitulo}
+                              </p>
+                            </div>
+                            <div className="text-sm">
+                              <span className="font-bold text-orange-600 text-xs">OLHO</span>
+                              <p className="whitespace-pre-wrap leading-relaxed mt-1">
+                                {materiaCompletaData.olho}
+                              </p>
+                            </div>
+                            <div className="text-sm">
+                              <span className="font-bold text-orange-600 text-xs">
+                                CORPO DA MATÉRIA
+                              </span>
+                              <p className="whitespace-pre-wrap leading-relaxed mt-1">
+                                {materiaCompletaData.corpo}
+                              </p>
+                            </div>
+                            <div className="text-sm">
+                              <span className="font-bold text-orange-600 text-xs">
+                                CALL TO ACTION
+                              </span>
+                              <ol className="list-decimal list-inside mt-1 space-y-0.5">
+                                {materiaCompletaData.call_to_action.map((cta, i) => (
+                                  <li key={i}>{cta}</li>
+                                ))}
+                              </ol>
+                            </div>
+                            <div className="text-sm">
+                              <span className="font-bold text-orange-600 text-xs">TAGS DE SEO</span>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {materiaCompletaData.tags_seo.map((tag, i) => (
+                                  <span
+                                    key={i}
+                                    className="text-xs bg-orange-50 text-orange-700 px-2 py-0.5 rounded-full"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="text-sm">
+                              <span className="font-bold text-orange-600 text-xs">
+                                SUGESTÃO DE REDES SOCIAIS
+                              </span>
+                              <p className="leading-relaxed mt-1">
+                                <span className="font-semibold text-gray-500 text-xs">
+                                  Texto Instagram:
+                                </span>{' '}
+                                {materiaCompletaData.sugestao_redes.instagram_text}
+                              </p>
+                              <p className="leading-relaxed mt-1">
+                                <span className="font-semibold text-gray-500 text-xs">
+                                  Sugestão de arte:
+                                </span>{' '}
+                                {materiaCompletaData.sugestao_redes.arte_description}
+                              </p>
+                            </div>
                           </div>
                         </TableCell>
                       </TableRow>

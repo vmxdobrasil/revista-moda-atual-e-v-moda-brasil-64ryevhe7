@@ -22,7 +22,7 @@ import { generateLegendaAtacadista } from '@/services/legenda-atacadista'
 import { generateTitulos } from '@/services/titulos'
 import { generateDescricao } from '@/services/descricao'
 import { generateMateria } from '@/services/materia'
-import type { MateriaSections } from '@/services/materia'
+import type { MateriaArticle } from '@/services/materia'
 import { MateriaPanel, type MateriaPhase } from '@/components/commands/MateriaPanel'
 import { toast } from '@/hooks/use-toast'
 
@@ -63,7 +63,7 @@ export function CommandBar() {
   const [legendaAtacadistaError, setLegendaAtacadistaError] = useState('')
   const [materiaPhase, setMateriaPhase] = useState<MateriaPhase>('idle')
   const [materiaContent, setMateriaContent] = useState('')
-  const [materiaSections, setMateriaSections] = useState<MateriaSections | null>(null)
+  const [materiaArticle, setMateriaArticle] = useState<MateriaArticle | null>(null)
   const [materiaError, setMateriaError] = useState('')
   const navigate = useNavigate()
   const location = useLocation()
@@ -90,7 +90,7 @@ export function CommandBar() {
     setLegendaAtacadistaError('')
     setMateriaPhase('idle')
     setMateriaContent('')
-    setMateriaSections(null)
+    setMateriaArticle(null)
     setMateriaError('')
   }, [])
 
@@ -164,7 +164,7 @@ export function CommandBar() {
     try {
       const result = await generateMateria(tema)
       setMateriaContent(result.content)
-      setMateriaSections(result.sections)
+      setMateriaArticle(result.article)
       setMateriaPhase('result')
       toast({ title: 'Matéria salva com sucesso!' })
     } catch (err: any) {
@@ -567,7 +567,7 @@ export function CommandBar() {
             <MateriaPanel
               phase={materiaPhase}
               content={materiaContent}
-              sections={materiaSections}
+              article={materiaArticle}
               error={materiaError}
               onGenerate={handleMateriaGenerate}
               onNewSearch={() => {
