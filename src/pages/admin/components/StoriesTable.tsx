@@ -19,7 +19,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { Pencil, Trash2, CalendarClock, Youtube, Newspaper, Factory } from 'lucide-react'
+import {
+  Pencil,
+  Trash2,
+  CalendarClock,
+  Youtube,
+  Newspaper,
+  Factory,
+  Clapperboard,
+} from 'lucide-react'
 import { type StoryText, getScheduledStatus, truncate } from '@/services/story-texts'
 
 function getDescriptionText(options: unknown): string | null {
@@ -46,6 +54,16 @@ function getAtacadistaCaption(options: unknown): { caption: string; hashtags: st
         ? obj.hashtags.filter((h): h is string => typeof h === 'string')
         : []
       return { caption: obj.caption, hashtags }
+    }
+  }
+  return null
+}
+
+function getReelScript(options: unknown): { hook: string } | null {
+  if (options && typeof options === 'object' && !Array.isArray(options)) {
+    const obj = options as Record<string, unknown>
+    if (obj.type === 'reels-script' && typeof obj.hook === 'string') {
+      return { hook: obj.hook }
     }
   }
   return null
@@ -99,6 +117,8 @@ export function StoriesTable({ items, onEdit, onSchedule, onDelete, showSchedule
             const isMateria = materiaContent !== null
             const atacadistaData = getAtacadistaCaption(item.options)
             const isAtacadista = atacadistaData !== null
+            const reelScriptData = getReelScript(item.options)
+            const isReelScript = reelScriptData !== null
             const options = Array.isArray(item.options) ? item.options : []
             return (
               <TableRow key={item.id}>
@@ -106,7 +126,11 @@ export function StoriesTable({ items, onEdit, onSchedule, onDelete, showSchedule
                   {item.subject}
                 </TableCell>
                 <TableCell>
-                  {isAtacadista ? (
+                  {isReelScript ? (
+                    <Badge className="gap-1 bg-pink-500 text-white hover:bg-pink-600">
+                      <Clapperboard className="w-3 h-3" />🎬 Reels
+                    </Badge>
+                  ) : isAtacadista ? (
                     <Badge className="gap-1 bg-orange-500 text-white hover:bg-orange-600">
                       <Factory className="w-3 h-3" />🏭 Atacado
                     </Badge>
@@ -125,7 +149,11 @@ export function StoriesTable({ items, onEdit, onSchedule, onDelete, showSchedule
                   )}
                 </TableCell>
                 <TableCell>
-                  {isAtacadista ? (
+                  {isReelScript ? (
+                    <span className="text-xs text-gray-600 italic">
+                      {truncate(reelScriptData!.hook, 40)}
+                    </span>
+                  ) : isAtacadista ? (
                     <span className="text-xs text-gray-600 italic">
                       {truncate(atacadistaData!.caption, 40)}
                     </span>

@@ -11,9 +11,19 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Search, ChevronDown, ChevronUp, Youtube, Factory, Newspaper, Calendar } from 'lucide-react'
+import {
+  Search,
+  ChevronDown,
+  ChevronUp,
+  Youtube,
+  Factory,
+  Newspaper,
+  Calendar,
+  Clapperboard,
+} from 'lucide-react'
 import type { StoryText } from '@/services/story-texts'
 import { getScheduledStatus, truncate } from '@/services/story-texts'
+import type { ReelScript } from '@/services/reel-script'
 
 export interface StoryTextFilters {
   dateFrom: string
@@ -106,6 +116,16 @@ function getPlanoSemanalData(options: unknown): { plan: string } | null {
   return null
 }
 
+function getReelScriptData(options: unknown): ReelScript | null {
+  if (options && typeof options === 'object' && !Array.isArray(options)) {
+    const obj = options as Record<string, unknown>
+    if (obj.type === 'reels-script') {
+      return obj as unknown as ReelScript
+    }
+  }
+  return null
+}
+
 export function StoryTextsPanel({
   storyTexts,
   filters,
@@ -184,9 +204,12 @@ export function StoryTextsPanel({
                 const isMateria = materiaData !== null || materiaCompletaData !== null
                 const planoSemanalData = getPlanoSemanalData(text.options)
                 const isPlanoSemanal = planoSemanalData !== null
+                const reelScriptData = getReelScriptData(text.options)
+                const isReelScript = reelScriptData !== null
                 const options = Array.isArray(text.options) ? text.options : []
                 const isExpanded = expandedId === text.id
-                const isExpandable = isDescricao || isAtacadista || isMateria || isPlanoSemanal
+                const isExpandable =
+                  isDescricao || isAtacadista || isMateria || isPlanoSemanal || isReelScript
                 return (
                   <Fragment key={text.id}>
                     <TableRow>
@@ -194,7 +217,11 @@ export function StoryTextsPanel({
                         {truncate(text.subject, 60)}
                       </TableCell>
                       <TableCell>
-                        {isPlanoSemanal ? (
+                        {isReelScript ? (
+                          <Badge className="gap-1 bg-pink-500 text-white hover:bg-pink-600">
+                            <Clapperboard className="w-3 h-3" />🎬 Reels
+                          </Badge>
+                        ) : isPlanoSemanal ? (
                           <Badge className="gap-1 bg-purple-500 text-white hover:bg-purple-600">
                             <Calendar className="w-3 h-3" />📅 Plano Semanal
                           </Badge>
@@ -230,13 +257,15 @@ export function StoryTextsPanel({
                             ) : (
                               <>
                                 <ChevronDown className="w-3 h-3" />{' '}
-                                {isPlanoSemanal
-                                  ? 'Ver plano'
-                                  : isMateria
-                                    ? 'Ver matéria'
-                                    : isAtacadista
-                                      ? 'Ver legenda'
-                                      : 'Ver descrição'}
+                                {isReelScript
+                                  ? 'Ver roteiro'
+                                  : isPlanoSemanal
+                                    ? 'Ver plano'
+                                    : isMateria
+                                      ? 'Ver matéria'
+                                      : isAtacadista
+                                        ? 'Ver legenda'
+                                        : 'Ver descrição'}
                               </>
                             )}
                           </Button>
@@ -384,6 +413,111 @@ export function StoryTextsPanel({
                                 </span>{' '}
                                 {materiaCompletaData.sugestao_redes.arte_description}
                               </p>
+                            </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    {isReelScript && isExpanded && reelScriptData && (
+                      <TableRow key={`${text.id}-reels`}>
+                        <TableCell colSpan={6} className="bg-muted/30">
+                          <div className="max-h-64 overflow-y-auto space-y-2 p-2">
+                            <div className="text-sm">
+                              <span className="font-bold text-pink-600 text-xs">
+                                TEXTO NA TELA (HOOK)
+                              </span>
+                              <p className="whitespace-pre-wrap leading-relaxed mt-1">
+                                {reelScriptData.hook}
+                              </p>
+                            </div>
+                            <div className="text-sm">
+                              <span className="font-bold text-pink-600 text-xs">
+                                CENA 1 ({reelScriptData.cena1?.timing || '0-3s'})
+                              </span>
+                              <p className="leading-relaxed mt-1">
+                                <span className="text-xs text-muted-foreground">Visual:</span>{' '}
+                                {reelScriptData.cena1?.visual}
+                              </p>
+                              <p className="leading-relaxed">
+                                <span className="text-xs text-muted-foreground">
+                                  Texto na tela:
+                                </span>{' '}
+                                {reelScriptData.cena1?.text}
+                              </p>
+                            </div>
+                            <div className="text-sm">
+                              <span className="font-bold text-pink-600 text-xs">
+                                CENA 2 ({reelScriptData.cena2?.timing || '3-8s'})
+                              </span>
+                              <p className="leading-relaxed mt-1">
+                                <span className="text-xs text-muted-foreground">Visual:</span>{' '}
+                                {reelScriptData.cena2?.visual}
+                              </p>
+                              <p className="leading-relaxed">
+                                <span className="text-xs text-muted-foreground">
+                                  Texto na tela:
+                                </span>{' '}
+                                {reelScriptData.cena2?.text}
+                              </p>
+                            </div>
+                            <div className="text-sm">
+                              <span className="font-bold text-pink-600 text-xs">
+                                CENA 3 ({reelScriptData.cena3?.timing || '8-15s'})
+                              </span>
+                              <p className="leading-relaxed mt-1">
+                                <span className="text-xs text-muted-foreground">Visual:</span>{' '}
+                                {reelScriptData.cena3?.visual}
+                              </p>
+                              <p className="leading-relaxed">
+                                <span className="text-xs text-muted-foreground">
+                                  Texto na tela:
+                                </span>{' '}
+                                {reelScriptData.cena3?.text}
+                              </p>
+                            </div>
+                            <div className="text-sm">
+                              <span className="font-bold text-pink-600 text-xs">CENA FINAL</span>
+                              <p className="leading-relaxed mt-1">
+                                <span className="text-xs text-muted-foreground">Visual:</span>{' '}
+                                {reelScriptData.cenaFinal?.visual}
+                              </p>
+                              <p className="leading-relaxed">
+                                <span className="text-xs text-muted-foreground">
+                                  Texto na tela:
+                                </span>{' '}
+                                {reelScriptData.cenaFinal?.text}
+                              </p>
+                              <p className="leading-relaxed">
+                                <span className="text-xs text-muted-foreground">CTA:</span>{' '}
+                                <span className="font-bold text-orange-600">
+                                  {reelScriptData.cenaFinal?.cta || 'VEJA O CATÁLOGO'}
+                                </span>
+                              </p>
+                            </div>
+                            <div className="text-sm">
+                              <span className="font-bold text-pink-600 text-xs">LEGENDA</span>
+                              <p className="whitespace-pre-wrap leading-relaxed mt-1">
+                                {reelScriptData.legenda}
+                              </p>
+                            </div>
+                            <div className="text-sm">
+                              <span className="font-bold text-pink-600 text-xs">HASHTAGS</span>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {reelScriptData.hashtags?.map((tag, i) => (
+                                  <span
+                                    key={i}
+                                    className="text-xs bg-orange-50 text-orange-700 px-2 py-0.5 rounded-full"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="text-sm">
+                              <span className="font-bold text-pink-600 text-xs">
+                                ÁUDIO SUGERIDO
+                              </span>
+                              <p className="leading-relaxed mt-1">{reelScriptData.audio}</p>
                             </div>
                           </div>
                         </TableCell>

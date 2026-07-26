@@ -18,6 +18,8 @@ import {
   type LegendaAtacadistaPhase,
 } from '@/components/commands/LegendaAtacadistaPanel'
 import { generateReel } from '@/services/reel'
+import { generateReelScript } from '@/services/reel-script'
+import type { ReelScriptResult } from '@/services/reel-script'
 import { generateLegendaAtacadista } from '@/services/legenda-atacadista'
 import { generateTitulos } from '@/services/titulos'
 import { generateDescricao } from '@/services/descricao'
@@ -27,6 +29,7 @@ import { MateriaPanel, type MateriaPhase } from '@/components/commands/MateriaPa
 import { generateWeeklyPlan } from '@/services/weekly-plan'
 import type { WeeklyPlanResult } from '@/services/weekly-plan'
 import { WeeklyPlanPanel, type WeeklyPlanPhase } from '@/components/commands/WeeklyPlanPanel'
+import { ReelScriptPanel, type ReelScriptPhase } from '@/components/commands/ReelScriptPanel'
 import { toast } from '@/hooks/use-toast'
 
 function renderIcon(icon: string) {
@@ -71,6 +74,9 @@ export function CommandBar() {
   const [weeklyPlanPhase, setWeeklyPlanPhase] = useState<WeeklyPlanPhase>('idle')
   const [weeklyPlanResult, setWeeklyPlanResult] = useState<WeeklyPlanResult | null>(null)
   const [weeklyPlanError, setWeeklyPlanError] = useState('')
+  const [reelScriptPhase, setReelScriptPhase] = useState<ReelScriptPhase>('idle')
+  const [reelScriptResult, setReelScriptResult] = useState<ReelScriptResult | null>(null)
+  const [reelScriptError, setReelScriptError] = useState('')
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -101,6 +107,9 @@ export function CommandBar() {
     setWeeklyPlanPhase('idle')
     setWeeklyPlanResult(null)
     setWeeklyPlanError('')
+    setReelScriptPhase('idle')
+    setReelScriptResult(null)
+    setReelScriptError('')
   }, [])
 
   const handleLegendaGenerate = useCallback(async (theme: string) => {
@@ -179,6 +188,19 @@ export function CommandBar() {
     } catch (err: any) {
       setMateriaError(err?.message || 'Erro ao gerar matéria. Tente novamente.')
       setMateriaPhase('error')
+    }
+  }, [])
+
+  const handleReelScriptGenerate = useCallback(async (tema: string) => {
+    setReelScriptPhase('generating')
+    try {
+      const result = await generateReelScript(tema)
+      setReelScriptResult(result)
+      setReelScriptPhase('result')
+      toast({ title: 'Roteiro de Reels gerado e salvo!' })
+    } catch (err: any) {
+      setReelScriptError(err?.message || 'Erro ao gerar roteiro. Tente novamente.')
+      setReelScriptPhase('error')
     }
   }, [])
 
@@ -306,6 +328,17 @@ export function CommandBar() {
     : ''
   const weeklyPlanParsed = isWeeklyPlanCmd ? parseWeeklyPlanArgs(weeklyPlanArgs) : null
 
+  const isReelScriptCmd =
+    trimmedLower.startsWith('/reels ') ||
+    trimmedLower === '/reels' ||
+    trimmedLower.startsWith('/script ') ||
+    trimmedLower === '/script'
+  const reelScriptTemaArg = isReelScriptCmd
+    ? trimmedLower.startsWith('/reels')
+      ? input.trim().slice('/reels'.length).trim()
+      : input.trim().slice('/script'.length).trim()
+    : ''
+
   useEffect(() => {
     if (!isLegendaCmd && legendaPhase !== 'generating') setLegendaPhase('idle')
   }, [isLegendaCmd, legendaPhase])
@@ -334,6 +367,10 @@ export function CommandBar() {
   useEffect(() => {
     if (!isWeeklyPlanCmd && weeklyPlanPhase !== 'generating') setWeeklyPlanPhase('idle')
   }, [isWeeklyPlanCmd, weeklyPlanPhase])
+
+  useEffect(() => {
+    if (!isReelScriptCmd && reelScriptPhase !== 'generating') setReelScriptPhase('idle')
+  }, [isReelScriptCmd, reelScriptPhase])
 
   const items = useMemo<CommandItem[]>(() => {
     if (isReelCmd && reelPhase === 'idle') {
@@ -525,6 +562,36 @@ export function CommandBar() {
         },
       ]
     }
+    if (isReelScriptCmd && reelScriptPhase === 'idle') {
+      if (reelScriptTemaArg) {
+        const cmdLabel = trimmedLower.startsWith('/reels') ? 'reels' : 'script'
+        return [
+          {
+            id: 'reel-script-run',
+            primary: `/${cmdLabel} ${reelScriptTemaArg}`,
+            secondary: 'Gerar roteiro completo de Reels',
+            icon: 'sparkles' as const,
+            level: 'S' as const,
+            action: () => handleReelScriptGenerate(reelScriptTemaArg),
+          },
+        ]
+      }
+      return [
+        {
+          id: 'reel-script-need-tema',
+          primary: trimmedLower.startsWith('/reels') ? '/reels' : '/script',
+          secondary: 'Qual o tema do Reel?',
+          icon: 'terminal' as const,
+          level: null,
+          action: () => {
+            toast({
+              description: 'Informe o tema do Reel (ex: /reels Macacões de verão)',
+            })
+            setReelScriptPhase('need-tema')
+          },
+        },
+      ]
+    }
     if (isWeeklyPlanCmd && weeklyPlanPhase === 'idle') {
       if (weeklyPlanParsed) {
         const cmdLabel = trimmedLower.startsWith('/plano') ? 'plano' : 'semana'
@@ -588,6 +655,10 @@ export function CommandBar() {
     materiaPhase,
     materiaTemaArg,
     handleMateriaGenerate,
+    isReelScriptCmd,
+    reelScriptPhase,
+    reelScriptTemaArg,
+    handleReelScriptGenerate,
     isWeeklyPlanCmd,
     weeklyPlanPhase,
     weeklyPlanArgs,
@@ -608,7 +679,8 @@ export function CommandBar() {
       descricaoPhase !== 'idle' ||
       legendaAtacadistaPhase !== 'idle' ||
       materiaPhase !== 'idle' ||
-      weeklyPlanPhase !== 'idle'
+      weeklyPlanPhase !== 'idle' ||
+      reelScriptPhase !== 'idle'
     )
       return
     if (
@@ -652,11 +724,23 @@ export function CommandBar() {
                 setSelectedIndex(0)
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Digite um comando (ex: /b tarefa, /a análise, /m objetivo, /super, /modulo 5, /legenda tema, /c tema, /s assunto, /stories tema, /reel tema, /r tema, /titulos tema, /seo tema, /descricao título, /yt título, /atacado MARCA - PRODUTO, /materia tema, /artigo tema, /plano DATA - DATA - TEMA1 - TEMA2 - TEMA3, /semana DATA - DATA - TEMA1 - TEMA2 - TEMA3)"
+              placeholder="Digite um comando (ex: /b tarefa, /a análise, /m objetivo, /super, /modulo 5, /legenda tema, /c tema, /s assunto, /stories tema, /reel tema, /r tema, /reels tema, /script tema, /titulos tema, /seo tema, /descricao título, /yt título, /atacado MARCA - PRODUTO, /materia tema, /artigo tema, /plano DATA - DATA - TEMA1 - TEMA2 - TEMA3, /semana DATA - DATA - TEMA1 - TEMA2 - TEMA3)"
               className="border-none focus-visible:ring-0"
             />
           </div>
-          {weeklyPlanPhase !== 'idle' ? (
+          {reelScriptPhase !== 'idle' ? (
+            <ReelScriptPanel
+              phase={reelScriptPhase}
+              result={reelScriptResult}
+              error={reelScriptError}
+              onGenerate={handleReelScriptGenerate}
+              onNewSearch={() => {
+                setReelScriptPhase('idle')
+                setInput('')
+              }}
+              onClose={closeBar}
+            />
+          ) : weeklyPlanPhase !== 'idle' ? (
             <WeeklyPlanPanel
               phase={weeklyPlanPhase}
               result={weeklyPlanResult}
