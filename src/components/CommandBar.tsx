@@ -10,6 +10,9 @@ import { generateCaption } from '@/services/caption'
 import { buildItems, type CommandItem } from '@/lib/commands/itemBuilder'
 import { LEVEL_BADGES } from '@/lib/commands/examples'
 import { LegendaPanel, type LegendaPhase } from '@/components/commands/LegendaPanel'
+import { ReelPanel, type ReelPhase } from '@/components/commands/ReelPanel'
+import { generateReel } from '@/services/reel'
+import { toast } from '@/hooks/use-toast'
 
 function renderIcon(icon: string) {
   switch (icon) {
@@ -32,6 +35,9 @@ export function CommandBar() {
   const [legendaPhase, setLegendaPhase] = useState<LegendaPhase>('idle')
   const [legendaCaption, setLegendaCaption] = useState('')
   const [legendaError, setLegendaError] = useState('')
+  const [reelPhase, setReelPhase] = useState<ReelPhase>('idle')
+  const [reelOptions, setReelOptions] = useState<string[]>([])
+  const [reelError, setReelError] = useState('')
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -42,6 +48,9 @@ export function CommandBar() {
     setLegendaPhase('idle')
     setLegendaCaption('')
     setLegendaError('')
+    setReelPhase('idle')
+    setReelOptions([])
+    setReelError('')
   }, [])
 
   const handleLegendaGenerate = useCallback(async (theme: string) => {
@@ -53,6 +62,19 @@ export function CommandBar() {
     } catch (err: any) {
       setLegendaError(err?.message || 'Falha ao gerar legenda')
       setLegendaPhase('error')
+    }
+  }, [])
+
+  const handleReelGenerate = useCallback(async (subject: string) => {
+    setReelPhase('generating')
+    try {
+      const result = await generateReel(subject)
+      setReelOptions(result.options)
+      setReelPhase('result')
+      toast({ title: 'Roteiro de Reel gerado e salvo!' })
+    } catch (err: any) {
+      setReelError(err?.message || 'Erro ao gerar roteiro. Tente novamente.')
+      setReelPhase('error')
     }
   }, [])
 
@@ -85,12 +107,53 @@ export function CommandBar() {
 
   const isLegendaCmd = input.trim().toLowerCase().startsWith('/legenda')
   const legendaThemeArg = isLegendaCmd ? input.trim().slice('/legenda'.length).trim() : ''
+  const trimmedLower = input.trim().toLowerCase()
+  const isReelCmd =
+    trimmedLower.startsWith('/reel') || trimmedLower.startsWith('/r ') || trimmedLower === '/r'
+  const reelSubjectArg = isReelCmd
+    ? trimmedLower.startsWith('/reel')
+      ? input.trim().slice(5).trim()
+      : input.trim().slice(2).trim()
+    : ''
 
   useEffect(() => {
     if (!isLegendaCmd && legendaPhase !== 'generating') setLegendaPhase('idle')
   }, [isLegendaCmd, legendaPhase])
 
+  useEffect(() => {
+    if (!isReelCmd && reelPhase !== 'generating') setReelPhase('idle')
+  }, [isReelCmd, reelPhase])
+
   const items = useMemo<CommandItem[]>(() => {
+    if (isReelCmd && reelPhase === 'idle') {
+      if (reelSubjectArg) {
+        return [
+          {
+            id: 'reel-run',
+            primary: `/reel ${reelSubjectArg}`,
+            secondary: 'Gerar roteiro para Instagram Reel',
+            icon: 'sparkles' as const,
+            level: 'S' as const,
+            action: () => handleReelGenerate(reelSubjectArg),
+          },
+        ]
+      }
+      return [
+        {
+          id: 'reel-need-subject',
+          primary: '/reel',
+          secondary: 'Qual o tema do Reel?',
+          icon: 'terminal' as const,
+          level: null,
+          action: () => {
+            toast({
+              description: 'Informe o tema do Reel (ex: /reel tendências de maquiagem 2026)',
+            })
+            setReelPhase('need-subject')
+          },
+        },
+      ]
+    }
     if (isLegendaCmd && legendaPhase === 'idle') {
       if (legendaThemeArg) {
         return [
@@ -126,6 +189,10 @@ export function CommandBar() {
     legendaPhase,
     legendaThemeArg,
     handleLegendaGenerate,
+    isReelCmd,
+    reelPhase,
+    reelSubjectArg,
+    handleReelGenerate,
   ])
 
   useEffect(() => {
@@ -133,7 +200,7 @@ export function CommandBar() {
   }, [items.length])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (legendaPhase !== 'idle') return
+    if (legendaPhase !== 'idle' || reelPhase !== 'idle') return
     if (
       e.key === 'Enter' &&
       items.length > 0 &&
@@ -175,11 +242,22 @@ export function CommandBar() {
                 setSelectedIndex(0)
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Digite um comando (ex: /b tarefa, /a análise, /m objetivo, /super, /modulo 5, /legenda tema, /s assunto, /stories tema)"
+              placeholder="Digite um comando (ex: /b tarefa, /a análise, /m objetivo, /super, /modulo 5, /legenda tema, /s assunto, /stories tema, /reel tema, /r tema)"
               className="border-none focus-visible:ring-0"
             />
           </div>
-          {legendaPhase !== 'idle' ? (
+          {reelPhase !== 'idle' ? (
+            <ReelPanel
+              phase={reelPhase}
+              options={reelOptions}
+              error={reelError}
+              onGenerate={handleReelGenerate}
+              onNewSearch={() => {
+                setReelPhase('idle')
+                setInput('')
+              }}
+            />
+          ) : legendaPhase !== 'idle' ? (
             <LegendaPanel
               phase={legendaPhase}
               caption={legendaCaption}
