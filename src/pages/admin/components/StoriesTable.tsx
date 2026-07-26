@@ -19,7 +19,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { Badge } from '@/components/ui/badge'
 import { Pencil, Trash2, CalendarClock, Youtube } from 'lucide-react'
 import { type StoryText, getScheduledStatus, truncate } from '@/services/story-texts'
 
