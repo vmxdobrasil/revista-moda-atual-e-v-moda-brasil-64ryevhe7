@@ -25,7 +25,10 @@ import { generateTitulos } from '@/services/titulos'
 import { generateDescricao } from '@/services/descricao'
 import { generateMateria } from '@/services/materia'
 import type { MateriaArticle } from '@/services/materia'
+import { generateTrendReport } from '@/services/trend-report'
+import type { TrendReport } from '@/services/trend-report'
 import { MateriaPanel, type MateriaPhase } from '@/components/commands/MateriaPanel'
+import { TrendReportPanel, type TrendReportPhase } from '@/components/commands/TrendReportPanel'
 import { generateWeeklyPlan } from '@/services/weekly-plan'
 import type { WeeklyPlanResult } from '@/services/weekly-plan'
 import { WeeklyPlanPanel, type WeeklyPlanPhase } from '@/components/commands/WeeklyPlanPanel'
@@ -77,6 +80,9 @@ export function CommandBar() {
   const [reelScriptPhase, setReelScriptPhase] = useState<ReelScriptPhase>('idle')
   const [reelScriptResult, setReelScriptResult] = useState<ReelScriptResult | null>(null)
   const [reelScriptError, setReelScriptError] = useState('')
+  const [trendReportPhase, setTrendReportPhase] = useState<TrendReportPhase>('idle')
+  const [trendReport, setTrendReport] = useState<TrendReport | null>(null)
+  const [trendReportError, setTrendReportError] = useState('')
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -110,6 +116,9 @@ export function CommandBar() {
     setReelScriptPhase('idle')
     setReelScriptResult(null)
     setReelScriptError('')
+    setTrendReportPhase('idle')
+    setTrendReport(null)
+    setTrendReportError('')
   }, [])
 
   const handleLegendaGenerate = useCallback(async (theme: string) => {
@@ -201,6 +210,19 @@ export function CommandBar() {
     } catch (err: any) {
       setReelScriptError(err?.message || 'Erro ao gerar roteiro. Tente novamente.')
       setReelScriptPhase('error')
+    }
+  }, [])
+
+  const handleTrendReportGenerate = useCallback(async (tendencia: string) => {
+    setTrendReportPhase('generating')
+    try {
+      const result = await generateTrendReport(tendencia)
+      setTrendReport(result)
+      setTrendReportPhase('result')
+      toast({ title: 'Relatório de tendência gerado e salvo!' })
+    } catch (err: any) {
+      setTrendReportError(err?.message || 'Erro ao gerar relatório. Tente novamente.')
+      setTrendReportPhase('error')
     }
   }, [])
 
@@ -333,6 +355,17 @@ export function CommandBar() {
     trimmedLower === '/reels' ||
     trimmedLower.startsWith('/script ') ||
     trimmedLower === '/script'
+
+  const isTrendReportCmd =
+    trimmedLower.startsWith('/tendencia ') ||
+    trimmedLower === '/tendencia' ||
+    trimmedLower.startsWith('/relatorio ') ||
+    trimmedLower === '/relatorio'
+  const trendReportArg = isTrendReportCmd
+    ? trimmedLower.startsWith('/tendencia')
+      ? input.trim().slice('/tendencia'.length).trim()
+      : input.trim().slice('/relatorio'.length).trim()
+    : ''
   const reelScriptTemaArg = isReelScriptCmd
     ? trimmedLower.startsWith('/reels')
       ? input.trim().slice('/reels'.length).trim()
@@ -371,6 +404,10 @@ export function CommandBar() {
   useEffect(() => {
     if (!isReelScriptCmd && reelScriptPhase !== 'generating') setReelScriptPhase('idle')
   }, [isReelScriptCmd, reelScriptPhase])
+
+  useEffect(() => {
+    if (!isTrendReportCmd && trendReportPhase !== 'generating') setTrendReportPhase('idle')
+  }, [isTrendReportCmd, trendReportPhase])
 
   const items = useMemo<CommandItem[]>(() => {
     if (isReelCmd && reelPhase === 'idle') {
@@ -624,6 +661,36 @@ export function CommandBar() {
         },
       ]
     }
+    if (isTrendReportCmd && trendReportPhase === 'idle') {
+      if (trendReportArg) {
+        const cmdLabel = trimmedLower.startsWith('/tendencia') ? 'tendencia' : 'relatorio'
+        return [
+          {
+            id: 'trend-report-run',
+            primary: `/${cmdLabel} ${trendReportArg}`,
+            secondary: 'Gerar relatório de tendência',
+            icon: 'sparkles' as const,
+            level: 'S' as const,
+            action: () => handleTrendReportGenerate(trendReportArg),
+          },
+        ]
+      }
+      return [
+        {
+          id: 'trend-report-need-tema',
+          primary: trimmedLower.startsWith('/tendencia') ? '/tendencia' : '/relatorio',
+          secondary: 'Qual o nome da tendência?',
+          icon: 'terminal' as const,
+          level: null,
+          action: () => {
+            toast({
+              description: 'Informe o nome da tendência (ex: /tendencia cores terrosas)',
+            })
+            setTrendReportPhase('need-tendencia')
+          },
+        },
+      ]
+    }
     return buildItems(input, navigate, closeBar, location.pathname, libraryPrompts)
   }, [
     input,
@@ -665,6 +732,10 @@ export function CommandBar() {
     weeklyPlanParsed,
     handleWeeklyPlanGenerate,
     parseWeeklyPlanArgs,
+    isTrendReportCmd,
+    trendReportPhase,
+    trendReportArg,
+    handleTrendReportGenerate,
   ])
 
   useEffect(() => {
@@ -680,7 +751,8 @@ export function CommandBar() {
       legendaAtacadistaPhase !== 'idle' ||
       materiaPhase !== 'idle' ||
       weeklyPlanPhase !== 'idle' ||
-      reelScriptPhase !== 'idle'
+      reelScriptPhase !== 'idle' ||
+      trendReportPhase !== 'idle'
     )
       return
     if (
@@ -724,11 +796,23 @@ export function CommandBar() {
                 setSelectedIndex(0)
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Digite um comando (ex: /b tarefa, /a análise, /m objetivo, /super, /modulo 5, /legenda tema, /c tema, /s assunto, /stories tema, /reel tema, /r tema, /reels tema, /script tema, /titulos tema, /seo tema, /descricao título, /yt título, /atacado MARCA - PRODUTO, /materia tema, /artigo tema, /plano DATA - DATA - TEMA1 - TEMA2 - TEMA3, /semana DATA - DATA - TEMA1 - TEMA2 - TEMA3)"
+              placeholder="Digite um comando (ex: /b tarefa, /a análise, /m objetivo, /super, /modulo 5, /legenda tema, /c tema, /s assunto, /stories tema, /reel tema, /r tema, /reels tema, /script tema, /titulos tema, /seo tema, /descricao título, /yt título, /atacado MARCA - PRODUTO, /materia tema, /artigo tema, /plano DATA - DATA - TEMA1 - TEMA2 - TEMA3, /semana DATA - DATA - TEMA1 - TEMA2 - TEMA3, /tendencia TENDÊNCIA, /relatorio TENDÊNCIA)"
               className="border-none focus-visible:ring-0"
             />
           </div>
-          {reelScriptPhase !== 'idle' ? (
+          {trendReportPhase !== 'idle' ? (
+            <TrendReportPanel
+              phase={trendReportPhase}
+              report={trendReport}
+              error={trendReportError}
+              onGenerate={handleTrendReportGenerate}
+              onNewSearch={() => {
+                setTrendReportPhase('idle')
+                setInput('')
+              }}
+              onClose={closeBar}
+            />
+          ) : reelScriptPhase !== 'idle' ? (
             <ReelScriptPanel
               phase={reelScriptPhase}
               result={reelScriptResult}

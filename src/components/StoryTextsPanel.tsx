@@ -20,10 +20,12 @@ import {
   Newspaper,
   Calendar,
   Clapperboard,
+  TrendingUp,
 } from 'lucide-react'
 import type { StoryText } from '@/services/story-texts'
 import { getScheduledStatus, truncate } from '@/services/story-texts'
 import type { ReelScript } from '@/services/reel-script'
+import type { TrendReport } from '@/services/trend-report'
 
 export interface StoryTextFilters {
   dateFrom: string
@@ -126,6 +128,27 @@ function getReelScriptData(options: unknown): ReelScript | null {
   return null
 }
 
+interface TrendReportOptions {
+  nome: string
+  origem: string
+  descricao: string
+  potencial_atacado: { nivel: string; justificativa: string }
+  relevancia_polo: string
+  oportunidades: string[]
+  abordagem_editorial: string
+  palavras_chave: string[]
+}
+
+function getTrendReportData(options: unknown): TrendReportOptions | null {
+  if (options && typeof options === 'object' && !Array.isArray(options)) {
+    const obj = options as Record<string, unknown>
+    if (obj.type === 'tendencia-relatorio' && obj.report && typeof obj.report === 'object') {
+      return obj.report as TrendReportOptions
+    }
+  }
+  return null
+}
+
 export function StoryTextsPanel({
   storyTexts,
   filters,
@@ -206,10 +229,17 @@ export function StoryTextsPanel({
                 const isPlanoSemanal = planoSemanalData !== null
                 const reelScriptData = getReelScriptData(text.options)
                 const isReelScript = reelScriptData !== null
+                const trendReportData = getTrendReportData(text.options)
+                const isTrendReport = trendReportData !== null
                 const options = Array.isArray(text.options) ? text.options : []
                 const isExpanded = expandedId === text.id
                 const isExpandable =
-                  isDescricao || isAtacadista || isMateria || isPlanoSemanal || isReelScript
+                  isDescricao ||
+                  isAtacadista ||
+                  isMateria ||
+                  isPlanoSemanal ||
+                  isReelScript ||
+                  isTrendReport
                 return (
                   <Fragment key={text.id}>
                     <TableRow>
@@ -217,7 +247,11 @@ export function StoryTextsPanel({
                         {truncate(text.subject, 60)}
                       </TableCell>
                       <TableCell>
-                        {isReelScript ? (
+                        {isTrendReport ? (
+                          <Badge className="gap-1 bg-teal-500 text-white hover:bg-teal-600">
+                            <TrendingUp className="w-3 h-3" />🔍 Tendência
+                          </Badge>
+                        ) : isReelScript ? (
                           <Badge className="gap-1 bg-pink-500 text-white hover:bg-pink-600">
                             <Clapperboard className="w-3 h-3" />🎬 Reels
                           </Badge>
@@ -257,15 +291,17 @@ export function StoryTextsPanel({
                             ) : (
                               <>
                                 <ChevronDown className="w-3 h-3" />{' '}
-                                {isReelScript
-                                  ? 'Ver roteiro'
-                                  : isPlanoSemanal
-                                    ? 'Ver plano'
-                                    : isMateria
-                                      ? 'Ver matéria'
-                                      : isAtacadista
-                                        ? 'Ver legenda'
-                                        : 'Ver descrição'}
+                                {isTrendReport
+                                  ? 'Ver relatório'
+                                  : isReelScript
+                                    ? 'Ver roteiro'
+                                    : isPlanoSemanal
+                                      ? 'Ver plano'
+                                      : isMateria
+                                        ? 'Ver matéria'
+                                        : isAtacadista
+                                          ? 'Ver legenda'
+                                          : 'Ver descrição'}
                               </>
                             )}
                           </Button>
@@ -518,6 +554,90 @@ export function StoryTextsPanel({
                                 ÁUDIO SUGERIDO
                               </span>
                               <p className="leading-relaxed mt-1">{reelScriptData.audio}</p>
+                            </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    {isTrendReport && isExpanded && trendReportData && (
+                      <TableRow key={`${text.id}-trend`}>
+                        <TableCell colSpan={6} className="bg-muted/30">
+                          <div className="max-h-64 overflow-y-auto space-y-3 p-2">
+                            <div className="text-sm">
+                              <span className="font-bold text-teal-600 text-xs">
+                                NOME DA TENDÊNCIA
+                              </span>
+                              <p className="whitespace-pre-wrap leading-relaxed mt-1">
+                                {trendReportData.nome}
+                              </p>
+                            </div>
+                            <div className="text-sm">
+                              <span className="font-bold text-teal-600 text-xs">ORIGEM</span>
+                              <p className="whitespace-pre-wrap leading-relaxed mt-1">
+                                {trendReportData.origem}
+                              </p>
+                            </div>
+                            <div className="text-sm">
+                              <span className="font-bold text-teal-600 text-xs">DESCRIÇÃO</span>
+                              <p className="whitespace-pre-wrap leading-relaxed mt-1">
+                                {trendReportData.descricao}
+                              </p>
+                            </div>
+                            <div className="text-sm">
+                              <span className="font-bold text-teal-600 text-xs">
+                                POTENCIAL NO ATACADO
+                              </span>
+                              <p className="leading-relaxed mt-1">
+                                <span className="font-semibold text-gray-500 text-xs">Nível:</span>{' '}
+                                {trendReportData.potencial_atacado?.nivel}
+                              </p>
+                              <p className="leading-relaxed">
+                                <span className="font-semibold text-gray-500 text-xs">
+                                  Justificativa:
+                                </span>{' '}
+                                {trendReportData.potencial_atacado?.justificativa}
+                              </p>
+                            </div>
+                            <div className="text-sm">
+                              <span className="font-bold text-teal-600 text-xs">
+                                RELEVÂNCIA PARA O POLO DE GOIÁS
+                              </span>
+                              <p className="whitespace-pre-wrap leading-relaxed mt-1">
+                                {trendReportData.relevancia_polo}
+                              </p>
+                            </div>
+                            <div className="text-sm">
+                              <span className="font-bold text-teal-600 text-xs">
+                                OPORTUNIDADES PARA FABRICANTES
+                              </span>
+                              <ol className="list-decimal list-inside mt-1 space-y-0.5">
+                                {trendReportData.oportunidades?.map((op, i) => (
+                                  <li key={i}>{op}</li>
+                                ))}
+                              </ol>
+                            </div>
+                            <div className="text-sm">
+                              <span className="font-bold text-teal-600 text-xs">
+                                SUGESTÃO DE ABORDAGEM EDITORIAL
+                              </span>
+                              <p className="whitespace-pre-wrap leading-relaxed mt-1">
+                                {trendReportData.abordagem_editorial}
+                              </p>
+                            </div>
+                            <div className="text-sm">
+                              <span className="font-bold text-teal-600 text-xs">
+                                PALAVRAS-CHAVE RELACIONADAS
+                              </span>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {trendReportData.palavras_chave?.map((tag, i) => (
+                                  <span
+                                    key={i}
+                                    className="text-xs bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
                             </div>
                           </div>
                         </TableCell>
