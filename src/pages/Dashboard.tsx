@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -18,10 +18,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Copy, Sparkles, Wand2, RefreshCcw } from 'lucide-react'
+import { Copy, Sparkles, Wand2, RefreshCcw, Download } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip } from 'recharts'
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart'
 import { useToast } from '@/hooks/use-toast'
+import { useRealtime } from '@/hooks/use-realtime'
+import { getAllStoryTexts, type StoryText } from '@/services/story-texts'
+import { StoryTextsPanel, type StoryTextFilters } from '@/components/StoryTextsPanel'
+import { ExportModal } from '@/components/ExportModal'
 
 const MOCK_EDITIONS = [
   { id: '45', title: 'Edição 45 - Outono Inverno', status: 'Aprovado', date: '10/05/2026' },
@@ -42,31 +46,72 @@ export default function Dashboard() {
   const { toast } = useToast()
   const [isGenerating, setIsGenerating] = useState(false)
   const [aiContent, setAiContent] = useState<null | { reels: string; seo: string }>(null)
+  const [storyTexts, setStoryTexts] = useState<StoryText[]>([])
+  const [storyLoading, setStoryLoading] = useState(true)
+  const [filters, setFilters] = useState<StoryTextFilters>({ dateFrom: '', dateTo: '', search: '' })
+  const [exportOpen, setExportOpen] = useState(false)
+
+  const loadStoryTexts = useCallback(async () => {
+    try {
+      setStoryTexts(await getAllStoryTexts())
+    } catch {
+      toast({ title: 'Erro', description: 'Falha ao carregar textos.', variant: 'destructive' })
+    } finally {
+      setStoryLoading(false)
+    }
+  }, [toast])
+
+  useEffect(() => {
+    loadStoryTexts()
+  }, [loadStoryTexts])
+  useRealtime('story_texts', () => {
+    loadStoryTexts()
+  })
+
+  const filteredTexts = useMemo(
+    () =>
+      storyTexts.filter((t) => {
+        if (filters.search && !t.subject.toLowerCase().includes(filters.search.toLowerCase()))
+          return false
+        if (filters.dateFrom && new Date(t.created) < new Date(filters.dateFrom)) return false
+        if (filters.dateTo) {
+          const d = new Date(filters.dateTo)
+          d.setHours(23, 59, 59)
+          if (new Date(t.created) > d) return false
+        }
+        return true
+      }),
+    [storyTexts, filters],
+  )
 
   const handleGenerate = () => {
     setIsGenerating(true)
     setTimeout(() => {
       setAiContent({
         reels:
-          '✨ [HOOK] Sabia que o atacado mudou para sempre? \n\n[BODY] Descubra as peças que vão esgotar nas vitrines nesta temporada. A nova coleção Lumina traz exclusividade e margem de lucro. \n\n[CTA] Clique no link da bio e acesse a Revista Moda Atual!',
-        seo: 'Título: Tendências de Outono: Como lucrar mais com a nova coleção.\nDesc: Descubra as melhores marcas do atacado brasileiro no V MODA BRASIL e transforme suas vendas nesta estação com curadoria exclusiva.',
+          '✨ [HOOK] Sabia que o atacado mudou para sempre?\n\n[BODY] Descubra as peças que vão esgotar nas vitrines nesta temporada. A nova coleção Lumina traz exclusividade e margem de lucro.\n\n[CTA] Clique no link da bio e acesse a Revista Moda Atual!',
+        seo: 'Título: Tendências de Outono: Como lucrar mais com a nova coleção.\nDesc: Descubra as melhores marcas do atacado brasileiro no V MODA BRASIL.',
       })
       setIsGenerating(false)
       toast({
         title: 'Conteúdo Gerado!',
-        description: 'Os roteiros e metadados foram criados pela IA com sucesso.',
+        description: 'Os roteiros e metadados foram criados pela IA.',
       })
     }, 2000)
   }
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-serif font-bold tracking-tight">Hub Editorial & IA</h1>
-        <p className="text-muted-foreground mt-2">
-          Gerencie publicações, acompanhe métricas e gere conteúdo automaticamente com Inteligência
-          Artificial.
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-3xl font-serif font-bold tracking-tight">Hub Editorial & IA</h1>
+          <p className="text-muted-foreground mt-2">
+            Gerencie publicações, acompanhe métricas e gere conteúdo com IA.
+          </p>
+        </div>
+        <Button variant="outline" onClick={() => setExportOpen(true)}>
+          <Download className="w-4 h-4 mr-2" /> Exportar
+        </Button>
       </div>
 
       <Tabs defaultValue="ai" className="space-y-6">
@@ -78,6 +123,7 @@ export default function Dashboard() {
           >
             Automação & IA
           </TabsTrigger>
+          <TabsTrigger value="textos">Textos</TabsTrigger>
           <TabsTrigger value="reports">Relatórios</TabsTrigger>
         </TabsList>
 
@@ -162,7 +208,6 @@ export default function Dashboard() {
                 </Button>
               </CardContent>
             </Card>
-
             <div className="md:col-span-2 space-y-6">
               {isGenerating && (
                 <div className="h-64 flex flex-col items-center justify-center space-y-4 text-muted-foreground border rounded-lg border-dashed">
@@ -170,7 +215,6 @@ export default function Dashboard() {
                   <p className="animate-pulse">Analisando texto e gerando roteiros...</p>
                 </div>
               )}
-
               {aiContent && !isGenerating && (
                 <div className="grid sm:grid-cols-2 gap-4 animate-fade-in-up">
                   <Card>
@@ -188,7 +232,6 @@ export default function Dashboard() {
                       </p>
                     </CardContent>
                   </Card>
-
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-lg flex items-center justify-between">
@@ -206,7 +249,6 @@ export default function Dashboard() {
                   </Card>
                 </div>
               )}
-
               {!aiContent && !isGenerating && (
                 <div className="h-64 flex flex-col items-center justify-center border rounded-lg border-dashed bg-muted/20">
                   <Sparkles className="w-8 h-8 text-muted-foreground mb-4 opacity-50" />
@@ -215,6 +257,26 @@ export default function Dashboard() {
               )}
             </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="textos">
+          <Card>
+            <CardHeader>
+              <CardTitle>Textos Gerados</CardTitle>
+              <CardDescription>
+                Filtre e gerencie os textos para stories e legendas. Use "Exportar" no topo para
+                baixar.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <StoryTextsPanel
+                storyTexts={filteredTexts}
+                filters={filters}
+                onFiltersChange={setFilters}
+                loading={storyLoading}
+              />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="reports">
@@ -244,6 +306,8 @@ export default function Dashboard() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <ExportModal open={exportOpen} onOpenChange={setExportOpen} records={filteredTexts} />
     </div>
   )
 }
