@@ -29,15 +29,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsAuthenticated(pb.authStore.isValid)
     })
 
-    if (pb.authStore.isValid) {
-      pb.collection('users')
-        .authRefresh()
-        .catch(() => pb.authStore.clear())
-        .finally(() => setLoading(false))
-    } else {
-      if (pb.authStore.record) pb.authStore.clear()
-      setLoading(false)
+    const initAuth = async () => {
+      if (pb.authStore.isValid) {
+        try {
+          await pb.collection('users').authRefresh()
+        } catch {
+          pb.authStore.clear()
+          setUser(null)
+          setIsAuthenticated(false)
+        } finally {
+          setLoading(false)
+        }
+      } else {
+        if (pb.authStore.record) pb.authStore.clear()
+        setUser(null)
+        setIsAuthenticated(false)
+        setLoading(false)
+      }
     }
+
+    initAuth()
+
     return () => {
       unsubscribe()
     }
