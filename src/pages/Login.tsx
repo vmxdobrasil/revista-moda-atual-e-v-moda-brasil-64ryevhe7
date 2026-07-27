@@ -13,9 +13,17 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
-  const { signIn, isAuthenticated } = useAuth()
+  const { signIn, isAuthenticated, loading } = useAuth()
   const navigate = useNavigate()
   const { toast } = useToast()
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+      </div>
+    )
+  }
 
   if (isAuthenticated) {
     return <Navigate to="/admin/editions" replace />

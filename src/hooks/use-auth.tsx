@@ -30,20 +30,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     })
 
     const initAuth = async () => {
-      if (pb.authStore.isValid) {
-        try {
+      try {
+        if (pb.authStore.isValid) {
           await pb.collection('users').authRefresh()
-        } catch {
-          pb.authStore.clear()
+        } else {
+          if (pb.authStore.record) pb.authStore.clear()
           setUser(null)
           setIsAuthenticated(false)
-        } finally {
-          setLoading(false)
         }
-      } else {
-        if (pb.authStore.record) pb.authStore.clear()
+      } catch {
+        try {
+          pb.authStore.clear()
+        } catch {
+          // ignore clear errors
+        }
         setUser(null)
         setIsAuthenticated(false)
+      } finally {
         setLoading(false)
       }
     }

@@ -41,6 +41,10 @@ export function AdminLayout() {
     return <Navigate to="/admin/login" replace />
   }
 
+  if (isAuthenticated) {
+    // Authenticated — render the layout with Outlet for child routes
+  }
+
   const handleLogout = () => {
     signOut()
     navigate('/admin/login')
