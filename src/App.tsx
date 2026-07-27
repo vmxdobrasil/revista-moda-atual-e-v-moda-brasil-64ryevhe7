@@ -36,6 +36,7 @@ const App = () => (
         <Sonner />
         <Routes>
           <Route element={<Layout />}>
+            <Route path="/vmodebrasil" element={<Navigate to="/" replace />} />
             <Route path="/" element={<Index />} />
             <Route path="/editions" element={<Editions />} />
             <Route path="/edition/:id" element={<MagazineReader />} />
