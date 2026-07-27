@@ -45,6 +45,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
   const [loadingEdition, setLoadingEdition] = useState(true)
   const [loadingPages, setLoadingPages] = useState(true)
   const [errorEmpty, setErrorEmpty] = useState(false)
+  const [notFound, setNotFound] = useState(false)
 
   const [currentSpread, setCurrentSpread] = useState(0)
   const [currentPage, setCurrentPage] = useState(0)
@@ -77,18 +78,29 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
       try {
         setLoadingEdition(true)
         setErrorEmpty(false)
+        setNotFound(false)
         const ed = isLatest ? await getLatestEdition() : paramId ? await getEdition(paramId) : null
 
         if (!ed) {
-          navigate('/', { replace: true })
+          if (isLatest) {
+            navigate('/', { replace: true })
+          } else {
+            setNotFound(true)
+          }
           return
         }
 
         setEdition(ed)
         document.title = `Revista Moda Atual - ${ed.title}`
-      } catch (err) {
+      } catch (err: any) {
         console.error(err)
-        navigate('/', { replace: true })
+        if (err?.status === 404 || err?.response?.status === 404) {
+          setNotFound(true)
+        } else if (isLatest) {
+          navigate('/', { replace: true })
+        } else {
+          setNotFound(true)
+        }
       } finally {
         setLoadingEdition(false)
       }
@@ -177,11 +189,38 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
     )
   }
 
-  if (errorEmpty || !edition) {
+  if (notFound || errorEmpty || !edition) {
     return (
-      <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-50 gap-4">
-        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
-        <h2 className="text-xl font-medium text-gray-600 text-center px-4">Redirecionando...</h2>
+      <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-50 gap-6 px-4">
+        <img
+          src="https://img.usecurling.com/i?q=v%20moda%20brasil%20logo&color=orange&shape=outline"
+          alt="Revista Moda Atual"
+          className="h-12 md:h-16 opacity-60"
+          loading="lazy"
+          decoding="async"
+        />
+        <div className="flex flex-col items-center gap-4 max-w-md text-center">
+          <h2 className="text-2xl font-bold text-gray-800">Edição não encontrada</h2>
+          <p className="text-gray-500">
+            A edição que você procura não existe ou foi removida. Que tal explorar outras edições
+            disponíveis?
+          </p>
+          <div className="flex items-center gap-2 mt-2">
+            <Button
+              asChild
+              className="bg-orange-500 hover:bg-orange-600 active:scale-95 transition-transform duration-100"
+            >
+              <Link to="/">Voltar para Home</Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="text-orange-600 border-orange-300 hover:bg-orange-50 active:scale-95 transition-transform duration-100"
+            >
+              <Link to="/editions">Ver Edições</Link>
+            </Button>
+          </div>
+        </div>
       </div>
     )
   }
