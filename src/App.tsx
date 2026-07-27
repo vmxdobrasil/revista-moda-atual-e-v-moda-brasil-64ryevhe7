@@ -27,6 +27,9 @@ import Top60Page from './pages/admin/Top60Page'
 import ArquitetoWorkflowPage from './pages/admin/ArquitetoWorkflowPage'
 import EngenheiroRefinamentoPage from './pages/admin/EngenheiroRefinamentoPage'
 import PromptRefinementPage from './pages/admin/PromptRefinementPage'
+import PromptsPage from './pages/admin/PromptsPage'
+import About from './pages/About'
+import AboutPage from './pages/admin/AboutPage'
 
 import Partners from './pages/Partners'
 import Advertisements from './pages/Advertisements'
@@ -55,6 +58,7 @@ const App = () => (
             <Route path="/reader/:id" element={<MagazineReader />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/texto/:id" element={<StoryTextView />} />
+            <Route path="/sobre" element={<About />} />
           </Route>
 
           <Route path="/admin/login" element={<Login />} />
@@ -80,6 +84,8 @@ const App = () => (
             <Route path="arquiteto-workflow" element={<ArquitetoWorkflowPage />} />
             <Route path="engenheiro-refinamento" element={<EngenheiroRefinamentoPage />} />
             <Route path="prompt-refinement" element={<PromptRefinementPage />} />
+            <Route path="prompts" element={<PromptsPage />} />
+            <Route path="about" element={<AboutPage />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

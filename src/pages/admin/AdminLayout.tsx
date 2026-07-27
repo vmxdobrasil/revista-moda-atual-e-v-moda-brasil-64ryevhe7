@@ -22,6 +22,9 @@ import {
   Tag,
   FileSearch,
   ClipboardList,
+  FileText,
+  BookHeart,
+  Library,
 } from 'lucide-react'
 import { CommandBar } from '@/components/CommandBar'
 
@@ -166,6 +169,20 @@ export function AdminLayout() {
           onClick={() => setSidebarOpen(false)}
         >
           <FileSearch className="w-5 h-5" /> Refinamento de Prompts
+        </Link>
+        <Link
+          to="/admin/prompts"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <Library className="w-5 h-5" /> Biblioteca de Prompts
+        </Link>
+        <Link
+          to="/admin/about"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <BookHeart className="w-5 h-5" /> Página Sobre
         </Link>
       </nav>
       <div className="p-4 border-t space-y-2">

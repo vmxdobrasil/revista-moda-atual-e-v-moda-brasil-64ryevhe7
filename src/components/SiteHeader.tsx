@@ -38,6 +38,12 @@ export function SiteHeader() {
         >
           Ofertas
         </Link>
+        <Link
+          to="/sobre"
+          className="text-gray-600 hover:text-orange-600 transition-colors font-medium"
+        >
+          Sobre
+        </Link>
       </nav>
       <Button asChild variant="ghost" size="sm" className="text-gray-600 hover:text-orange-600">
         <Link to="/admin">

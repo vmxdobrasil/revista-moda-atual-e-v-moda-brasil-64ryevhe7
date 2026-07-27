@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-27T12:26:09.739Z",
+  "generatedAt": "2026-07-27T12:50:51.235Z",
   "collections": [
     {
       "name": "users",
@@ -1002,6 +1002,46 @@
         }
       ],
       "indexes": ["CREATE INDEX idx_delivery_queue_status ON delivery_queue (status)"]
+    },
+    {
+      "name": "about_content",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "title",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "body",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": []
     }
   ]
 }
