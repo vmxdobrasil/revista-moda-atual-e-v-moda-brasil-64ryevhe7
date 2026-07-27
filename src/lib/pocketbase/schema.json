@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-27T12:50:51.235Z",
+  "generatedAt": "2026-07-27T13:05:14.061Z",
   "collections": [
     {
       "name": "users",
@@ -482,6 +482,19 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["processing", "completed", "failed"]
+        },
+        {
+          "name": "error_note",
+          "type": "text",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [

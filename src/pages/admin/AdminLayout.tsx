@@ -25,6 +25,7 @@ import {
   FileText,
   BookHeart,
   Library,
+  Layers,
 } from 'lucide-react'
 import { CommandBar } from '@/components/CommandBar'
 
@@ -183,6 +184,13 @@ export function AdminLayout() {
           onClick={() => setSidebarOpen(false)}
         >
           <BookHeart className="w-5 h-5" /> Página Sobre
+        </Link>
+        <Link
+          to="/admin/multi-format-generator"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <Layers className="w-5 h-5" /> Multi-Formato
         </Link>
       </nav>
       <div className="p-4 border-t space-y-2">

@@ -30,6 +30,8 @@ import PromptRefinementPage from './pages/admin/PromptRefinementPage'
 import PromptsPage from './pages/admin/PromptsPage'
 import About from './pages/About'
 import AboutPage from './pages/admin/AboutPage'
+import MultiFormatGeneratorPage from './pages/admin/MultiFormatGeneratorPage'
+import MultiFormatReviewPage from './pages/admin/MultiFormatReviewPage'
 
 import Partners from './pages/Partners'
 import Advertisements from './pages/Advertisements'
@@ -86,6 +88,8 @@ const App = () => (
             <Route path="prompt-refinement" element={<PromptRefinementPage />} />
             <Route path="prompts" element={<PromptsPage />} />
             <Route path="about" element={<AboutPage />} />
+            <Route path="multi-format-generator" element={<MultiFormatGeneratorPage />} />
+            <Route path="multi-format-generator/:id" element={<MultiFormatReviewPage />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
