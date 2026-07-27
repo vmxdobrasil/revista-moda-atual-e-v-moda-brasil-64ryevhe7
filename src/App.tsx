@@ -26,6 +26,8 @@ import StoryTextView from './pages/StoryTextView'
 import Top60Page from './pages/admin/Top60Page'
 import ArquitetoWorkflowPage from './pages/admin/ArquitetoWorkflowPage'
 import EngenheiroRefinamentoPage from './pages/admin/EngenheiroRefinamentoPage'
+import PromptRefinementPage from './pages/admin/PromptRefinementPage'
+
 import Partners from './pages/Partners'
 import Advertisements from './pages/Advertisements'
 import Offers from './pages/Offers'
@@ -73,6 +75,7 @@ const App = () => (
             <Route path="marketplace-products" element={<MarketplaceProductsPage />} />
             <Route path="arquiteto-workflow" element={<ArquitetoWorkflowPage />} />
             <Route path="engenheiro-refinamento" element={<EngenheiroRefinamentoPage />} />
+            <Route path="prompt-refinement" element={<PromptRefinementPage />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
