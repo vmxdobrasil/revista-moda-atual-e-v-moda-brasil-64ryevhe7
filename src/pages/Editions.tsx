@@ -1,99 +1,179 @@
+import { useEffect, useState, useCallback, useMemo } from 'react'
+import { Link } from 'react-router-dom'
+import { getEditions, Edition, getFileUrl } from '@/services/magazine'
+import { useRealtime } from '@/hooks/use-realtime'
+import { useMetaTags } from '@/hooks/use-meta-tags'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Copy, Edit2, Play, Plus } from 'lucide-react'
-
-const editions = [
-  {
-    id: 1,
-    img: 'https://img.usecurling.com/p/100/140?q=fashion%20magazine%20cover',
-    title: 'Outono Inverno 26',
-    date: '10 Mai 2026',
-    status: 'Aprovado',
-    color: 'bg-green-500/20 text-green-500',
-  },
-  {
-    id: 2,
-    img: 'https://img.usecurling.com/p/100/140?q=wedding%20dress',
-    title: 'Especial Noivas',
-    date: '22 Jun 2026',
-    status: 'Em Revisão',
-    color: 'bg-brand-orange/20 text-brand-orange',
-  },
-  {
-    id: 3,
-    img: 'https://img.usecurling.com/p/100/140?q=summer%20fashion',
-    title: 'Primavera Verão 27',
-    date: '15 Ago 2026',
-    status: 'Rascunho',
-    color: 'bg-muted text-muted-foreground',
-  },
-]
+import { ArrowRight, BookOpen, Library, AlertCircle } from 'lucide-react'
 
 export default function Editions() {
+  const [editions, setEditions] = useState<Edition[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+
+  const loadData = useCallback(async () => {
+    try {
+      const data = await getEditions()
+      setEditions(data)
+      setError(false)
+    } catch (err) {
+      console.error(err)
+      setError(true)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  useRealtime('editions', () => {
+    loadData()
+  })
+
+  const meta = useMemo(
+    () => ({
+      title: 'Edições — Revista Moda Atual',
+      description: 'Todas as edições da Revista Moda Atual disponíveis para leitura.',
+      image: '/og-image.png',
+      url: window.location.origin,
+      type: 'website',
+    }),
+    [],
+  )
+
+  useMetaTags(meta)
+
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-end">
-        <div>
-          <h1 className="text-4xl font-serif tracking-tight mb-2">Módulo Editorial</h1>
-          <p className="text-muted-foreground">
-            Gerencie o fluxo de trabalho das edições da Revista Moda Atual.
+    <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
+      <header className="bg-white border-b py-5 px-6 md:px-12 flex items-center justify-between sticky top-0 z-30 shadow-sm">
+        <Link
+          to="/"
+          className="shrink-0 hover:opacity-80 transition-opacity flex items-center gap-2"
+        >
+          <div className="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-lg bg-orange-600 text-white font-extrabold text-sm md:text-lg shadow-md">
+            V
+          </div>
+          <span className="text-orange-600 font-bold text-lg md:text-xl tracking-tight">
+            MODA BRASIL
+          </span>
+        </Link>
+        <div className="flex items-center gap-2 text-orange-600 font-semibold text-sm md:text-base">
+          <BookOpen className="w-5 h-5" />
+          <span className="hidden sm:inline">Acervo Digital</span>
+        </div>
+      </header>
+
+      <main className="flex-1 container mx-auto px-4 py-16 md:py-24">
+        <div className="mb-16 text-center max-w-3xl mx-auto">
+          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-4">
+            Todas as Edições
+          </h2>
+          <p className="text-lg md:text-xl text-gray-600 leading-relaxed">
+            Explore todas as edições da Revista Moda Atual. Clique em qualquer capa para começar a
+            leitura interativa.
           </p>
         </div>
-        <Button className="bg-brand-orange hover:bg-brand-orange/90 text-white shadow-lg shadow-brand-orange/20">
-          <Plus className="w-4 h-4 mr-2" /> Nova Edição
-        </Button>
-      </div>
 
-      <Card className="border-border/50 overflow-hidden">
-        <div className="w-full overflow-x-auto">
-          <table className="w-full text-sm text-left border-collapse">
-            <thead className="text-xs uppercase bg-muted/50 text-muted-foreground border-b border-border">
-              <tr>
-                <th className="px-6 py-4 font-medium">Capa</th>
-                <th className="px-6 py-4 font-medium">Título & Edição</th>
-                <th className="px-6 py-4 font-medium">Data de Lançamento</th>
-                <th className="px-6 py-4 font-medium">Status (Workflow)</th>
-                <th className="px-6 py-4 font-medium text-right">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {editions.map((ed) => (
-                <tr key={ed.id} className="hover:bg-muted/30 transition-colors">
-                  <td className="px-6 py-4">
-                    <img
-                      src={ed.img}
-                      alt={ed.title}
-                      className="w-12 h-16 object-cover rounded-sm shadow-sm"
-                    />
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="font-bold text-base text-foreground font-serif">{ed.title}</div>
-                    <div className="text-muted-foreground text-xs mt-1">Vol {ed.id + 40}</div>
-                  </td>
-                  <td className="px-6 py-4 text-muted-foreground">{ed.date}</td>
-                  <td className="px-6 py-4">
-                    <Badge variant="outline" className={`border-none ${ed.color}`}>
-                      {ed.status}
-                    </Badge>
-                  </td>
-                  <td className="px-6 py-4 text-right space-x-2">
-                    <Button variant="ghost" size="icon" title="Duplicar">
-                      <Copy className="w-4 h-4 text-muted-foreground" />
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-12">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="aspect-[0.7118] bg-gray-200 animate-pulse rounded-xl" />
+            ))}
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mb-6">
+              <AlertCircle className="w-10 h-10 text-red-500" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-3">Erro ao carregar edições</h3>
+            <p className="text-gray-500 max-w-md text-lg mb-6">
+              Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.
+            </p>
+            <Button
+              onClick={() => {
+                setLoading(true)
+                loadData()
+              }}
+              className="bg-orange-600 hover:bg-orange-700 text-white rounded-full px-8"
+            >
+              Tentar Novamente
+            </Button>
+          </div>
+        ) : editions.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-20 h-20 rounded-full bg-orange-100 flex items-center justify-center mb-6">
+              <Library className="w-10 h-10 text-orange-500" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-3">Nenhuma edição disponível</h3>
+            <p className="text-gray-500 max-w-md text-lg">
+              Ainda não há edições publicadas. Volte em breve para conferir as novidades!
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-12">
+            {editions.map((ed) => (
+              <Card
+                key={ed.id}
+                className="overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-white rounded-xl"
+              >
+                <div className="relative aspect-[0.7118] overflow-hidden bg-gray-100 flex items-center justify-center">
+                  <img
+                    src={ed.cover_file ? getFileUrl(ed, ed.cover_file) : ed.cover_url}
+                    alt={ed.title}
+                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700 ease-out"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                    <Button
+                      asChild
+                      className="w-full bg-orange-600 hover:bg-orange-500 text-white shadow-lg h-12 text-md"
+                    >
+                      <Link to={`/edition/${ed.id}`}>
+                        Ler Edição <ArrowRight className="w-5 h-5 ml-2" />
+                      </Link>
                     </Button>
-                    <Button variant="ghost" size="icon" title="Editar">
-                      <Edit2 className="w-4 h-4 text-muted-foreground" />
-                    </Button>
-                    <Button variant="ghost" size="icon" title="Publicar">
-                      <Play className="w-4 h-4 text-brand-gold" />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                </div>
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-1 group-hover:text-orange-600 transition-colors">
+                    {ed.title}
+                  </h3>
+                  <p className="text-gray-600 text-sm line-clamp-3 leading-relaxed">
+                    {ed.description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </main>
+
+      <footer className="bg-gray-900 text-gray-400 py-12 px-6 md:px-12">
+        <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-600 text-white font-extrabold text-sm opacity-80">
+              V
+            </div>
+            <span className="text-sm">Revista Moda Atual Digital</span>
+          </div>
+          <div className="flex items-center gap-6 text-sm">
+            <Link to="/" className="hover:text-orange-500 transition-colors">
+              Início
+            </Link>
+            <Link to="/editions" className="hover:text-orange-500 transition-colors">
+              Edições
+            </Link>
+            <Link to="/reader/latest" className="hover:text-orange-500 transition-colors">
+              Ler Revista
+            </Link>
+          </div>
+          <p className="text-xs text-gray-500">
+            © {new Date().getFullYear()} V Moda Brasil. Todos os direitos reservados.
+          </p>
         </div>
-      </Card>
+      </footer>
     </div>
   )
 }
