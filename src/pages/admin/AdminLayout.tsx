@@ -18,6 +18,7 @@ import {
   Store,
   LayoutDashboard,
   Wand2,
+  Wrench,
 } from 'lucide-react'
 import { CommandBar } from '@/components/CommandBar'
 
@@ -123,6 +124,13 @@ export function AdminLayout() {
           onClick={() => setSidebarOpen(false)}
         >
           <Wand2 className="w-5 h-5" /> Arquiteto de Workflow
+        </Link>
+        <Link
+          to="/admin/engenheiro-refinamento"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <Wrench className="w-5 h-5" /> Engenheiro de Prompts
         </Link>
         <Link
           to="/admin/vmodebrasil"
