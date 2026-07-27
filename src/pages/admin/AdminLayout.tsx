@@ -21,6 +21,7 @@ import {
   Megaphone,
   Tag,
   FileSearch,
+  ClipboardList,
 } from 'lucide-react'
 import { CommandBar } from '@/components/CommandBar'
 
@@ -137,6 +138,13 @@ export function AdminLayout() {
           onClick={() => setSidebarOpen(false)}
         >
           <Tag className="w-5 h-5" /> Ofertas
+        </Link>
+        <Link
+          to="/admin/delivery-queue"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <ClipboardList className="w-5 h-5" /> Fila de Entrega
         </Link>
         <Link
           to="/admin/arquiteto-workflow"

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-27T11:45:42.319Z",
+  "generatedAt": "2026-07-27T12:26:09.739Z",
   "collections": [
     {
       "name": "users",
@@ -924,6 +924,84 @@
         }
       ],
       "indexes": ["CREATE INDEX idx_advertisements_active ON advertisements (is_active)"]
+    },
+    {
+      "name": "delivery_queue",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "theme",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "article_content",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "caption",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "bio_text",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "product",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "marketplace_products"
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["rascunho", "em_revisao", "aprovado", "publicado"]
+        },
+        {
+          "name": "published_at",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "error_note",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": ["CREATE INDEX idx_delivery_queue_status ON delivery_queue (status)"]
     }
   ]
 }

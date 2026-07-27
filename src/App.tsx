@@ -33,6 +33,8 @@ import Advertisements from './pages/Advertisements'
 import Offers from './pages/Offers'
 import AdvertisementsAdminPage from './pages/admin/AdvertisementsPage'
 import MarketplaceProductsPage from './pages/admin/MarketplaceProductsPage'
+import DeliveryQueuePage from './pages/admin/DeliveryQueuePage'
+import DeliveryReviewPage from './pages/admin/DeliveryReviewPage'
 import { AuthProvider } from './hooks/use-auth'
 
 const App = () => (
@@ -73,6 +75,8 @@ const App = () => (
             <Route path="top60" element={<Top60Page />} />
             <Route path="advertisements" element={<AdvertisementsAdminPage />} />
             <Route path="marketplace-products" element={<MarketplaceProductsPage />} />
+            <Route path="delivery-queue" element={<DeliveryQueuePage />} />
+            <Route path="delivery-queue/:id" element={<DeliveryReviewPage />} />
             <Route path="arquiteto-workflow" element={<ArquitetoWorkflowPage />} />
             <Route path="engenheiro-refinamento" element={<EngenheiroRefinamentoPage />} />
             <Route path="prompt-refinement" element={<PromptRefinementPage />} />
