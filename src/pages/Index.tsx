@@ -61,6 +61,32 @@ export default function Index() {
           </span>
         </Link>
         <div className="flex items-center gap-4 md:gap-6">
+          <nav className="hidden lg:flex items-center gap-5 text-sm">
+            <Link
+              to="/editions"
+              className="text-gray-600 hover:text-orange-600 transition-colors font-medium"
+            >
+              Edições
+            </Link>
+            <Link
+              to="/partners"
+              className="text-gray-600 hover:text-orange-600 transition-colors font-medium"
+            >
+              Parceiros
+            </Link>
+            <Link
+              to="/advertisements"
+              className="text-gray-600 hover:text-orange-600 transition-colors font-medium"
+            >
+              Anúncios
+            </Link>
+            <Link
+              to="/offers"
+              className="text-gray-600 hover:text-orange-600 transition-colors font-medium"
+            >
+              Ofertas
+            </Link>
+          </nav>
           <div className="flex items-center gap-2 text-orange-600 font-semibold text-sm md:text-base">
             <BookOpen className="w-5 h-5" />
             <span className="hidden sm:inline">Acervo Digital</span>
@@ -176,9 +202,21 @@ export default function Index() {
             </div>
             <span className="text-sm">Revista Moda Atual Digital</span>
           </div>
-          <div className="flex items-center gap-6 text-sm">
+          <div className="flex items-center gap-4 md:gap-6 text-sm flex-wrap justify-center">
             <Link to="/" className="hover:text-orange-500 transition-colors">
               Início
+            </Link>
+            <Link to="/editions" className="hover:text-orange-500 transition-colors">
+              Edições
+            </Link>
+            <Link to="/partners" className="hover:text-orange-500 transition-colors">
+              Parceiros
+            </Link>
+            <Link to="/advertisements" className="hover:text-orange-500 transition-colors">
+              Anúncios
+            </Link>
+            <Link to="/offers" className="hover:text-orange-500 transition-colors">
+              Ofertas
             </Link>
             <Link to="/reader/latest" className="hover:text-orange-500 transition-colors">
               Ler Revista

@@ -1,21 +1,37 @@
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { getEditions, Edition, getFileUrl } from '@/services/magazine'
+import { getBrands, type Top60Brand } from '@/services/top60'
 import { useRealtime } from '@/hooks/use-realtime'
 import { useMetaTags } from '@/hooks/use-meta-tags'
+import { SiteHeader } from '@/components/SiteHeader'
+import { SiteFooter } from '@/components/SiteFooter'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, BookOpen, Library, AlertCircle } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
+import { ArrowRight, BookOpen, Library, AlertCircle, Search, Sparkles } from 'lucide-react'
 
 export default function Editions() {
   const [editions, setEditions] = useState<Edition[]>([])
+  const [brands, setBrands] = useState<Top60Brand[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [search, setSearch] = useState('')
+  const [brandFilter, setBrandFilter] = useState('all')
 
   const loadData = useCallback(async () => {
     try {
-      const data = await getEditions()
+      const [data, b] = await Promise.all([getEditions(), getBrands()])
       setEditions(data)
+      setBrands(b)
       setError(false)
     } catch (err) {
       console.error(err)
@@ -28,10 +44,7 @@ export default function Editions() {
   useEffect(() => {
     loadData()
   }, [loadData])
-
-  useRealtime('editions', () => {
-    loadData()
-  })
+  useRealtime('editions', () => loadData())
 
   const meta = useMemo(
     () => ({
@@ -43,31 +56,23 @@ export default function Editions() {
     }),
     [],
   )
-
   useMetaTags(meta)
+
+  const filtered = useMemo(() => {
+    return editions.filter((ed) => {
+      if (brandFilter !== 'all' && ed.brand !== brandFilter) return false
+      if (search && !ed.title.toLowerCase().includes(search.toLowerCase())) return false
+      return true
+    })
+  }, [editions, search, brandFilter])
+
+  const showHighlight = search === '' && brandFilter === 'all'
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-      <header className="bg-white border-b py-5 px-6 md:px-12 flex items-center justify-between sticky top-0 z-30 shadow-sm">
-        <Link
-          to="/"
-          className="shrink-0 hover:opacity-80 transition-opacity flex items-center gap-2"
-        >
-          <div className="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-lg bg-orange-600 text-white font-extrabold text-sm md:text-lg shadow-md">
-            V
-          </div>
-          <span className="text-orange-600 font-bold text-lg md:text-xl tracking-tight">
-            MODA BRASIL
-          </span>
-        </Link>
-        <div className="flex items-center gap-2 text-orange-600 font-semibold text-sm md:text-base">
-          <BookOpen className="w-5 h-5" />
-          <span className="hidden sm:inline">Acervo Digital</span>
-        </div>
-      </header>
-
+      <SiteHeader />
       <main className="flex-1 container mx-auto px-4 py-16 md:py-24">
-        <div className="mb-16 text-center max-w-3xl mx-auto">
+        <div className="mb-12 text-center max-w-3xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-4">
             Todas as Edições
           </h2>
@@ -75,6 +80,31 @@ export default function Editions() {
             Explore todas as edições da Revista Moda Atual. Clique em qualquer capa para começar a
             leitura interativa.
           </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3 mb-10 max-w-2xl mx-auto">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Buscar por título..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={brandFilter} onValueChange={setBrandFilter}>
+            <SelectTrigger className="w-full sm:w-56">
+              <SelectValue placeholder="Filtrar por marca" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas as marcas</SelectItem>
+              {brands.map((b) => (
+                <SelectItem key={b.id} value={b.id}>
+                  {b.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {loading ? (
@@ -88,7 +118,7 @@ export default function Editions() {
             <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mb-6">
               <AlertCircle className="w-10 h-10 text-red-500" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-3">Erro ao carregar edições</h3>
+            <h3 className="text-2xl font-bold text-gray-800 mb-3">Não foi possível carregar</h3>
             <p className="text-gray-500 max-w-md text-lg mb-6">
               Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.
             </p>
@@ -102,78 +132,71 @@ export default function Editions() {
               Tentar Novamente
             </Button>
           </div>
-        ) : editions.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="w-20 h-20 rounded-full bg-orange-100 flex items-center justify-center mb-6">
               <Library className="w-10 h-10 text-orange-500" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-3">Nenhuma edição disponível</h3>
+            <h3 className="text-2xl font-bold text-gray-800 mb-3">Nenhuma edição encontrada</h3>
             <p className="text-gray-500 max-w-md text-lg">
-              Ainda não há edições publicadas. Volte em breve para conferir as novidades!
+              Não há edições que correspondam aos seus filtros. Tente limpar a busca.
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-12">
-            {editions.map((ed) => (
-              <Card
-                key={ed.id}
-                className="overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-white rounded-xl"
-              >
-                <div className="relative aspect-[0.7118] overflow-hidden bg-gray-100 flex items-center justify-center">
-                  <img
-                    src={ed.cover_file ? getFileUrl(ed, ed.cover_file) : ed.cover_url}
-                    alt={ed.title}
-                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700 ease-out"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
-                    <Button
-                      asChild
-                      className="w-full bg-orange-600 hover:bg-orange-500 text-white shadow-lg h-12 text-md"
-                    >
-                      <Link to={`/edition/${ed.id}`}>
-                        Ler Edição <ArrowRight className="w-5 h-5 ml-2" />
-                      </Link>
-                    </Button>
+            {filtered.map((ed, idx) => {
+              const isLatest = showHighlight && idx === 0
+              return (
+                <Card
+                  key={ed.id}
+                  className={cn(
+                    'overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-white rounded-xl relative',
+                    isLatest && 'ring-2 ring-orange-500 shadow-lg',
+                  )}
+                >
+                  {isLatest && (
+                    <div className="absolute top-3 left-3 z-10">
+                      <Badge className="bg-orange-600 text-white shadow-md gap-1">
+                        <Sparkles className="w-3 h-3" /> Edição Mais Recente
+                      </Badge>
+                    </div>
+                  )}
+                  <div className="relative aspect-[0.7118] overflow-hidden bg-gray-100 flex items-center justify-center">
+                    <img
+                      src={ed.cover_file ? getFileUrl(ed, ed.cover_file) : ed.cover_url}
+                      alt={ed.title}
+                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700 ease-out"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                      <Button
+                        asChild
+                        className="w-full bg-orange-600 hover:bg-orange-500 text-white shadow-lg h-12 text-md"
+                      >
+                        <Link to={`/edition/${ed.id}`}>
+                          Ler Edição <ArrowRight className="w-5 h-5 ml-2" />
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
-                </div>
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-1 group-hover:text-orange-600 transition-colors">
-                    {ed.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm line-clamp-3 leading-relaxed">
-                    {ed.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+                  <CardContent className="p-6">
+                    <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-1 group-hover:text-orange-600 transition-colors">
+                      {ed.title}
+                    </h3>
+                    <p className="text-gray-600 text-sm line-clamp-3 leading-relaxed">
+                      {ed.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
         )}
       </main>
-
-      <footer className="bg-gray-900 text-gray-400 py-12 px-6 md:px-12">
-        <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-600 text-white font-extrabold text-sm opacity-80">
-              V
-            </div>
-            <span className="text-sm">Revista Moda Atual Digital</span>
-          </div>
-          <div className="flex items-center gap-6 text-sm">
-            <Link to="/" className="hover:text-orange-500 transition-colors">
-              Início
-            </Link>
-            <Link to="/editions" className="hover:text-orange-500 transition-colors">
-              Edições
-            </Link>
-            <Link to="/reader/latest" className="hover:text-orange-500 transition-colors">
-              Ler Revista
-            </Link>
-          </div>
-          <p className="text-xs text-gray-500">
-            © {new Date().getFullYear()} V Moda Brasil. Todos os direitos reservados.
-          </p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   )
+}
+
+function cn(...classes: (string | boolean | undefined)[]) {
+  return classes.filter(Boolean).join(' ')
 }

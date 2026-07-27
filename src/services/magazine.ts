@@ -77,7 +77,7 @@ export interface Hotspot {
 }
 
 export const getEditions = () =>
-  pb.collection('editions').getFullList<Edition>({ sort: '-created' })
+  pb.collection('editions').getFullList<Edition>({ sort: '-created', expand: 'brand' })
 
 export const getLatestEdition = async () => {
   const result = await pb.collection('editions').getList<Edition>(1, 1, {

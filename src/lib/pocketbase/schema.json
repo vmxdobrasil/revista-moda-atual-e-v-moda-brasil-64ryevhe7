@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-27T01:39:41.465Z",
+  "generatedAt": "2026-07-27T02:39:01.658Z",
   "collections": [
     {
       "name": "users",
@@ -872,6 +872,58 @@
         }
       ],
       "indexes": ["CREATE INDEX idx_story_texts_created ON story_texts (created)"]
+    },
+    {
+      "name": "advertisements",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "image",
+          "type": "file",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "url",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "is_active",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": ["CREATE INDEX idx_advertisements_active ON advertisements (is_active)"]
     }
   ]
 }
