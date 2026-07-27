@@ -7,7 +7,6 @@ import Editions from './pages/Editions'
 import NotFound from './pages/NotFound'
 import Layout from './components/Layout'
 import MagazineReader from './pages/MagazineReader'
-import Marketplace from './pages/Marketplace'
 import Login from './pages/Login'
 import { AdminLayout } from './pages/admin/AdminLayout'
 import EditionsPage from './pages/admin/EditionsPage'
@@ -25,8 +24,6 @@ import DashboardPage from './pages/admin/DashboardPage'
 import Dashboard from './pages/Dashboard'
 import StoryTextView from './pages/StoryTextView'
 import Top60Page from './pages/admin/Top60Page'
-import VmodeBrasilPage from './pages/admin/VmodeBrasilPage'
-import MarketplaceOrdersPage from './pages/admin/MarketplaceOrdersPage'
 import ArquitetoWorkflowPage from './pages/admin/ArquitetoWorkflowPage'
 import EngenheiroRefinamentoPage from './pages/admin/EngenheiroRefinamentoPage'
 import { AuthProvider } from './hooks/use-auth'
@@ -44,7 +41,6 @@ const App = () => (
             <Route path="/edition/:id" element={<MagazineReader />} />
             <Route path="/reader/latest" element={<MagazineReader isLatest />} />
             <Route path="/reader/:id" element={<MagazineReader />} />
-            <Route path="/vmodebrasil" element={<Marketplace />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/texto/:id" element={<StoryTextView />} />
           </Route>
@@ -65,8 +61,6 @@ const App = () => (
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="ai-persona/chat" element={<AiPersonaChat />} />
             <Route path="top60" element={<Top60Page />} />
-            <Route path="vmodebrasil" element={<VmodeBrasilPage />} />
-            <Route path="vmodebrasil/orders" element={<MarketplaceOrdersPage />} />
             <Route path="arquiteto-workflow" element={<ArquitetoWorkflowPage />} />
             <Route path="engenheiro-refinamento" element={<EngenheiroRefinamentoPage />} />
           </Route>

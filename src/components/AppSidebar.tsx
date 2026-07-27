@@ -6,7 +6,7 @@ import {
   SidebarMenuButton,
   SidebarHeader,
 } from '@/components/ui/sidebar'
-import { BookOpen, Store, Share2, BarChart2, Layers } from 'lucide-react'
+import { BookOpen, Share2, BarChart2, Layers } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 
 export function AppSidebar() {
@@ -34,13 +34,6 @@ export function AppSidebar() {
             <SidebarMenuButton asChild isActive={location.pathname === '/editions'}>
               <Link to="/editions">
                 <BookOpen className="w-4 h-4" /> <span>Edições</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={location.pathname === '/hub'}>
-              <Link to="/hub">
-                <Store className="w-4 h-4" /> <span>Marketplace</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

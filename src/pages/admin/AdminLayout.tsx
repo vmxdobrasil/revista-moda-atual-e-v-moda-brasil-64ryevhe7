@@ -15,7 +15,6 @@ import {
   MessageCircle,
   Workflow,
   Trophy,
-  Store,
   LayoutDashboard,
   Wand2,
   Wrench,
@@ -131,13 +130,6 @@ export function AdminLayout() {
           onClick={() => setSidebarOpen(false)}
         >
           <Wrench className="w-5 h-5" /> Engenheiro de Prompts
-        </Link>
-        <Link
-          to="/admin/vmodebrasil"
-          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
-          onClick={() => setSidebarOpen(false)}
-        >
-          <Store className="w-5 h-5" /> Marketplace
         </Link>
       </nav>
       <div className="p-4 border-t space-y-2">

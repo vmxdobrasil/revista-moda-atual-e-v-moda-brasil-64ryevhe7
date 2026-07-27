@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/sheet'
 import { Drawer, DrawerContent, DrawerTrigger, DrawerClose } from '@/components/ui/drawer'
 import { Button } from '@/components/ui/button'
-import { LayoutGrid, List, Loader2, Store, Instagram } from 'lucide-react'
+import { LayoutGrid, List, Loader2, Instagram } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 
 export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
@@ -321,19 +321,6 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
           </h1>
         </div>
         <div className="flex items-center gap-2 md:gap-4">
-          {edition.expand?.brand && (
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="gap-2 text-orange-600 border-orange-300 hover:bg-orange-50 active:scale-95 transition-transform duration-100"
-            >
-              <Link to={`/vmodebrasil?brand=${encodeURIComponent(edition.expand.brand.name)}`}>
-                <Store className="w-4 h-4" />
-                <span className="hidden lg:inline">Ver Catálogo</span>
-              </Link>
-            </Button>
-          )}
           <Sheet>
             <SheetTrigger asChild>
               <Button

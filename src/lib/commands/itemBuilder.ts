@@ -29,15 +29,7 @@ export interface CommandItem {
   action: () => void
 }
 
-const STATIC_COMMANDS = [
-  { cmd: '/top60', label: 'Top 60 Marcas', path: '/admin/top60' },
-  { cmd: '/vmodebrasil', label: 'Marketplace V MODA BRASIL', path: '/admin/vmodebrasil' },
-  {
-    cmd: '/vmodebrasil/orders',
-    label: 'Pedidos do Marketplace',
-    path: '/admin/vmodebrasil/orders',
-  },
-]
+const STATIC_COMMANDS = [{ cmd: '/top60', label: 'Top 60 Marcas', path: '/admin/top60' }]
 
 function isCmd(input: string, cmd: string): boolean {
   const t = input.trim().toLowerCase()
