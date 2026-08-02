@@ -5,12 +5,42 @@ import { useRealtime } from '@/hooks/use-realtime'
 import { useMetaTags } from '@/hooks/use-meta-tags'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, BookOpen, Library, Settings, AlertCircle } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { ArrowRight, BookOpen, Library, Settings, AlertCircle, Link2, Check } from 'lucide-react'
+import { SocialShare } from '@/components/SocialShare'
+
+const HOMEPAGE_URL = 'https://revistamodaatual.com.br'
 
 export default function Index() {
   const [editions, setEditions] = useState<Edition[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
+
+  const handleCopyLink = useCallback(() => {
+    navigator.clipboard
+      .writeText(HOMEPAGE_URL)
+      .then(() => {
+        setLinkCopied(true)
+        setTimeout(() => setLinkCopied(false), 2000)
+      })
+      .catch(() => {
+        const textarea = document.createElement('textarea')
+        textarea.value = HOMEPAGE_URL
+        textarea.style.position = 'fixed'
+        textarea.style.opacity = '0'
+        document.body.appendChild(textarea)
+        textarea.select()
+        try {
+          document.execCommand('copy')
+          setLinkCopied(true)
+          setTimeout(() => setLinkCopied(false), 2000)
+        } catch {
+          // ignore
+        }
+        document.body.removeChild(textarea)
+      })
+  }, [])
 
   const loadData = useCallback(async () => {
     try {
@@ -121,6 +151,33 @@ export default function Index() {
               <BookOpen className="w-6 h-6 mr-3" /> Ler Última Edição
             </Link>
           </Button>
+
+          <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCopyLink}
+              className={cn(
+                'gap-2 rounded-full px-5 py-2.5 border-2 transition-all duration-200',
+                linkCopied
+                  ? 'border-green-500 text-green-600 bg-green-50'
+                  : 'border-orange-200 text-orange-700 hover:border-orange-400 hover:bg-orange-50',
+              )}
+            >
+              {linkCopied ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  <span className="font-semibold">Copiado!</span>
+                </>
+              ) : (
+                <>
+                  <Link2 className="w-4 h-4" />
+                  <span className="font-semibold">Copiar link</span>
+                </>
+              )}
+            </Button>
+            <SocialShare title="Revista Moda Atual" url={HOMEPAGE_URL} />
+          </div>
         </div>
 
         {loading ? (
