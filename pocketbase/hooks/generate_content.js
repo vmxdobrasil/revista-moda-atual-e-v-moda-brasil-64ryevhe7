@@ -93,6 +93,16 @@ routerAdd(
         return e.json(500, { error: 'Resposta do AI incompleta. Tente novamente.' })
       }
 
+      try {
+        var alCol = $app.findCollectionByNameOrId('audit_logs')
+        var alRec = new Record(alCol)
+        alRec.set('integration_name', 'generate_content')
+        alRec.set('integration_type', 'route')
+        alRec.set('status', 'success')
+        alRec.set('executed_at', new Date().toISOString())
+        $app.save(alRec)
+      } catch (_) {}
+
       return e.json(200, parsed)
     } catch (err) {
       if (err instanceof SkipAiConfigError) {

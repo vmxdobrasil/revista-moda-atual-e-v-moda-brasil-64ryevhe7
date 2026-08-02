@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-30T17:50:04.440Z",
+  "generatedAt": "2026-08-02T18:23:04.171Z",
   "collections": [
     {
       "name": "users",
@@ -1055,6 +1055,82 @@
         }
       ],
       "indexes": []
+    },
+    {
+      "name": "audit_logs",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "integration_name",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "integration_type",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["route", "event", "agent"]
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["success", "error"]
+        },
+        {
+          "name": "executed_at",
+          "type": "date",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "workflow_id",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "error_message",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "agent_name",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_audit_logs_integration ON audit_logs (integration_name)",
+        "CREATE INDEX idx_audit_logs_executed ON audit_logs (executed_at)",
+        "CREATE INDEX idx_audit_logs_agent ON audit_logs (agent_name)"
+      ]
     }
   ]
 }

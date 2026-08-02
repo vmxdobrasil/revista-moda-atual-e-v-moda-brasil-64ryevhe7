@@ -6,7 +6,7 @@ routerAdd(
     var userId = e.auth && e.auth.id
     if (!userId) return e.unauthorizedError('auth required')
 
-    var editionId = body.edition_id || ''
+    var editionId = body.editionId || ''
     var theme = body.theme || ''
 
     if (!editionId && !theme) {
@@ -94,6 +94,17 @@ routerAdd(
       record.set('final_content', finalContent)
       $app.save(record)
 
+      try {
+        var alCol = $app.findCollectionByNameOrId('audit_logs')
+        var alRec = new Record(alCol)
+        alRec.set('integration_name', 'content_workflow_orchestrator')
+        alRec.set('integration_type', 'route')
+        alRec.set('status', 'success')
+        alRec.set('executed_at', new Date().toISOString())
+        alRec.set('workflow_id', record.id)
+        $app.save(alRec)
+      } catch (_) {}
+
       $app.logger().info('content workflow completed', 'workflow_result_id', record.id)
 
       return e.json(200, {
@@ -111,6 +122,17 @@ routerAdd(
       } else if (err instanceof SkipAiError) {
         errorMsg = 'AI service error: ' + (err.message || 'unknown')
       }
+
+      try {
+        var alColE = $app.findCollectionByNameOrId('audit_logs')
+        var alRecE = new Record(alColE)
+        alRecE.set('integration_name', 'content_workflow_orchestrator')
+        alRecE.set('integration_type', 'route')
+        alRecE.set('status', 'error')
+        alRecE.set('executed_at', new Date().toISOString())
+        alRecE.set('error_message', errorMsg)
+        $app.save(alRecE)
+      } catch (_) {}
 
       $app.logger().error('content workflow failed', 'step', currentStep, 'error', errorMsg)
 

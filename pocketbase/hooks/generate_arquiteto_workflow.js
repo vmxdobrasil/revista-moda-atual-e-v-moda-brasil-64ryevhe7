@@ -3,11 +3,11 @@ routerAdd(
   '/backend/v1/generate-arquiteto-workflow',
   (e) => {
     const body = e.requestInfo().body || {}
-    const entregaFinal = (body.entrega_final || '').trim()
+    const entregaFinal = (body.entregaFinal || '').trim()
     const nRaw = body.n
 
-    if (!entrega_final || entregaFinal.length === 0) {
-      return e.json(400, { error: 'entrega_final é obrigatório' })
+    if (!entregaFinal || entregaFinal.length === 0) {
+      return e.json(400, { error: 'entregaFinal é obrigatório' })
     }
 
     var n = Number(nRaw)
@@ -42,8 +42,29 @@ routerAdd(
 
       var content = reply.choices[0].message.content.trim()
 
+      try {
+        var alCol = $app.findCollectionByNameOrId('audit_logs')
+        var alRec = new Record(alCol)
+        alRec.set('integration_name', 'generate_arquiteto_workflow')
+        alRec.set('integration_type', 'route')
+        alRec.set('status', 'success')
+        alRec.set('executed_at', new Date().toISOString())
+        $app.save(alRec)
+      } catch (_) {}
+
       return e.json(200, { workflow: content })
     } catch (err) {
+      try {
+        var alCol2 = $app.findCollectionByNameOrId('audit_logs')
+        var alRec2 = new Record(alCol2)
+        alRec2.set('integration_name', 'generate_arquiteto_workflow')
+        alRec2.set('integration_type', 'route')
+        alRec2.set('status', 'error')
+        alRec2.set('executed_at', new Date().toISOString())
+        alRec2.set('error_message', err && err.message ? err.message : 'unknown error')
+        $app.save(alRec2)
+      } catch (_) {}
+
       if (err instanceof SkipAiConfigError) {
         return e.json(503, { error: 'IA temporariamente indisponível' })
       }

@@ -3,7 +3,7 @@ routerAdd(
   '/backend/v1/generate-engenheiro-refinamento',
   (e) => {
     const body = e.requestInfo().body || {}
-    const promptOriginal = (body.prompt_original || '').trim()
+    const promptOriginal = (body.promptOriginal || '').trim()
 
     if (!promptOriginal || promptOriginal.length === 0) {
       return e.json(400, { error: 'prompt_original é obrigatório' })
@@ -34,8 +34,28 @@ routerAdd(
 
       var content = reply.choices[0].message.content.trim()
 
+      try {
+        var alCol = $app.findCollectionByNameOrId('audit_logs')
+        var alRec = new Record(alCol)
+        alRec.set('integration_name', 'generate_engenheiro_refinamento')
+        alRec.set('integration_type', 'route')
+        alRec.set('status', 'success')
+        alRec.set('executed_at', new Date().toISOString())
+        $app.save(alRec)
+      } catch (_) {}
+
       return e.json(200, { resultado: content })
     } catch (err) {
+      try {
+        var alCol2 = $app.findCollectionByNameOrId('audit_logs')
+        var alRec2 = new Record(alCol2)
+        alRec2.set('integration_name', 'generate_engenheiro_refinamento')
+        alRec2.set('integration_type', 'route')
+        alRec2.set('status', 'error')
+        alRec2.set('executed_at', new Date().toISOString())
+        alRec2.set('error_message', err && err.message ? err.message : 'unknown error')
+        $app.save(alRec2)
+      } catch (_) {}
       if (err instanceof SkipAiConfigError) {
         return e.json(503, { error: 'IA temporariamente indisponível' })
       }

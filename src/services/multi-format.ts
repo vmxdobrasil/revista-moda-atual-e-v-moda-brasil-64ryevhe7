@@ -1,46 +1,38 @@
 import pb from '@/lib/pocketbase/client'
 
 export interface MultiFormatFinalContent {
-  trend_analysis?: { raw?: string }
-  article_content?: { raw?: string; titulo_principal?: string; corpo?: string }
+  trend_analysis?: any
+  article_content?: any
   instagram_caption?: string
-  reel_script?: { raw?: string }
+  reel_script?: any
   seo_title?: string[]
   youtube_description?: string
 }
 
 export interface MultiFormatResult {
+  success: boolean
   id: string
-  theme: string
-  status: string
-  error_note: string
-  agent_outputs: Record<string, unknown>
-  final_content: MultiFormatFinalContent
-  created: string
-  updated: string
+  final_content?: MultiFormatFinalContent
+  error?: string
 }
 
 export async function runMultiFormatGenerator(
   theme: string,
   productId?: string,
-): Promise<{
-  success: boolean
-  id: string
-  final_content?: MultiFormatFinalContent
-  error?: string
-}> {
-  return pb.send('/backend/v1/multi-format-generator/run', {
+): Promise<MultiFormatResult> {
+  const body: Record<string, unknown> = { theme }
+  if (productId) body.productId = productId
+  return await pb.send('/backend/v1/multi-format-generator/run', {
     method: 'POST',
-    body: JSON.stringify({ theme, product_id: productId || '' }),
+    body: JSON.stringify(body),
     headers: { 'Content-Type': 'application/json' },
   })
 }
 
-export async function getMultiFormatResults(): Promise<MultiFormatResult[]> {
-  const results = await pb.collection('workflow_results').getFullList({ sort: '-created' })
-  return (results as unknown as MultiFormatResult[]).filter((r) => r.status && r.status !== '')
+export async function getMultiFormatResults(): Promise<any[]> {
+  return await pb.collection('workflow_results').getFullList({ sort: '-created' })
 }
 
-export async function getMultiFormatResult(id: string): Promise<MultiFormatResult> {
-  return pb.collection('workflow_results').getOne(id) as unknown as MultiFormatResult
+export async function getMultiFormatResult(id: string): Promise<any> {
+  return await pb.collection('workflow_results').getOne(id)
 }

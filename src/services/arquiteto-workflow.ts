@@ -10,7 +10,7 @@ export async function generateArquitetoWorkflow(
 ): Promise<ArquitetoWorkflowResult> {
   const res = await pb.send('/backend/v1/generate-arquiteto-workflow', {
     method: 'POST',
-    body: JSON.stringify({ entrega_final: entregaFinal, n }),
+    body: JSON.stringify({ entregaFinal, n }),
     headers: { 'Content-Type': 'application/json' },
   })
   return { workflow: res.workflow || '' }

@@ -7,7 +7,7 @@ routerAdd(
     if (!userId) return e.unauthorizedError('auth required')
     var theme = (body.theme || '').trim()
     if (!theme) return e.badRequestError('Tema é obrigatório')
-    var productId = body.product_id || ''
+    var productId = body.productId || ''
 
     function loadPrompt(slug) {
       var rec = $app.findFirstRecordByData('prompt_library', 'slug', slug)
@@ -148,6 +148,17 @@ routerAdd(
       record.set('status', 'completed')
       $app.save(record)
 
+      try {
+        var alCol = $app.findCollectionByNameOrId('audit_logs')
+        var alRec = new Record(alCol)
+        alRec.set('integration_name', 'multi_format_generator')
+        alRec.set('integration_type', 'route')
+        alRec.set('status', 'success')
+        alRec.set('executed_at', new Date().toISOString())
+        alRec.set('workflow_id', record.id)
+        $app.save(alRec)
+      } catch (_) {}
+
       return e.json(200, { success: true, id: record.id, final_content: finalContent })
     } catch (err) {
       var msg = err && err.message ? err.message : 'Erro desconhecido'
@@ -157,6 +168,17 @@ routerAdd(
       record.set('error_note', msg)
       record.set('agent_outputs', outputs)
       $app.save(record)
+      try {
+        var alColE = $app.findCollectionByNameOrId('audit_logs')
+        var alRecE = new Record(alColE)
+        alRecE.set('integration_name', 'multi_format_generator')
+        alRecE.set('integration_type', 'route')
+        alRecE.set('status', 'error')
+        alRecE.set('executed_at', new Date().toISOString())
+        alRecE.set('workflow_id', record.id)
+        alRecE.set('error_message', msg)
+        $app.save(alRecE)
+      } catch (_) {}
       return e.json(500, { success: false, id: record.id, error: msg })
     }
   },

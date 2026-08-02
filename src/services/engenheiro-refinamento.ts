@@ -9,7 +9,7 @@ export async function generateEngenheiroRefinamento(
 ): Promise<EngenheiroRefinamentoResult> {
   const res = await pb.send('/backend/v1/generate-engenheiro-refinamento', {
     method: 'POST',
-    body: JSON.stringify({ prompt_original: promptOriginal }),
+    body: JSON.stringify({ promptOriginal }),
     headers: { 'Content-Type': 'application/json' },
   })
   return { resultado: res.resultado || '' }

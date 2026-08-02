@@ -20,6 +20,17 @@ routerAdd(
         stream: true,
       })
 
+      try {
+        var alCol = $app.findCollectionByNameOrId('audit_logs')
+        var alRec = new Record(alCol)
+        alRec.set('integration_name', 'fashion_advisor_chat')
+        alRec.set('integration_type', 'route')
+        alRec.set('status', 'success')
+        alRec.set('executed_at', new Date().toISOString())
+        alRec.set('agent_name', 'fashion-trend-advisor')
+        $app.save(alRec)
+      } catch (_) {}
+
       e.response.header().set('Content-Type', 'text/event-stream')
       e.response.header().set('Cache-Control', 'no-cache')
       e.response.header().set('X-Conversation-Id', conv.id)
