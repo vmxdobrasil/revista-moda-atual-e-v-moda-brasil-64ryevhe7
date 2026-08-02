@@ -38,12 +38,16 @@ export function useRealtime<TRecord extends RecordModel = RecordModel>(
           unsubscribeFn = fn
         }
       })
-      .catch(() => {})
+      .catch((err) => {
+        console.error(`Realtime subscription failed for ${collectionName}:`, err)
+      })
 
     return () => {
       cancelled = true
       if (unsubscribeFn) {
-        unsubscribeFn().catch(() => {})
+        unsubscribeFn().catch((err) => {
+          console.error(`Realtime unsubscribe failed for ${collectionName}:`, err)
+        })
       }
     }
   }, [collectionName, enabled])

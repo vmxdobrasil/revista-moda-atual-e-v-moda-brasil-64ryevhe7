@@ -38,6 +38,7 @@ export interface AuditDeliveryQueue {
     priority: string
   }>
   healthStatus: string
+  avgProcessingTime: string
   items: Array<{
     id: string
     theme: string
@@ -47,6 +48,7 @@ export interface AuditDeliveryQueue {
     published_at: string
     error_note: string
     priority: string
+    processingTime: string
   }>
 }
 

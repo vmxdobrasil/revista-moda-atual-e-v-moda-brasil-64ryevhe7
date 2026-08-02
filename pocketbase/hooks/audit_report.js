@@ -214,6 +214,20 @@ routerAdd(
         if (stVal === 'rascunho' && item.getString('error_note')) priority = 'alta'
         else if (stVal === 'rascunho') priority = 'média'
         else if (stVal === 'em_revisao') priority = 'média'
+        var procTime = 'indisponível'
+        var createdStr = item.getString('created')
+        var publishedStr = item.getString('published_at')
+        if (createdStr && publishedStr) {
+          try {
+            var diff = new Date(publishedStr) - new Date(createdStr)
+            if (diff > 0) {
+              var hours = Math.floor(diff / 3600000)
+              var mins = Math.floor((diff % 3600000) / 60000)
+              procTime = hours > 0 ? hours + 'h ' + mins + 'm' : mins + 'm'
+            }
+          } catch (_) {}
+        }
+
         dq.items.push({
           id: item.id,
           theme: item.getString('theme'),
@@ -223,6 +237,7 @@ routerAdd(
           published_at: item.getString('published_at'),
           error_note: item.getString('error_note'),
           priority: priority,
+          processingTime: procTime,
         })
         if (item.getString('error_note')) {
           dq.errors.push({
@@ -237,6 +252,30 @@ routerAdd(
       dq.pending = (dq.byStatus['rascunho'] || 0) + (dq.byStatus['em_revisao'] || 0)
       if (dq.errors.length > 0) dq.healthStatus = 'errors'
       else if (dq.pending > 0) dq.healthStatus = 'pending'
+
+      var totalProcMs = 0
+      var procCount = 0
+      for (var pi2 = 0; pi2 < dq.items.length; pi2++) {
+        var createdTs = dq.items[pi2].created
+        var publishedTs = dq.items[pi2].published_at
+        if (createdTs && publishedTs) {
+          try {
+            var diffMs = new Date(publishedTs) - new Date(createdTs)
+            if (diffMs > 0) {
+              totalProcMs += diffMs
+              procCount++
+            }
+          } catch (_) {}
+        }
+      }
+      if (procCount > 0) {
+        var avgMs = totalProcMs / procCount
+        var avgH = Math.floor(avgMs / 3600000)
+        var avgM = Math.floor((avgMs % 3600000) / 60000)
+        dq.avgProcessingTime = avgH > 0 ? avgH + 'h ' + avgM + 'm' : avgM + 'm'
+      } else {
+        dq.avgProcessingTime = 'indisponível'
+      }
     } catch (err) {
       dq.healthStatus = 'error'
     }
@@ -247,19 +286,21 @@ routerAdd(
       found: 21,
       additional: [
         {
-          name: 'generate_arquiteto_workflow',
-          purpose: 'Generates AI workflow with chained steps using the arquiteto-workflow prompt',
-          status: 'active',
-        },
-        {
-          name: 'generate_engenheiro_refinamento',
-          purpose: 'Refines and optimizes prompts using the engenheiro-refinamento prompt',
-          status: 'active',
-        },
-        {
-          name: 'social_posts_compute',
+          name: 'meta_prompt_generate',
           purpose:
-            'Event hook that computes engagement_rate and is_top_performer on social_posts CRUD operations',
+            'Generates meta-prompts by combining fashion-trend-advisor agent insights with prompt library entries for optimized content creation',
+          status: 'active',
+        },
+        {
+          name: 'multi_format_generator',
+          purpose:
+            'Generates content in multiple formats (article, caption, bio) with marketplace product integration and workflow result persistence',
+          status: 'active',
+        },
+        {
+          name: 'social_analytics_recommendations',
+          purpose:
+            'Analyzes social posts performance data and generates actionable marketing recommendations based on engagement metrics',
           status: 'active',
         },
       ],

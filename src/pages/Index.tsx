@@ -18,7 +18,7 @@ export default function Index() {
       setEditions(data)
       setError(false)
     } catch (err) {
-      console.error(err)
+      console.error('Failed to load editions on Index page:', err)
       setError(true)
     } finally {
       setLoading(false)
@@ -30,7 +30,9 @@ export default function Index() {
   }, [loadData])
 
   useRealtime('editions', () => {
-    loadData()
+    loadData().catch((err) => {
+      console.error('Realtime data reload failed for editions:', err)
+    })
   })
 
   const homeMeta = useMemo(

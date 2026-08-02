@@ -1,24 +1,30 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getAuditReport, type AuditReport } from '@/services/audit'
 import { AuditDataTable, StatusBadge, PriorityBadge } from '@/components/audit/AuditDataTable'
-import { exportAuditToCSV } from '@/lib/audit-export'
+import { AuditHistory } from '@/components/audit/AuditHistory'
+import { exportAuditToCSV, exportAuditToPDF, exportAuditToTXT } from '@/lib/audit-export'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ShieldCheck, Download, CheckCircle2 } from 'lucide-react'
+import { ShieldCheck, Download, FileText, FileSpreadsheet, FileType, ArrowLeft } from 'lucide-react'
+
+const indisponivel = 'indisponível'
 
 export default function AuditPage() {
   const [report, setReport] = useState<AuditReport | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isHistorical, setIsHistorical] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
+    setIsHistorical(false)
     try {
       setReport(await getAuditReport())
     } catch (err) {
+      console.error('Failed to load audit report:', err)
       setError(err instanceof Error ? err.message : 'Falha ao gerar relatório.')
     } finally {
       setLoading(false)
@@ -28,6 +34,11 @@ export default function AuditPage() {
   useEffect(() => {
     load()
   }, [load])
+
+  const handleViewHistorical = (historicalReport: AuditReport) => {
+    setReport(historicalReport)
+    setIsHistorical(true)
+  }
 
   if (loading)
     return (
@@ -41,18 +52,32 @@ export default function AuditPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h2 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
             <ShieldCheck className="text-orange-500" /> Auditoria do Sistema
           </h2>
           <p className="text-gray-500 mt-1">
+            {isHistorical ? 'Relatório Histórico — ' : ''}
             Gerado em {new Date(report.generatedAt).toLocaleString('pt-BR')}
           </p>
         </div>
-        <Button onClick={() => exportAuditToCSV(report)} variant="outline" className="gap-2">
-          <Download className="w-4 h-4" /> Exportar CSV
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          {isHistorical && (
+            <Button onClick={load} variant="outline" className="gap-2">
+              <ArrowLeft className="w-4 h-4" /> Relatório Atual
+            </Button>
+          )}
+          <Button onClick={() => exportAuditToCSV(report)} variant="outline" className="gap-2">
+            <FileSpreadsheet className="w-4 h-4" /> CSV
+          </Button>
+          <Button onClick={() => exportAuditToPDF(report)} variant="outline" className="gap-2">
+            <FileText className="w-4 h-4" /> PDF
+          </Button>
+          <Button onClick={() => exportAuditToTXT(report)} variant="outline" className="gap-2">
+            <FileType className="w-4 h-4" /> TXT
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="collections">
@@ -63,6 +88,7 @@ export default function AuditPage() {
           <TabsTrigger value="delivery">Fila de Entrega</TabsTrigger>
           <TabsTrigger value="divergences">Divergências</TabsTrigger>
           <TabsTrigger value="fix">Correções</TabsTrigger>
+          <TabsTrigger value="history">Histórico</TabsTrigger>
         </TabsList>
 
         <TabsContent value="collections">
@@ -75,7 +101,7 @@ export default function AuditPage() {
                   {
                     key: 'lastRecord',
                     label: 'Último Registro',
-                    render: (v) => (v ? new Date(v).toLocaleString('pt-BR') : '—'),
+                    render: (v) => (v ? new Date(v).toLocaleString('pt-BR') : indisponivel),
                   },
                   { key: 'status', label: 'Status', render: (v) => <StatusBadge status={v} /> },
                   {
@@ -101,7 +127,7 @@ export default function AuditPage() {
                   {
                     key: 'lastExecution',
                     label: 'Última Execução',
-                    render: (v) => (v ? new Date(v).toLocaleString('pt-BR') : 'unavailable'),
+                    render: (v) => (v ? new Date(v).toLocaleString('pt-BR') : indisponivel),
                   },
                   { key: 'deps', label: 'Dependências' },
                   {
@@ -127,7 +153,7 @@ export default function AuditPage() {
                   {
                     key: 'lastExecution',
                     label: 'Última Execução',
-                    render: (v) => (v ? new Date(v).toLocaleString('pt-BR') : 'unavailable'),
+                    render: (v) => (v ? new Date(v).toLocaleString('pt-BR') : indisponivel),
                   },
                   {
                     key: 'priority',
@@ -144,10 +170,13 @@ export default function AuditPage() {
         <TabsContent value="delivery">
           <Card>
             <CardContent className="p-4 space-y-4">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 flex-wrap">
                 <StatusBadge status={report.deliveryQueue.healthStatus} />
                 <span className="text-sm text-gray-500">
                   Total: {report.deliveryQueue.total} | Pendentes: {report.deliveryQueue.pending}
+                </span>
+                <span className="text-sm text-gray-500">
+                  Tempo Médio: {report.deliveryQueue.avgProcessingTime || indisponivel}
                 </span>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -164,9 +193,13 @@ export default function AuditPage() {
                     { key: 'theme', label: 'Tema' },
                     { key: 'status', label: 'Status' },
                     {
+                      key: 'processingTime',
+                      label: 'Tempo de Processamento',
+                    },
+                    {
                       key: 'created',
                       label: 'Criado',
-                      render: (v) => (v ? new Date(v).toLocaleString('pt-BR') : '—'),
+                      render: (v) => (v ? new Date(v).toLocaleString('pt-BR') : indisponivel),
                     },
                     {
                       key: 'priority',
@@ -241,7 +274,7 @@ export default function AuditPage() {
           <Card>
             <CardContent className="p-4 space-y-3">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-500" />
+                <ShieldCheck className="w-5 h-5 text-green-500" />
                 <h3 className="font-bold">Arquiteto de Workflow — Correção Aplicada</h3>
                 <StatusBadge status={report.arquitetoFix.status} />
               </div>
@@ -262,6 +295,10 @@ export default function AuditPage() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="history">
+          <AuditHistory onViewReport={handleViewHistorical} />
         </TabsContent>
       </Tabs>
     </div>

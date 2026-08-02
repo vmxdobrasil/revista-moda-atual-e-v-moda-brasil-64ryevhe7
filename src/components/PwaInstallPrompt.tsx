@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Download, X, Smartphone } from 'lucide-react'
 import logoImg from '@/assets/image-editing1-586c9.png'
@@ -8,58 +8,103 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
 }
 
+const DISMISS_KEY = 'pwa_prompt_dismissed_at'
+const ENGAGEMENT_KEY = 'pwa_engagement_count'
+const MIN_ENGAGEMENT = 3
+const DISMISS_DURATION = 7 * 24 * 60 * 60 * 1000
+
 export function PwaInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [showPrompt, setShowPrompt] = useState(false)
   const [isIos, setIsIos] = useState(false)
 
+  const isDismissed = useCallback(() => {
+    const dismissed = localStorage.getItem(DISMISS_KEY)
+    if (!dismissed) return false
+    return Date.now() - parseInt(dismissed, 10) < DISMISS_DURATION
+  }, [])
+
+  const isStandalone = useCallback(() => {
+    return (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (navigator as unknown as { standalone?: boolean }).standalone === true
+    )
+  }, [])
+
   useEffect(() => {
+    if (isStandalone()) return
+
+    const userAgent = window.navigator.userAgent.toLowerCase()
+    const iosDevice = /iphone|ipad|ipod/.test(userAgent)
+    if (iosDevice) setIsIos(true)
+
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault()
       setDeferredPrompt(e as BeforeInstallPromptEvent)
-      const dismissed = localStorage.getItem('pwa_prompt_dismissed')
-      if (!dismissed) {
-        setShowPrompt(true)
-      }
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
 
-    const userAgent = window.navigator.userAgent.toLowerCase()
-    const iosDevice = /iphone|ipad|ipod/.test(userAgent)
-    const isStandalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      (navigator as unknown as { standalone?: boolean }).standalone
+    const trackEngagement = () => {
+      const count = parseInt(localStorage.getItem(ENGAGEMENT_KEY) || '0', 10) + 1
+      localStorage.setItem(ENGAGEMENT_KEY, String(count))
 
-    if (iosDevice && !isStandalone) {
-      setIsIos(true)
-      const dismissed = localStorage.getItem('pwa_prompt_dismissed')
-      if (!dismissed) {
-        setShowPrompt(true)
+      if (count >= MIN_ENGAGEMENT && !isDismissed()) {
+        if (iosDevice || deferredPrompt) {
+          setShowPrompt(true)
+        }
       }
     }
 
+    let throttleTimer: ReturnType<typeof setTimeout> | null = null
+    const onInteract = () => {
+      if (throttleTimer) return
+      throttleTimer = setTimeout(() => {
+        throttleTimer = null
+        trackEngagement()
+      }, 2000)
+    }
+
+    document.addEventListener('click', onInteract)
+    document.addEventListener('scroll', onInteract, { passive: true })
+    document.addEventListener('touchstart', onInteract, { passive: true })
+
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+      document.removeEventListener('click', onInteract)
+      document.removeEventListener('scroll', onInteract)
+      document.removeEventListener('touchstart', onInteract)
+      if (throttleTimer) clearTimeout(throttleTimer)
     }
-  }, [])
+  }, [deferredPrompt, isStandalone, isDismissed])
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) return
     setShowPrompt(false)
-    deferredPrompt.prompt()
+    await deferredPrompt.prompt()
     const choice = await deferredPrompt.userChoice
     if (choice.outcome === 'accepted') {
       setDeferredPrompt(null)
+      localStorage.removeItem(ENGAGEMENT_KEY)
     }
   }
 
   const handleDismiss = () => {
     setShowPrompt(false)
-    localStorage.setItem('pwa_prompt_dismissed', 'true')
+    localStorage.setItem(DISMISS_KEY, String(Date.now()))
   }
 
-  if (!showPrompt) return null
+  useEffect(() => {
+    const handleInstalled = () => {
+      setDeferredPrompt(null)
+      setShowPrompt(false)
+      localStorage.removeItem(ENGAGEMENT_KEY)
+    }
+    window.addEventListener('appinstalled', handleInstalled)
+    return () => window.removeEventListener('appinstalled', handleInstalled)
+  }, [])
+
+  if (!showPrompt || isStandalone()) return null
 
   return (
     <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-md z-50 bg-background/95 backdrop-blur border border-primary/20 shadow-2xl rounded-2xl p-4 transition-all duration-300 animate-in slide-in-from-bottom-5">
@@ -101,7 +146,7 @@ export function PwaInstallPrompt() {
                 className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-xs rounded-lg px-4 gap-1.5 shadow-sm"
               >
                 <Download className="w-3.5 h-3.5" />
-                Instalar aplicativo
+                Instalar
               </Button>
               <Button
                 onClick={handleDismiss}
