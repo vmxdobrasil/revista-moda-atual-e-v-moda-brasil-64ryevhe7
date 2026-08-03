@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { getAuditReport, type AuditReport } from '@/services/audit'
+import { MetricCard } from '@/components/admin/MetricCard'
 import { AuditHistory } from '@/components/audit/AuditHistory'
 import { AuditCharts } from '@/components/audit/AuditCharts'
 import { AuditComparison } from '@/components/audit/AuditComparison'
@@ -16,7 +17,17 @@ import { useRealtime } from '@/hooks/use-realtime'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ShieldCheck, FileSpreadsheet, Printer, FileType, ArrowLeft } from 'lucide-react'
+import {
+  ShieldCheck,
+  FileSpreadsheet,
+  Printer,
+  FileType,
+  ArrowLeft,
+  Database,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+} from 'lucide-react'
 
 export default function AuditPage() {
   const [report, setReport] = useState<AuditReport | null>(null)
@@ -70,6 +81,19 @@ export default function AuditPage() {
     setIsHistorical(true)
   }
 
+  const totalRecords = useMemo(
+    () => report?.collections.reduce((sum, c) => sum + c.count, 0) ?? 0,
+    [report],
+  )
+  const activeHooks = useMemo(
+    () => report?.hooks.filter((h) => h.status === 'active').length ?? 0,
+    [report],
+  )
+  const errorHooks = useMemo(
+    () => report?.hooks.filter((h) => h.status === 'error').length ?? 0,
+    [report],
+  )
+
   if (loading)
     return (
       <div className="space-y-4">
@@ -99,13 +123,13 @@ export default function AuditPage() {
             </Button>
           )}
           <Button onClick={() => exportAuditToCSV(report)} variant="outline" className="gap-2">
-            <FileSpreadsheet className="w-4 h-4" /> CSV
+            <FileSpreadsheet className="w-4 h-4" /> Exportar CSV
           </Button>
           <Button onClick={() => exportAuditToPDF(report)} variant="outline" className="gap-2">
-            <Printer className="w-4 h-4" /> PDF
+            <Printer className="w-4 h-4" /> Exportar PDF
           </Button>
           <Button onClick={() => exportAuditToTXT(report)} variant="outline" className="gap-2">
-            <FileType className="w-4 h-4" /> TXT
+            <FileType className="w-4 h-4" /> Exportar TXT
           </Button>
         </div>
       </div>
@@ -123,6 +147,32 @@ export default function AuditPage() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <MetricCard
+              icon={Database}
+              label="Total de Registros"
+              value={totalRecords}
+              color="hsl(24, 95%, 53%)"
+            />
+            <MetricCard
+              icon={CheckCircle2}
+              label="Hooks Ativos"
+              value={activeHooks}
+              color="hsl(140, 70%, 45%)"
+            />
+            <MetricCard
+              icon={AlertCircle}
+              label="Hooks com Erro"
+              value={errorHooks}
+              color="hsl(0, 80%, 50%)"
+            />
+            <MetricCard
+              icon={Clock}
+              label="Fila Pendente"
+              value={report.deliveryQueue.pending}
+              color="hsl(210, 80%, 50%)"
+            />
+          </div>
           <AuditCharts report={report} />
           <AuditComparison />
         </TabsContent>

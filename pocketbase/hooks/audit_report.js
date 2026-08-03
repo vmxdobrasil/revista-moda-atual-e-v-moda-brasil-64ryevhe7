@@ -222,10 +222,10 @@ routerAdd(
         else if (stVal === 'em_revisao') priority = 'média'
         var procTime = 'indisponível'
         var createdStr = item.getString('created')
-        var publishedStr = item.getString('published_at')
-        if (createdStr && publishedStr) {
+        var updatedStr = item.getString('updated')
+        if (createdStr && updatedStr) {
           try {
-            var diff = new Date(publishedStr) - new Date(createdStr)
+            var diff = new Date(updatedStr) - new Date(createdStr)
             if (diff > 0) {
               var hours = Math.floor(diff / 3600000)
               var mins = Math.floor((diff % 3600000) / 60000)
@@ -263,10 +263,10 @@ routerAdd(
       var procCount = 0
       for (var pi2 = 0; pi2 < dq.items.length; pi2++) {
         var createdTs = dq.items[pi2].created
-        var publishedTs = dq.items[pi2].published_at
-        if (createdTs && publishedTs) {
+        var updatedTs = dq.items[pi2].updated
+        if (createdTs && updatedTs) {
           try {
-            var diffMs = new Date(publishedTs) - new Date(createdTs)
+            var diffMs = new Date(updatedTs) - new Date(createdTs)
             if (diffMs > 0) {
               totalProcMs += diffMs
               procCount++

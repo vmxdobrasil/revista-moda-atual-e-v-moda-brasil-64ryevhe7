@@ -43,11 +43,23 @@ export function exportAuditToCSV(report: AuditReport): void {
   lines.push('=== FILA DE ENTREGA ===')
   lines.push(`Total,${report.deliveryQueue.total}`)
   lines.push(`Pendentes,${report.deliveryQueue.pending}`)
+  lines.push(`Publicados,${report.deliveryQueue.byStatus['publicado'] || 0}`)
+  lines.push(`Erros,${report.deliveryQueue.errors.length}`)
   lines.push(`Saúde,${report.deliveryQueue.healthStatus}`)
   lines.push(`Tempo Médio de Processamento,${report.deliveryQueue.avgProcessingTime}`)
   Object.entries(report.deliveryQueue.byStatus).forEach(([k, v]) => {
     lines.push(`${k},${v}`)
   })
+  if (report.deliveryQueue.errors.length > 0) {
+    lines.push('')
+    lines.push('--- ITENS COM ERRO ---')
+    lines.push('ID,Tema,Erro,Criado,Prioridade')
+    report.deliveryQueue.errors.forEach((err) => {
+      lines.push(
+        `"${err.id}","${err.theme}","${err.error_note}","${fmtDate(err.created)}","${err.priority}"`,
+      )
+    })
+  }
 
   lines.push('')
   lines.push('=== DIVERGÊNCIAS ===')
@@ -127,11 +139,20 @@ export function exportAuditToTXT(report: AuditReport): void {
   lines.push('-'.repeat(40))
   lines.push(`  Total: ${report.deliveryQueue.total}`)
   lines.push(`  Pendentes: ${report.deliveryQueue.pending}`)
+  lines.push(`  Publicados: ${report.deliveryQueue.byStatus['publicado'] || 0}`)
+  lines.push(`  Erros: ${report.deliveryQueue.errors.length}`)
   lines.push(`  Saúde: ${report.deliveryQueue.healthStatus}`)
   lines.push(`  Tempo Médio de Processamento: ${report.deliveryQueue.avgProcessingTime}`)
   Object.entries(report.deliveryQueue.byStatus).forEach(([k, v]) => {
     lines.push(`    ${k}: ${v}`)
   })
+  if (report.deliveryQueue.errors.length > 0) {
+    lines.push('')
+    lines.push('  ITENS COM ERRO:')
+    report.deliveryQueue.errors.forEach((err) => {
+      lines.push(`    - ${err.theme}: ${err.error_note}`)
+    })
+  }
   lines.push('')
 
   lines.push('DIVERGÊNCIAS')
@@ -191,12 +212,25 @@ ${report.hooks.map((h) => `<tr><td>${esc(h.name)}</td><td>${h.type}</td><td>${h.
 ${report.agents.map((a) => `<tr><td>${esc(a.name)}</td><td>${a.slug}</td><td>${a.status}</td><td>${fmtDate(a.lastExecution)}</td><td>${a.priority}</td></tr>`).join('')}
 </table>
 <h2 style="page-break-before: always;">Fila de Entrega</h2>
-<p>Total: ${report.deliveryQueue.total} | Pendentes: ${report.deliveryQueue.pending} | Saúde: ${report.deliveryQueue.healthStatus} | Tempo Médio: ${report.deliveryQueue.avgProcessingTime}</p>
+<p>Total: ${report.deliveryQueue.total} | Pendentes: ${report.deliveryQueue.pending} | Publicados: ${report.deliveryQueue.byStatus['publicado'] || 0} | Erros: ${report.deliveryQueue.errors.length} | Saúde: ${report.deliveryQueue.healthStatus} | Tempo Médio: ${report.deliveryQueue.avgProcessingTime}</p>
 <table><tr><th>Status</th><th>Quantidade</th></tr>
 ${Object.entries(report.deliveryQueue.byStatus)
   .map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`)
   .join('')}
 </table>
+${
+  report.deliveryQueue.errors.length > 0
+    ? `<h3>Itens com Erro (${report.deliveryQueue.errors.length})</h3>
+<table><tr><th>Tema</th><th>Erro</th><th>Criado</th></tr>
+${report.deliveryQueue.errors
+  .map(
+    (err) =>
+      `<tr><td>${esc(err.theme)}</td><td>${esc(err.error_note)}</td><td>${fmtDate(err.created)}</td></tr>`,
+  )
+  .join('')}
+</table>`
+    : ''
+}
 <h2 style="page-break-before: always;">Divergências</h2>
 <p>Hooks: ${report.hooksDivergence.documented} documentados → ${report.hooksDivergence.found} encontrados</p>
 <p>Prompts: ${report.promptsDivergence.documented} documentados → ${report.promptsDivergence.found} encontrados</p>
