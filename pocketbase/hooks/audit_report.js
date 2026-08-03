@@ -283,7 +283,7 @@ routerAdd(
 
     result.hooksDivergence = {
       documented: 18,
-      found: 21,
+      found: hooksData.length,
       additional: [
         {
           name: 'meta_prompt_generate',
@@ -352,38 +352,38 @@ routerAdd(
     }
 
     result.promptsDivergence = {
-      documented: 16,
+      documented: documentedSlugs.length,
       found: promptCount,
       additional: additionalPrompts,
       allPrompts: promptList,
     }
 
+    var adminAdditional = [
+      {
+        name: 'Top 60 (Parceiros)',
+        description:
+          'CRUD of categories and brands, ranking, website, social handle, position, score, and previous position.',
+        route: '/admin/top60',
+        status: 'active',
+      },
+      {
+        name: 'Anúncios',
+        description: 'CRUD of advertising banners with image, URL, title, active/inactive status.',
+        route: '/admin/advertisements',
+        status: 'active',
+      },
+      {
+        name: 'Ofertas',
+        description:
+          'CRUD of marketplace products and orders, including product price, currency, category, vendor, featured status, and order status flow.',
+        route: '/admin/marketplace-products',
+        status: 'active',
+      },
+    ]
     result.adminModulesDivergence = {
       documented: 15,
-      found: 18,
-      additional: [
-        {
-          name: 'Top 60 (Parceiros)',
-          description:
-            'CRUD of categories and brands, ranking, website, social handle, position, score, and previous position.',
-          route: '/admin/top60',
-          status: 'active',
-        },
-        {
-          name: 'Anúncios',
-          description:
-            'CRUD of advertising banners with image, URL, title, active/inactive status.',
-          route: '/admin/advertisements',
-          status: 'active',
-        },
-        {
-          name: 'Ofertas',
-          description:
-            'CRUD of marketplace products and orders, including product price, currency, category, vendor, featured status, and order status flow.',
-          route: '/admin/marketplace-products',
-          status: 'active',
-        },
-      ],
+      found: 15 + adminAdditional.length,
+      additional: adminAdditional,
     }
 
     result.arquitetoFix = {
