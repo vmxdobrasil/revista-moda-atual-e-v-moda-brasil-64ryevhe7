@@ -24,6 +24,8 @@ routerAdd(
       'advertisements',
       'delivery_queue',
       'about_content',
+      'audit_logs',
+      'audit_snapshots',
     ]
 
     var collections = []
@@ -142,10 +144,12 @@ routerAdd(
       hd.lastExecution = null
       hd.status = 'unavailable'
       hd.priority = 'média'
+      hd.error_message = ''
       var log = findLastLog(hd.name, null)
       if (log) {
         hd.lastExecution = log.getString('executed_at')
         hd.status = log.getString('status') === 'error' ? 'error' : 'active'
+        hd.error_message = log.getString('error_message') || ''
         hd.priority = hd.status === 'error' ? 'alta' : 'baixa'
       }
     }
@@ -189,10 +193,12 @@ routerAdd(
       ad.lastExecution = null
       ad.status = 'unavailable'
       ad.priority = 'média'
+      ad.error_message = ''
       var alog = findLastLog(null, ad.slug)
       if (alog) {
         ad.lastExecution = alog.getString('executed_at')
         ad.status = alog.getString('status') === 'error' ? 'error' : 'active'
+        ad.error_message = alog.getString('error_message') || ''
         ad.priority = ad.status === 'error' ? 'alta' : 'baixa'
       }
     }
@@ -338,6 +344,12 @@ routerAdd(
       'basic-super-prompt-1',
       'basic-super-prompt-2',
       'advanced-super-prompt',
+      'arquiteto-workflow',
+      'engenheiro-refinamento',
+      'auditoria',
+      'edicao-de-roupas',
+      'suporte-de-entrega',
+      'chamada-newsletter',
     ]
     var additionalPrompts = []
     for (var pi = 0; pi < promptList.length; pi++) {
@@ -418,6 +430,32 @@ routerAdd(
         },
       ],
     }
+
+    var hookExecutionsByDay = {}
+    var nowDate = new Date()
+    for (var di = 0; di < 7; di++) {
+      var dd = new Date(nowDate)
+      dd.setDate(dd.getDate() - di)
+      var ds =
+        dd.getUTCFullYear() +
+        '-' +
+        String(dd.getUTCMonth() + 1).padStart(2, '0') +
+        '-' +
+        String(dd.getUTCDate()).padStart(2, '0')
+      hookExecutionsByDay[ds] = { date: ds, success: 0, error: 0 }
+    }
+    for (var li = 0; li < allLogs.length; li++) {
+      var execAt = allLogs[li].getString('executed_at')
+      if (!execAt) continue
+      var execDay = execAt.split(' ')[0].split('T')[0]
+      if (hookExecutionsByDay[execDay]) {
+        if (allLogs[li].getString('status') === 'error') hookExecutionsByDay[execDay].error++
+        else hookExecutionsByDay[execDay].success++
+      }
+    }
+    result.hookExecutionsByDay = Object.values(hookExecutionsByDay).sort(function (a, b) {
+      return a.date.localeCompare(b.date)
+    })
 
     return e.json(200, result)
   },

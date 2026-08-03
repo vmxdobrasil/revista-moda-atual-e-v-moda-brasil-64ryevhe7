@@ -15,6 +15,7 @@ export interface AuditHook {
   lastExecution: string | null
   status: string
   priority: string
+  error_message: string
 }
 
 export interface AuditAgent {
@@ -24,6 +25,7 @@ export interface AuditAgent {
   lastExecution: string | null
   status: string
   priority: string
+  error_message: string
 }
 
 export interface AuditDeliveryQueue {
@@ -64,6 +66,7 @@ export interface AuditReport {
   hooks: AuditHook[]
   agents: AuditAgent[]
   deliveryQueue: AuditDeliveryQueue
+  hookExecutionsByDay?: Array<{ date: string; success: number; error: number }>
   hooksDivergence: AuditDivergence<{ name: string; purpose: string; status: string }>
   promptsDivergence: AuditDivergence<{
     name: string

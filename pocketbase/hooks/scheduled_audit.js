@@ -2,7 +2,7 @@ onBootstrap((e) => {
   e.next()
 
   try {
-    cronAdd('scheduled_audit', '0 * * * *', () => {
+    cronAdd('scheduled_audit', '0 0 * * *', () => {
       var baseUrl = $secrets.get('PB_INSTANCE_URL') || ''
       if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1)
       var token = $secrets.get('PB_SUPERUSER_TOKEN') || ''

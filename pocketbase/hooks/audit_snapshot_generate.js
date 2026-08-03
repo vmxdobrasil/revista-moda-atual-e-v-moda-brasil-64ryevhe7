@@ -11,10 +11,7 @@ routerAdd(
       '-' +
       String(now.getUTCMonth() + 1).padStart(2, '0') +
       '-' +
-      String(now.getUTCDate()).padStart(2, '0') +
-      ' ' +
-      String(now.getUTCHours()).padStart(2, '0') +
-      ':00'
+      String(now.getUTCDate()).padStart(2, '0')
 
     try {
       var existing = $app.findFirstRecordByData('audit_snapshots', 'period', periodKey)

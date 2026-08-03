@@ -12,6 +12,9 @@ function fmtDate(v: string | null): string {
 export function exportAuditToCSV(report: AuditReport): void {
   const lines: string[] = []
 
+  lines.push('Relatório de Auditoria — Revista MODA ATUAL')
+  lines.push(`Gerado em: ${new Date(report.generatedAt).toLocaleString('pt-BR')}`)
+  lines.push('')
   lines.push('=== COLEÇÕES ===')
   lines.push('Nome,Registros,Último Registro,Status,Prioridade')
   report.collections.forEach((c) => {
@@ -20,10 +23,10 @@ export function exportAuditToCSV(report: AuditReport): void {
 
   lines.push('')
   lines.push('=== HOOKS ===')
-  lines.push('Nome,Tipo,Status,Última Execução,Dependências,Prioridade')
+  lines.push('Nome,Tipo,Status,Última Execução,Dependências,Prioridade,Mensagem de Erro')
   report.hooks.forEach((h) => {
     lines.push(
-      `"${h.name}","${h.type}","${h.status}","${fmtDate(h.lastExecution)}","${h.deps}","${h.priority}"`,
+      `"${h.name}","${h.type}","${h.status}","${fmtDate(h.lastExecution)}","${h.deps}","${h.priority}","${h.error_message || ''}"`,
     )
   })
 
@@ -104,6 +107,9 @@ export function exportAuditToTXT(report: AuditReport): void {
     lines.push(`    Status: ${h.status} | Prioridade: ${h.priority}`)
     lines.push(`    Dependências: ${h.deps}`)
     lines.push(`    Última execução: ${fmtDate(h.lastExecution)}`)
+    if (h.error_message) {
+      lines.push(`    Erro: ${h.error_message}`)
+    }
   })
   lines.push('')
 
@@ -170,28 +176,28 @@ th{background:#f5f5f5;font-weight:600}
 .meta{font-size:12px;color:#666;margin-bottom:16px}
 @media print{body{padding:0}@page{margin:1cm}}
 </style></head><body>
-<h1>Relatório de Auditoria do Sistema</h1>
+<h1>Relatório de Auditoria — Revista MODA ATUAL</h1>
 <p class="meta">Gerado em ${new Date(report.generatedAt).toLocaleString('pt-BR')}</p>
 <h2>Coleções (${report.collections.length})</h2>
 <table><tr><th>Nome</th><th>Registros</th><th>Último Registro</th><th>Status</th><th>Prioridade</th></tr>
 ${report.collections.map((c) => `<tr><td>${esc(c.name)}</td><td>${c.count}</td><td>${fmtDate(c.lastRecord)}</td><td>${c.status}</td><td>${c.priority}</td></tr>`).join('')}
 </table>
-<h2>Hooks (${report.hooks.length})</h2>
-<table><tr><th>Nome</th><th>Tipo</th><th>Status</th><th>Última Execução</th><th>Dependências</th><th>Prioridade</th></tr>
-${report.hooks.map((h) => `<tr><td>${esc(h.name)}</td><td>${h.type}</td><td>${h.status}</td><td>${fmtDate(h.lastExecution)}</td><td>${esc(h.deps)}</td><td>${h.priority}</td></tr>`).join('')}
+<h2 style="page-break-before: always;">Hooks (${report.hooks.length})</h2>
+<table><tr><th>Nome</th><th>Tipo</th><th>Status</th><th>Última Execução</th><th>Dependências</th><th>Prioridade</th><th>Erro</th></tr>
+${report.hooks.map((h) => `<tr><td>${esc(h.name)}</td><td>${h.type}</td><td>${h.status}</td><td>${fmtDate(h.lastExecution)}</td><td>${esc(h.deps)}</td><td>${h.priority}</td><td>${esc(h.error_message || '—')}</td></tr>`).join('')}
 </table>
-<h2>Agentes (${report.agents.length})</h2>
+<h2 style="page-break-before: always;">Agentes (${report.agents.length})</h2>
 <table><tr><th>Nome</th><th>Slug</th><th>Status</th><th>Última Execução</th><th>Prioridade</th></tr>
 ${report.agents.map((a) => `<tr><td>${esc(a.name)}</td><td>${a.slug}</td><td>${a.status}</td><td>${fmtDate(a.lastExecution)}</td><td>${a.priority}</td></tr>`).join('')}
 </table>
-<h2>Fila de Entrega</h2>
+<h2 style="page-break-before: always;">Fila de Entrega</h2>
 <p>Total: ${report.deliveryQueue.total} | Pendentes: ${report.deliveryQueue.pending} | Saúde: ${report.deliveryQueue.healthStatus} | Tempo Médio: ${report.deliveryQueue.avgProcessingTime}</p>
 <table><tr><th>Status</th><th>Quantidade</th></tr>
 ${Object.entries(report.deliveryQueue.byStatus)
   .map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`)
   .join('')}
 </table>
-<h2>Divergências</h2>
+<h2 style="page-break-before: always;">Divergências</h2>
 <p>Hooks: ${report.hooksDivergence.documented} documentados → ${report.hooksDivergence.found} encontrados</p>
 <p>Prompts: ${report.promptsDivergence.documented} documentados → ${report.promptsDivergence.found} encontrados</p>
 <p>Módulos Admin: ${report.adminModulesDivergence.documented} documentados → ${report.adminModulesDivergence.found} encontrados</p>
