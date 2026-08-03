@@ -9,6 +9,92 @@ function fmtDate(v: string | null): string {
   }
 }
 
+function escHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
+interface ExecutiveSummary {
+  totalHooks: number
+  activeHooks: number
+  errorHooks: number
+  totalAgents: number
+  activeAgents: number
+  totalRecords: number
+  collectionsNeedingAttention: number
+  dqErrors: number
+  dqPending: number
+  dqPublished: number
+  totalExecutions: number
+  successExecutions: number
+  errorExecutions: number
+  successRate: string
+  overallStatus: string
+  statusColor: string
+  findings: string[]
+  hasData: boolean
+}
+
+function computeExecutiveSummary(report: AuditReport): ExecutiveSummary {
+  const totalHooks = report.hooks.length
+  const activeHooks = report.hooks.filter((h) => h.status === 'active').length
+  const errorHooks = report.hooks.filter((h) => h.status === 'error').length
+  const totalAgents = report.agents.length
+  const activeAgents = report.agents.filter((a) => a.status === 'active').length
+  const totalRecords = report.collections.reduce((sum, c) => sum + c.count, 0)
+  const collectionsNeedingAttention = report.collections.filter((c) => c.status !== 'OK').length
+  const dqErrors = report.deliveryQueue.errors.length
+  const dqPending = report.deliveryQueue.pending
+  const dqPublished = report.deliveryQueue.byStatus['publicado'] || 0
+  const totalExecutions =
+    report.hookExecutionsByDay?.reduce((sum, d) => sum + d.success + d.error, 0) || 0
+  const successExecutions = report.hookExecutionsByDay?.reduce((sum, d) => sum + d.success, 0) || 0
+  const errorExecutions = report.hookExecutionsByDay?.reduce((sum, d) => sum + d.error, 0) || 0
+  const successRate =
+    totalExecutions > 0 ? ((successExecutions / totalExecutions) * 100).toFixed(1) : '0.0'
+
+  let overallStatus = 'Saudável'
+  let statusColor = '#16a34a'
+  if (errorHooks > 0 || dqErrors > 0) {
+    overallStatus = 'Atenção Necessária'
+    statusColor = '#ea580c'
+  }
+  if (errorHooks > 3 || dqErrors > 5) {
+    overallStatus = 'Crítico'
+    statusColor = '#dc2626'
+  }
+
+  const findings: string[] = []
+  if (errorHooks > 0) findings.push(`${errorHooks} hook(s) com erro`)
+  if (collectionsNeedingAttention > 0)
+    findings.push(`${collectionsNeedingAttention} coleção(ões) precisando de atenção`)
+  if (dqErrors > 0) findings.push(`${dqErrors} item(ns) com erro na fila de entrega`)
+  if (dqPending > 0) findings.push(`${dqPending} item(ns) pendentes na fila de entrega`)
+  if (findings.length === 0) findings.push('Nenhum problema detectado')
+
+  const hasData = totalHooks > 0 || totalRecords > 0 || totalExecutions > 0
+
+  return {
+    totalHooks,
+    activeHooks,
+    errorHooks,
+    totalAgents,
+    activeAgents,
+    totalRecords,
+    collectionsNeedingAttention,
+    dqErrors,
+    dqPending,
+    dqPublished,
+    totalExecutions,
+    successExecutions,
+    errorExecutions,
+    successRate,
+    overallStatus,
+    statusColor,
+    findings,
+    hasData,
+  }
+}
+
 export function exportAuditToCSV(report: AuditReport): void {
   const lines: string[] = []
 
@@ -95,11 +181,33 @@ export function exportAuditToCSV(report: AuditReport): void {
 }
 
 export function exportAuditToTXT(report: AuditReport): void {
+  const s = computeExecutiveSummary(report)
   const lines: string[] = []
 
   lines.push('RELATÓRIO DE AUDITORIA DO SISTEMA')
   lines.push(`Gerado em: ${new Date(report.generatedAt).toLocaleString('pt-BR')}`)
   lines.push('='.repeat(60))
+  lines.push('')
+
+  lines.push('RESUMO EXECUTIVO')
+  lines.push('-'.repeat(40))
+  if (!s.hasData) {
+    lines.push('  Nenhum dado disponível para o período.')
+  } else {
+    lines.push(`  Status Geral: ${s.overallStatus}`)
+    lines.push(`  Total de Operações: ${s.totalHooks + s.totalAgents}`)
+    lines.push(`  Execuções (7 dias): ${s.totalExecutions}`)
+    lines.push(`  Taxa de Sucesso: ${s.successRate}%`)
+    lines.push(`  Hooks Ativos: ${s.activeHooks}/${s.totalHooks}`)
+    lines.push(`  Agentes Ativos: ${s.activeAgents}/${s.totalAgents}`)
+    lines.push(`  Registros Totais: ${s.totalRecords}`)
+    lines.push(`  Fila Publicada: ${s.dqPublished}`)
+    lines.push('')
+    lines.push('  Principais Achados:')
+    s.findings.forEach((f) => {
+      lines.push(`    - ${f}`)
+    })
+  }
   lines.push('')
 
   lines.push('COLEÇÕES')
@@ -179,11 +287,38 @@ export function exportAuditToTXT(report: AuditReport): void {
   URL.revokeObjectURL(url)
 }
 
+function buildExecutiveSummaryHTML(report: AuditReport): string {
+  const s = computeExecutiveSummary(report)
+
+  if (!s.hasData) {
+    return `<div class="summary-box">
+<h2>Resumo Executivo</h2>
+<p class="summary-empty">Nenhum dado disponível para o período auditado.</p>
+</div>`
+  }
+
+  return `<div class="summary-box">
+<h2>Resumo Executivo</h2>
+<div class="summary-grid">
+<div class="summary-item"><span class="summary-label">Status Geral</span><span class="summary-value" style="color:${s.statusColor}">${s.overallStatus}</span></div>
+<div class="summary-item"><span class="summary-label">Total de Operações</span><span class="summary-value">${s.totalHooks + s.totalAgents}</span></div>
+<div class="summary-item"><span class="summary-label">Execuções (7 dias)</span><span class="summary-value">${s.totalExecutions}</span></div>
+<div class="summary-item"><span class="summary-label">Taxa de Sucesso</span><span class="summary-value" style="color:${s.successRate === '100.0' ? '#16a34a' : '#ea580c'}">${s.successRate}%</span></div>
+<div class="summary-item"><span class="summary-label">Hooks Ativos</span><span class="summary-value">${s.activeHooks}/${s.totalHooks}</span></div>
+<div class="summary-item"><span class="summary-label">Agentes Ativos</span><span class="summary-value">${s.activeAgents}/${s.totalAgents}</span></div>
+<div class="summary-item"><span class="summary-label">Registros Totais</span><span class="summary-value">${s.totalRecords}</span></div>
+<div class="summary-item"><span class="summary-label">Fila Publicada</span><span class="summary-value">${s.dqPublished}</span></div>
+</div>
+<div class="summary-findings">
+<span class="summary-label">Principais Achados:</span>
+<ul>${s.findings.map((f) => `<li>${escHtml(f)}</li>`).join('')}</ul>
+</div>
+</div>`
+}
+
 export function exportAuditToPDF(report: AuditReport): void {
   const printWindow = window.open('', '_blank')
   if (!printWindow) return
-
-  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
   const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
 <title>Relatório de Auditoria</title>
@@ -195,21 +330,32 @@ table{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:11px}
 th,td{border:1px solid #e0e0e0;padding:4px 6px;text-align:left}
 th{background:#f5f5f5;font-weight:600}
 .meta{font-size:12px;color:#666;margin-bottom:16px}
+.summary-box{border:2px solid #ea580c;border-radius:8px;padding:16px;margin-bottom:20px;background:#fff7ed}
+.summary-box h2{border-bottom:none;color:#ea580c;margin-top:0}
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.summary-item{display:flex;flex-direction:column}
+.summary-label{font-size:10px;color:#666;text-transform:uppercase;letter-spacing:0.5px}
+.summary-value{font-size:18px;font-weight:700;margin-top:2px}
+.summary-findings{border-top:1px solid #e0e0e0;padding-top:8px}
+.summary-findings ul{margin:4px 0 0 16px;padding:0}
+.summary-findings li{font-size:12px;margin-bottom:2px}
+.summary-empty{color:#999;font-style:italic}
 @media print{body{padding:0}@page{margin:1cm}}
 </style></head><body>
 <h1>Relatório de Auditoria — Revista MODA ATUAL</h1>
 <p class="meta">Gerado em ${new Date(report.generatedAt).toLocaleString('pt-BR')}</p>
+${buildExecutiveSummaryHTML(report)}
 <h2>Coleções (${report.collections.length})</h2>
 <table><tr><th>Nome</th><th>Registros</th><th>Último Registro</th><th>Status</th><th>Prioridade</th></tr>
-${report.collections.map((c) => `<tr><td>${esc(c.name)}</td><td>${c.count}</td><td>${fmtDate(c.lastRecord)}</td><td>${c.status}</td><td>${c.priority}</td></tr>`).join('')}
+${report.collections.map((c) => `<tr><td>${escHtml(c.name)}</td><td>${c.count}</td><td>${fmtDate(c.lastRecord)}</td><td>${c.status}</td><td>${c.priority}</td></tr>`).join('')}
 </table>
 <h2 style="page-break-before: always;">Hooks (${report.hooks.length})</h2>
 <table><tr><th>Nome</th><th>Tipo</th><th>Status</th><th>Última Execução</th><th>Dependências</th><th>Prioridade</th><th>Erro</th></tr>
-${report.hooks.map((h) => `<tr><td>${esc(h.name)}</td><td>${h.type}</td><td>${h.status}</td><td>${fmtDate(h.lastExecution)}</td><td>${esc(h.deps)}</td><td>${h.priority}</td><td>${esc(h.error_message || '—')}</td></tr>`).join('')}
+${report.hooks.map((h) => `<tr><td>${escHtml(h.name)}</td><td>${h.type}</td><td>${h.status}</td><td>${fmtDate(h.lastExecution)}</td><td>${escHtml(h.deps)}</td><td>${h.priority}</td><td>${escHtml(h.error_message || '—')}</td></tr>`).join('')}
 </table>
 <h2 style="page-break-before: always;">Agentes (${report.agents.length})</h2>
 <table><tr><th>Nome</th><th>Slug</th><th>Status</th><th>Última Execução</th><th>Prioridade</th></tr>
-${report.agents.map((a) => `<tr><td>${esc(a.name)}</td><td>${a.slug}</td><td>${a.status}</td><td>${fmtDate(a.lastExecution)}</td><td>${a.priority}</td></tr>`).join('')}
+${report.agents.map((a) => `<tr><td>${escHtml(a.name)}</td><td>${a.slug}</td><td>${a.status}</td><td>${fmtDate(a.lastExecution)}</td><td>${a.priority}</td></tr>`).join('')}
 </table>
 <h2 style="page-break-before: always;">Fila de Entrega</h2>
 <p>Total: ${report.deliveryQueue.total} | Pendentes: ${report.deliveryQueue.pending} | Publicados: ${report.deliveryQueue.byStatus['publicado'] || 0} | Erros: ${report.deliveryQueue.errors.length} | Saúde: ${report.deliveryQueue.healthStatus} | Tempo Médio: ${report.deliveryQueue.avgProcessingTime}</p>
@@ -225,7 +371,7 @@ ${
 ${report.deliveryQueue.errors
   .map(
     (err) =>
-      `<tr><td>${esc(err.theme)}</td><td>${esc(err.error_note)}</td><td>${fmtDate(err.created)}</td></tr>`,
+      `<tr><td>${escHtml(err.theme)}</td><td>${escHtml(err.error_note)}</td><td>${fmtDate(err.created)}</td></tr>`,
   )
   .join('')}
 </table>`

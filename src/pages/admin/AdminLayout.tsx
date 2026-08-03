@@ -29,11 +29,13 @@ import {
   ShieldCheck,
 } from 'lucide-react'
 import { CommandBar } from '@/components/CommandBar'
+import { useFailureAlerts } from '@/hooks/use-failure-alerts'
 
 export function AdminLayout() {
   const { isAuthenticated, loading, signOut } = useAuth()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const failureAlerts = useFailureAlerts()
 
   if (loading) {
     return (
@@ -192,6 +194,11 @@ export function AdminLayout() {
           onClick={() => setSidebarOpen(false)}
         >
           <ShieldCheck className="w-5 h-5" /> Auditoria
+          {failureAlerts.unacknowledged.length > 0 && (
+            <span className="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold rounded-full bg-red-500 text-white">
+              {failureAlerts.unacknowledged.length}
+            </span>
+          )}
         </Link>
         <Link
           to="/admin/multi-format-generator"

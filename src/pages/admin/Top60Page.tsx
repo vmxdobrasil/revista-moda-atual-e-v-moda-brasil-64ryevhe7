@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import {
   getBrands,
   getCategories,
@@ -64,7 +64,7 @@ export default function Top60Page() {
 
   useRealtime('top60_brands', () => loadData())
   useRealtime('top60_categories', () => loadData())
-  useMemo(() => {
+  useEffect(() => {
     loadData()
   }, [loadData])
 
@@ -193,7 +193,30 @@ export default function Top60Page() {
       </div>
 
       {grouped.length === 0 ? (
-        <p className="text-center text-gray-400 py-10">Nenhuma marca encontrada.</p>
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-20 h-20 rounded-full bg-orange-100 flex items-center justify-center mb-6">
+            <Trophy className="w-10 h-10 text-orange-300" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-800 mb-2">
+            {brands.length === 0 ? 'Nenhuma marca cadastrada' : 'Nenhuma marca encontrada'}
+          </h3>
+          <p className="text-gray-500 max-w-md mb-6">
+            {brands.length === 0
+              ? 'Comece adicionando marcas ao ranking das melhores do atacado brasileiro.'
+              : 'Tente ajustar os filtros de busca ou categoria.'}
+          </p>
+          {brands.length === 0 && (
+            <Button
+              onClick={() => {
+                setEditingBrand(null)
+                setBrandFormOpen(true)
+              }}
+              className="bg-orange-500 hover:bg-orange-600 gap-2"
+            >
+              <Plus className="w-4 h-4" /> Adicionar Primeira Marca
+            </Button>
+          )}
+        </div>
       ) : (
         grouped.map(({ category, brands: catBrands }) => (
           <div key={category.id} className="space-y-3">

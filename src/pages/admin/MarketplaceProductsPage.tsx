@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import {
   getAllProducts,
   deleteProduct,
@@ -49,7 +49,7 @@ export default function MarketplaceProductsPage() {
   }, [toast])
 
   useRealtime('marketplace_products', () => loadData())
-  useMemo(() => {
+  useEffect(() => {
     loadData()
   }, [loadData])
 
@@ -64,14 +64,16 @@ export default function MarketplaceProductsPage() {
   }
 
   const handleToggleFeatured = async (id: string, featured: boolean) => {
+    const prevProducts = products
+    setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, featured } : p)))
     try {
       await toggleFeatured(id, featured)
-      setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, featured } : p)))
       toast({
         title: 'Sucesso',
         description: featured ? 'Produto destacado como oferta.' : 'Destaque removido.',
       })
     } catch {
+      setProducts(prevProducts)
       toast({ title: 'Erro', description: 'Falha ao alterar destaque.', variant: 'destructive' })
     }
   }

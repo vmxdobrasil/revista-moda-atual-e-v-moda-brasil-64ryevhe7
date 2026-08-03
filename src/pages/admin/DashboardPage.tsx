@@ -9,7 +9,10 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { StoriesTable } from './components/StoriesTable'
 import { StoryTextEditModal } from './components/StoryTextEditModal'
 import { StoryTextScheduleModal } from './components/StoryTextScheduleModal'
-import { LayoutDashboard, Sparkles, CalendarClock } from 'lucide-react'
+import { LayoutDashboard, Sparkles, CalendarClock, AlertTriangle } from 'lucide-react'
+import { useFailureAlerts } from '@/hooks/use-failure-alerts'
+import { FailureAlertBanner, FailureAlertsList } from '@/components/admin/FailureAlerts'
+import { DashboardMetrics } from '@/components/admin/DashboardMetrics'
 
 function CaptionsList({ items }: { items: SavedContent[] }) {
   if (items.length === 0)
@@ -45,6 +48,7 @@ export default function DashboardPage() {
   const [scheduleOpen, setScheduleOpen] = useState(false)
   const [selected, setSelected] = useState<StoryText | null>(null)
   const { toast } = useToast()
+  const failureAlerts = useFailureAlerts()
 
   const loadData = useCallback(async () => {
     try {
@@ -89,13 +93,21 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      <FailureAlertBanner
+        count={failureAlerts.unacknowledged.length}
+        onDismiss={failureAlerts.acknowledgeAll}
+      />
       <div>
         <h2 className="text-3xl font-bold text-gray-800 tracking-tight flex items-center gap-2">
           <LayoutDashboard className="w-7 h-7 text-orange-500" />
           Dashboard
         </h2>
-        <p className="text-gray-500 mt-1">Gerencie textos de Stories e legendas geradas.</p>
+        <p className="text-gray-500 mt-1">
+          Métricas de conteúdo publicado, textos de Stories e legendas geradas.
+        </p>
       </div>
+
+      <DashboardMetrics />
 
       <Tabs defaultValue="stories">
         <TabsList>
@@ -107,6 +119,14 @@ export default function DashboardPage() {
           </TabsTrigger>
           <TabsTrigger value="scheduled" className="gap-2">
             <CalendarClock className="w-4 h-4" /> Agendados ({scheduled.length})
+          </TabsTrigger>
+          <TabsTrigger value="alerts" className="gap-2">
+            <AlertTriangle className="w-4 h-4" /> Alertas
+            {failureAlerts.unacknowledged.length > 0 && (
+              <span className="ml-1 inline-flex items-center justify-center w-5 h-5 text-xs font-bold rounded-full bg-red-500 text-white">
+                {failureAlerts.unacknowledged.length}
+              </span>
+            )}
           </TabsTrigger>
         </TabsList>
 
@@ -151,6 +171,15 @@ export default function DashboardPage() {
               />
             </CardContent>
           </Card>
+        </TabsContent>
+        <TabsContent value="alerts">
+          <FailureAlertsList
+            logs={failureAlerts.logs}
+            loading={failureAlerts.loading}
+            error={failureAlerts.error}
+            onAcknowledge={failureAlerts.acknowledge}
+            onAcknowledgeAll={failureAlerts.acknowledgeAll}
+          />
         </TabsContent>
       </Tabs>
 

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   getDeliveryQueueItems,
@@ -62,7 +62,7 @@ export default function DeliveryQueuePage() {
   }, [toast, statusFilter])
 
   useRealtime('delivery_queue', () => loadData())
-  useMemo(() => {
+  useEffect(() => {
     loadData()
   }, [loadData])
 

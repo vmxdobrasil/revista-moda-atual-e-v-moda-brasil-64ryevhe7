@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import {
   getAllAds,
   deleteAd,
@@ -48,7 +48,7 @@ export default function AdvertisementsPage() {
   }, [toast])
 
   useRealtime('advertisements', () => loadData())
-  useMemo(() => {
+  useEffect(() => {
     loadData()
   }, [loadData])
 
@@ -63,14 +63,16 @@ export default function AdvertisementsPage() {
   }
 
   const handleToggleActive = async (id: string, isActive: boolean) => {
+    const prevAds = ads
+    setAds((prev) => prev.map((a) => (a.id === id ? { ...a, is_active: isActive } : a)))
     try {
       await toggleAdActive(id, isActive)
-      setAds((prev) => prev.map((a) => (a.id === id ? { ...a, is_active: isActive } : a)))
       toast({
         title: 'Sucesso',
         description: isActive ? 'Anúncio ativado.' : 'Anúncio desativado.',
       })
     } catch {
+      setAds(prevAds)
       toast({ title: 'Erro', description: 'Falha ao alterar status.', variant: 'destructive' })
     }
   }
