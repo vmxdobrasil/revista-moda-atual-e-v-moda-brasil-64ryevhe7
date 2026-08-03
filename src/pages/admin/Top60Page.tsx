@@ -45,14 +45,17 @@ export default function Top60Page() {
   const [catFormOpen, setCatFormOpen] = useState(false)
   const [editingBrand, setEditingBrand] = useState<Top60Brand | null>(null)
   const [editingCat, setEditingCat] = useState<Top60Category | null>(null)
+  const [error, setError] = useState(false)
   const { toast } = useToast()
 
   const loadData = useCallback(async () => {
     try {
+      setError(false)
       const [b, c] = await Promise.all([getBrands(), getCategories()])
       setBrands(b)
       setCategories(c)
     } catch {
+      setError(true)
       toast({ title: 'Erro', description: 'Falha ao carregar dados.', variant: 'destructive' })
     } finally {
       setLoading(false)
@@ -102,6 +105,23 @@ export default function Top60Page() {
       toast({ title: 'Erro', description: 'Falha ao excluir.', variant: 'destructive' })
     }
   }
+
+  if (error)
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <p className="text-gray-500 mb-4">Falha ao carregar dados.</p>
+        <Button
+          onClick={() => {
+            setLoading(true)
+            setError(false)
+            loadData()
+          }}
+          className="bg-orange-500 hover:bg-orange-600 rounded-full px-8"
+        >
+          Tentar Novamente
+        </Button>
+      </div>
+    )
 
   if (loading)
     return (

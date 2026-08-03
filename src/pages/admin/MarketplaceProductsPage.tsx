@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback } from 'react'
 import {
   getAllProducts,
   deleteProduct,
+  toggleFeatured,
   getImageUrl,
   formatPrice,
   type MarketplaceProduct,
@@ -11,6 +12,7 @@ import { ProductForm } from './components/ProductForm'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,20 +25,23 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { useToast } from '@/hooks/use-toast'
-import { Plus, Tag, Trash2, Pencil } from 'lucide-react'
+import { Plus, Tag, Trash2, Pencil, AlertCircle } from 'lucide-react'
 
 export default function MarketplaceProductsPage() {
   const [products, setProducts] = useState<MarketplaceProduct[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
   const [formOpen, setFormOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<MarketplaceProduct | null>(null)
   const { toast } = useToast()
 
   const loadData = useCallback(async () => {
     try {
+      setError(false)
       const data = await getAllProducts()
       setProducts(data)
     } catch {
+      setError(true)
       toast({ title: 'Erro', description: 'Falha ao carregar produtos.', variant: 'destructive' })
     } finally {
       setLoading(false)
@@ -58,6 +63,19 @@ export default function MarketplaceProductsPage() {
     }
   }
 
+  const handleToggleFeatured = async (id: string, featured: boolean) => {
+    try {
+      await toggleFeatured(id, featured)
+      setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, featured } : p)))
+      toast({
+        title: 'Sucesso',
+        description: featured ? 'Produto destacado como oferta.' : 'Destaque removido.',
+      })
+    } catch {
+      toast({ title: 'Erro', description: 'Falha ao alterar destaque.', variant: 'destructive' })
+    }
+  }
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -67,6 +85,29 @@ export default function MarketplaceProductsPage() {
             <Skeleton key={i} className="h-40 w-full" />
           ))}
         </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mb-6">
+          <AlertCircle className="w-10 h-10 text-red-500" />
+        </div>
+        <h3 className="text-2xl font-bold text-gray-800 mb-3">Não foi possível carregar</h3>
+        <p className="text-gray-500 max-w-md text-lg mb-6">
+          Ocorreu um erro ao buscar os produtos. Tente novamente.
+        </p>
+        <Button
+          onClick={() => {
+            setLoading(true)
+            loadData()
+          }}
+          className="bg-orange-500 hover:bg-orange-600 rounded-full px-8"
+        >
+          Tentar Novamente
+        </Button>
       </div>
     )
   }
@@ -122,6 +163,16 @@ export default function MarketplaceProductsPage() {
                 {product.category && (
                   <p className="text-xs text-gray-400 mt-1">{product.category}</p>
                 )}
+                <div className="flex items-center gap-2 mt-3">
+                  <Switch
+                    checked={product.featured || false}
+                    onCheckedChange={(checked) => handleToggleFeatured(product.id, checked)}
+                    id={`prod-featured-${product.id}`}
+                  />
+                  <span className="text-xs text-gray-500">
+                    {product.featured ? 'Oferta em destaque' : 'Marcar como oferta'}
+                  </span>
+                </div>
               </div>
               <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
                 <Button

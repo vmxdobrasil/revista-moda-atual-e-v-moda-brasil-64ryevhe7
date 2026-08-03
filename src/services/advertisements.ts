@@ -35,6 +35,12 @@ export async function deleteAd(id: string): Promise<void> {
   await pb.collection('advertisements').delete(id)
 }
 
+export async function toggleAdActive(id: string, isActive: boolean): Promise<Advertisement> {
+  return (await pb.collection('advertisements').update(id, {
+    is_active: isActive,
+  })) as unknown as Advertisement
+}
+
 export function getAdImageUrl(record: any, filename: string): string {
   if (!filename) return ''
   return pb.files.getURL(record, filename)

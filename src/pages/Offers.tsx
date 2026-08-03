@@ -12,6 +12,7 @@ import { SiteFooter } from '@/components/SiteFooter'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tag, AlertCircle, ShoppingBag, ExternalLink } from 'lucide-react'
+import { AdSlot } from '@/components/AdSlot'
 
 export default function Offers() {
   const [products, setProducts] = useState<MarketplaceProduct[]>([])
@@ -63,6 +64,8 @@ export default function Offers() {
             Produtos selecionados do atacado brasileiro com condições especiais.
           </p>
         </div>
+
+        <AdSlot />
 
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

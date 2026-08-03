@@ -80,6 +80,19 @@ export async function updateOrderStatus(id: string, status: string): Promise<voi
   await pb.collection('marketplace_orders').update(id, { status })
 }
 
+export async function getFeaturedProducts(): Promise<MarketplaceProduct[]> {
+  return (await pb.collection('marketplace_products').getFullList({
+    filter: 'featured = true',
+    sort: '-created',
+  })) as unknown as MarketplaceProduct[]
+}
+
+export async function toggleFeatured(id: string, featured: boolean): Promise<MarketplaceProduct> {
+  return (await pb.collection('marketplace_products').update(id, {
+    featured,
+  })) as unknown as MarketplaceProduct
+}
+
 export function getImageUrl(record: any, filename: string): string {
   if (!filename) return ''
   return pb.files.getUrl(record, filename) as string

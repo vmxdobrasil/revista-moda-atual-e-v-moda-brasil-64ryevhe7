@@ -6,6 +6,7 @@ import { SiteHeader } from '@/components/SiteHeader'
 import { SiteFooter } from '@/components/SiteFooter'
 import { Button } from '@/components/ui/button'
 import { Megaphone, AlertCircle, ImageOff } from 'lucide-react'
+import { OffersRail } from '@/components/OffersRail'
 
 export default function Advertisements() {
   const [ads, setAds] = useState<Advertisement[]>([])
@@ -134,6 +135,8 @@ export default function Advertisements() {
             })}
           </div>
         )}
+
+        <OffersRail />
       </main>
       <SiteFooter />
     </div>

@@ -1,10 +1,17 @@
 import { useState, useMemo, useCallback } from 'react'
-import { getAllAds, deleteAd, getAdImageUrl, type Advertisement } from '@/services/advertisements'
+import {
+  getAllAds,
+  deleteAd,
+  toggleAdActive,
+  getAdImageUrl,
+  type Advertisement,
+} from '@/services/advertisements'
 import { useRealtime } from '@/hooks/use-realtime'
 import { AdvertisementForm } from './components/AdvertisementForm'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,20 +24,23 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { useToast } from '@/hooks/use-toast'
-import { Plus, Megaphone, Trash2, Pencil } from 'lucide-react'
+import { Plus, Megaphone, Trash2, Pencil, AlertCircle } from 'lucide-react'
 
 export default function AdvertisementsPage() {
   const [ads, setAds] = useState<Advertisement[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
   const [formOpen, setFormOpen] = useState(false)
   const [editingAd, setEditingAd] = useState<Advertisement | null>(null)
   const { toast } = useToast()
 
   const loadData = useCallback(async () => {
     try {
+      setError(false)
       const data = await getAllAds()
       setAds(data)
     } catch {
+      setError(true)
       toast({ title: 'Erro', description: 'Falha ao carregar anúncios.', variant: 'destructive' })
     } finally {
       setLoading(false)
@@ -52,6 +62,19 @@ export default function AdvertisementsPage() {
     }
   }
 
+  const handleToggleActive = async (id: string, isActive: boolean) => {
+    try {
+      await toggleAdActive(id, isActive)
+      setAds((prev) => prev.map((a) => (a.id === id ? { ...a, is_active: isActive } : a)))
+      toast({
+        title: 'Sucesso',
+        description: isActive ? 'Anúncio ativado.' : 'Anúncio desativado.',
+      })
+    } catch {
+      toast({ title: 'Erro', description: 'Falha ao alterar status.', variant: 'destructive' })
+    }
+  }
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -61,6 +84,29 @@ export default function AdvertisementsPage() {
             <Skeleton key={i} className="h-32 w-full" />
           ))}
         </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mb-6">
+          <AlertCircle className="w-10 h-10 text-red-500" />
+        </div>
+        <h3 className="text-2xl font-bold text-gray-800 mb-3">Não foi possível carregar</h3>
+        <p className="text-gray-500 max-w-md text-lg mb-6">
+          Ocorreu um erro ao buscar os anúncios. Tente novamente.
+        </p>
+        <Button
+          onClick={() => {
+            setLoading(true)
+            loadData()
+          }}
+          className="bg-orange-500 hover:bg-orange-600 rounded-full px-8"
+        >
+          Tentar Novamente
+        </Button>
       </div>
     )
   }
@@ -116,6 +162,16 @@ export default function AdvertisementsPage() {
                   </Badge>
                 </div>
                 {ad.url && <p className="text-xs text-gray-400 truncate">{ad.url}</p>}
+                <div className="flex items-center gap-2 mt-3">
+                  <Switch
+                    checked={ad.is_active}
+                    onCheckedChange={(checked) => handleToggleActive(ad.id, checked)}
+                    id={`ad-toggle-${ad.id}`}
+                  />
+                  <span className="text-xs text-gray-500">
+                    {ad.is_active ? 'Visível publicamente' : 'Oculto'}
+                  </span>
+                </div>
               </div>
               <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
                 <Button
