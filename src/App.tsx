@@ -67,7 +67,7 @@ const App = () => (
               <Route path="/reader/:id" element={<MagazineReader />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/texto/:id" element={<StoryTextView />} />
-              <Route path="/sobre" element={<About />} />
+              <Route path="/sobre-nos" element={<About />} />
             </Route>
 
             <Route path="/admin/login" element={<Login />} />

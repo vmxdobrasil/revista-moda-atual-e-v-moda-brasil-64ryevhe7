@@ -39,10 +39,10 @@ export function SiteHeader() {
           Ofertas
         </Link>
         <Link
-          to="/sobre"
+          to="/sobre-nos"
           className="text-gray-600 hover:text-orange-600 transition-colors font-medium"
         >
-          Sobre
+          Sobre Nós
         </Link>
       </nav>
       <Button asChild variant="ghost" size="sm" className="text-gray-600 hover:text-orange-600">

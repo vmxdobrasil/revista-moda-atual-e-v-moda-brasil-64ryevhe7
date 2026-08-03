@@ -26,6 +26,9 @@ export function SiteFooter() {
           <Link to="/offers" className="hover:text-orange-500 transition-colors">
             Ofertas
           </Link>
+          <Link to="/sobre-nos" className="hover:text-orange-500 transition-colors">
+            Sobre Nós
+          </Link>
           <Link to="/reader/latest" className="hover:text-orange-500 transition-colors">
             Ler Revista
           </Link>

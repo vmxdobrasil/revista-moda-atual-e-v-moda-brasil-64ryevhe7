@@ -34,7 +34,8 @@ export default function About() {
   const meta = useMemo(
     () => ({
       title: 'Sobre Nós — Revista Moda Atual',
-      description: 'Conheça a história e a missão da Revista Moda Atual e do V Moda Brasil.',
+      description:
+        'Conheça a história, a equipe, o propósito e a visão tecnológica da Revista Moda Atual e do V Moda Brasil.',
       image: '/og-image.png',
       url: window.location.origin,
       type: 'website',
