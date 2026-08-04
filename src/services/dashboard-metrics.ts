@@ -1,37 +1,43 @@
 import pb from '@/lib/pocketbase/client'
 
 export interface DashboardMetrics {
-  editions: {
-    total: number
-    totalViews: number
-    totalPages: number
-  }
-  socialPosts: {
-    total: number
-    totalViews: number
-    totalLikes: number
-    avgEngagement: number
-  }
-  workflowResults: {
-    completed: number
-    failed: number
-    processing: number
-  }
-  deliveryQueue: {
-    published: number
-    pending: number
-    total: number
-  }
+  editions: { total: number; totalViews: number; totalPages: number }
+  socialPosts: { total: number; totalViews: number; totalLikes: number; avgEngagement: number }
+  workflowResults: { completed: number; failed: number; processing: number }
+  deliveryQueue: { published: number; pending: number; total: number }
+  marketplaceOrders: { total: number; pending: number; delivered: number }
+  notifications: { total: number; unread: number }
+  seoMetrics: { totalKeywords: number; avgPosition: number }
 }
 
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {
-  const [editions, editionPages, socialPosts, workflowResults, deliveryQueue] = await Promise.all([
+  const [
+    editions,
+    editionPages,
+    socialPosts,
+    workflowResults,
+    deliveryQueue,
+    orders,
+    notifications,
+    seoMetrics,
+  ] = await Promise.all([
     pb.collection('editions').getFullList<any>(),
     pb.collection('edition_pages').getFullList<any>(),
     pb.collection('social_posts').getFullList<any>(),
     pb.collection('workflow_results').getFullList<any>(),
     pb.collection('delivery_queue').getFullList<any>(),
+    pb
+      .collection('marketplace_orders')
+      .getFullList<any>()
+      .catch(() => []),
+    pb.collection('notifications').getFullList<any>(),
+    pb
+      .collection('seo_metrics')
+      .getFullList<any>()
+      .catch(() => []),
   ])
+
+  const totalPosition = seoMetrics.reduce((sum, m) => sum + (m.position || 0), 0)
 
   return {
     editions: {
@@ -58,6 +64,19 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
       pending: deliveryQueue.filter((d) => d.status === 'rascunho' || d.status === 'em_revisao')
         .length,
       total: deliveryQueue.length,
+    },
+    marketplaceOrders: {
+      total: orders.length,
+      pending: orders.filter((o) => o.status === 'pending' || o.status === 'confirmed').length,
+      delivered: orders.filter((o) => o.status === 'delivered').length,
+    },
+    notifications: {
+      total: notifications.length,
+      unread: notifications.filter((n) => !n.is_read).length,
+    },
+    seoMetrics: {
+      totalKeywords: seoMetrics.length,
+      avgPosition: seoMetrics.length > 0 ? totalPosition / seoMetrics.length : 0,
     },
   }
 }

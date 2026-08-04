@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '@/hooks/use-auth'
-import { Navigate, Outlet, Link, useNavigate } from 'react-router-dom'
+import { Navigate, Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import {
@@ -38,6 +38,7 @@ import { NotificationCenter } from '@/components/admin/NotificationCenter'
 export function AdminLayout() {
   const { isAuthenticated, loading, signOut } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const failureAlerts = useFailureAlerts()
 
@@ -50,7 +51,8 @@ export function AdminLayout() {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/admin/login" replace />
+    const redirect = encodeURIComponent(location.pathname + location.search)
+    return <Navigate to={`/admin/login?redirect=${redirect}`} replace />
   }
 
   const handleLogout = () => {

@@ -1,6 +1,6 @@
-import { useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { MessageCircle, Facebook, Twitter, Share2 } from 'lucide-react'
+import { Share2, MessageCircle, Send, Link2, Check } from 'lucide-react'
+import { useState, useCallback } from 'react'
 
 interface SocialShareProps {
   title: string
@@ -8,83 +8,73 @@ interface SocialShareProps {
 }
 
 export function SocialShare({ title, url }: SocialShareProps) {
-  const shareText = `Confira a edição "${title}" da Revista Moda Atual!`
-  const encodedUrl = encodeURIComponent(url)
-  const encodedText = encodeURIComponent(shareText)
+  const [copied, setCopied] = useState(false)
 
-  const handleWhatsApp = useCallback(() => {
-    window.open(
-      `https://wa.me/?text=${encodedText}%20${encodedUrl}`,
-      '_blank',
-      'noopener,noreferrer',
-    )
-  }, [encodedText, encodedUrl])
-
-  const handleFacebook = useCallback(() => {
-    window.open(
-      `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
-      '_blank',
-      'noopener,noreferrer',
-    )
-  }, [encodedUrl])
-
-  const handleTwitter = useCallback(() => {
-    window.open(
-      `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`,
-      '_blank',
-      'noopener,noreferrer',
-    )
-  }, [encodedText, encodedUrl])
-
-  const handleNativeShare = useCallback(async () => {
-    if (navigator.share) {
+  const handleCopy = useCallback(() => {
+    const fallbackCopy = () => {
       try {
-        await navigator.share({ title, text: shareText, url })
+        const ta = document.createElement('textarea')
+        ta.value = url
+        ta.style.position = 'fixed'
+        ta.style.opacity = '0'
+        document.body.appendChild(ta)
+        ta.select()
+        document.execCommand('copy')
+        document.body.removeChild(ta)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
       } catch {
-        // user cancelled
+        // ignore
       }
     }
-  }, [title, shareText, url])
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard
+        .writeText(url)
+        .then(() => {
+          setCopied(true)
+          setTimeout(() => setCopied(false), 2000)
+        })
+        .catch(fallbackCopy)
+    } else {
+      fallbackCopy()
+    }
+  }, [url])
+
+  const encUrl = encodeURIComponent(url)
+  const encTitle = encodeURIComponent(title)
 
   return (
     <div className="flex items-center gap-2">
-      <Button
-        size="sm"
-        variant="outline"
-        className="gap-2 bg-[#25D366]/10 border-[#25D366]/30 text-[#25D366] hover:bg-[#25D366]/20 hover:text-[#25D366] active:scale-95 transition-transform duration-100"
-        onClick={handleWhatsApp}
-      >
-        <MessageCircle className="w-4 h-4" />
-        <span className="hidden sm:inline">WhatsApp</span>
+      <Button variant="outline" size="sm" asChild className="rounded-full p-2">
+        <a
+          href={`https://wa.me/?text=${encTitle}%20${encUrl}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <MessageCircle className="w-4 h-4" />
+        </a>
       </Button>
-      <Button
-        size="sm"
-        variant="outline"
-        className="gap-2 bg-[#1877F2]/10 border-[#1877F2]/30 text-[#1877F2] hover:bg-[#1877F2]/20 hover:text-[#1877F2] active:scale-95 transition-transform duration-100"
-        onClick={handleFacebook}
-      >
-        <Facebook className="w-4 h-4" />
-        <span className="hidden sm:inline">Facebook</span>
-      </Button>
-      <Button
-        size="sm"
-        variant="outline"
-        className="gap-2 bg-gray-800/10 border-gray-800/30 text-gray-800 hover:bg-gray-800/20 hover:text-gray-800 active:scale-95 transition-transform duration-100"
-        onClick={handleTwitter}
-      >
-        <Twitter className="w-4 h-4" />
-        <span className="hidden sm:inline">Twitter</span>
-      </Button>
-      {typeof navigator !== 'undefined' && !!navigator.share && (
-        <Button
-          size="sm"
-          variant="outline"
-          className="gap-2 text-gray-700 active:scale-95 transition-transform duration-100"
-          onClick={handleNativeShare}
+      <Button variant="outline" size="sm" asChild className="rounded-full p-2">
+        <a
+          href={`https://www.facebook.com/sharer/sharer.php?u=${encUrl}`}
+          target="_blank"
+          rel="noopener noreferrer"
         >
           <Share2 className="w-4 h-4" />
-        </Button>
-      )}
+        </a>
+      </Button>
+      <Button variant="outline" size="sm" asChild className="rounded-full p-2">
+        <a
+          href={`https://twitter.com/intent/tweet?text=${encTitle}&url=${encUrl}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Send className="w-4 h-4" />
+        </a>
+      </Button>
+      <Button variant="outline" size="sm" onClick={handleCopy} className="rounded-full p-2">
+        {copied ? <Check className="w-4 h-4" /> : <Link2 className="w-4 h-4" />}
+      </Button>
     </div>
   )
 }

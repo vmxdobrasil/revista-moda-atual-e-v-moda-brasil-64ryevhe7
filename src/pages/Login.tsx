@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Navigate, Link } from 'react-router-dom'
+import { useNavigate, Navigate, Link, useSearchParams } from 'react-router-dom'
 import { ClientResponseError } from 'pocketbase'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
@@ -50,6 +50,9 @@ export default function Login() {
   const [passwordError, setPasswordError] = useState('')
   const { signIn, isAuthenticated, loading, checkBackendHealth } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const redirectTo = searchParams.get('redirect')
+  const safeRedirect = redirectTo && redirectTo.startsWith('/admin') ? redirectTo : '/admin'
   const { toast } = useToast()
 
   if (loading) {
@@ -61,7 +64,7 @@ export default function Login() {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/admin" replace />
+    return <Navigate to={safeRedirect} replace />
   }
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,7 +119,7 @@ export default function Login() {
       if (result.otp) params.set('otp', result.otp)
       navigate(`/admin/2fa-verify?${params.toString()}`)
     } else {
-      navigate('/admin')
+      navigate(safeRedirect)
     }
 
     setIsSubmitting(false)

@@ -16,6 +16,7 @@ import { LayoutDashboard, Sparkles, CalendarClock, AlertTriangle, Send } from 'l
 import { useFailureAlerts } from '@/hooks/use-failure-alerts'
 import { FailureAlertBanner, FailureAlertsList } from '@/components/admin/FailureAlerts'
 import { DashboardMetrics } from '@/components/admin/DashboardMetrics'
+import { QuickAccessCards } from '@/components/admin/QuickAccessCards'
 
 function CaptionsList({ items }: { items: SavedContent[] }) {
   if (items.length === 0)
@@ -118,6 +119,8 @@ export default function DashboardPage() {
       </div>
 
       <DashboardMetrics />
+
+      <QuickAccessCards />
 
       <Tabs defaultValue="stories">
         <TabsList>
