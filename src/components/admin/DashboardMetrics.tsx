@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { getDashboardMetrics, type DashboardMetrics as Metrics } from '@/services/dashboard-metrics'
 import { useRealtime } from '@/hooks/use-realtime'
 import { MetricCard } from '@/components/admin/MetricCard'
+import { StatusBreakdowns } from '@/components/admin/StatusBreakdowns'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { LucideIcon } from 'lucide-react'
@@ -113,7 +114,7 @@ export function DashboardMetrics() {
         },
         {
           icon: FileText,
-          label: 'Views em Páginas',
+          label: 'Total de Páginas',
           value: metrics.editions.totalPages,
           color: 'hsl(210, 80%, 50%)',
         },
@@ -240,6 +241,7 @@ export function DashboardMetrics() {
           </div>
         </div>
       ))}
+      {metrics && <StatusBreakdowns metrics={metrics} />}
     </div>
   )
 }
