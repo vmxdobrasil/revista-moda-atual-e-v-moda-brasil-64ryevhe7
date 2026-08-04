@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Navigate } from 'react-router-dom'
+import { useNavigate, Navigate, Link } from 'react-router-dom'
 import { ClientResponseError } from 'pocketbase'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
@@ -22,6 +22,9 @@ function getAuthErrorMessage(error: unknown): string {
       return 'Dados inválidos. Verifique o formato do e-mail e a senha.'
     }
     return getErrorMessage(error)
+  }
+  if (error instanceof Error) {
+    return error.message
   }
   return 'Ocorreu um erro inesperado. Tente novamente.'
 }
@@ -96,18 +99,22 @@ export default function Login() {
         'Não foi possível conectar ao servidor. Verifique sua conexão de internet e tente novamente.'
       setErrorMessage(msg)
       toast({ title: 'Erro de Conexão', description: msg, variant: 'destructive' })
-      await logAuthFailure(msg)
+      await logAuthFailure(msg, email)
       setIsSubmitting(false)
       return
     }
 
-    const { error } = await signIn(email, password)
+    const result = await signIn(email, password)
 
-    if (error) {
-      const msg = getAuthErrorMessage(error)
+    if (result.error) {
+      const msg = getAuthErrorMessage(result.error)
       setErrorMessage(msg)
       toast({ title: 'Erro de Autenticação', description: msg, variant: 'destructive' })
-      await logAuthFailure(msg)
+      await logAuthFailure(msg, email)
+    } else if (result.requires2FA) {
+      const params = new URLSearchParams({ email: result.email || '' })
+      if (result.otp) params.set('otp', result.otp)
+      navigate(`/admin/2fa-verify?${params.toString()}`)
     } else {
       navigate('/admin')
     }
@@ -149,7 +156,15 @@ export default function Login() {
             {emailError && <p className="text-sm text-red-500">{emailError}</p>}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Senha</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Senha</Label>
+              <Link
+                to="/esqueci-senha"
+                className="text-xs text-orange-500 hover:text-orange-600 hover:underline"
+              >
+                Esqueci minha senha?
+              </Link>
+            </div>
             <Input
               id="password"
               type="password"

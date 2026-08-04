@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-04T00:17:20.521Z",
+  "generatedAt": "2026-08-04T00:42:15.197Z",
   "collections": [
     {
       "name": "users",
@@ -37,6 +37,30 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "twofa_enabled",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "backup_codes",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "twofa_otp",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "twofa_otp_expiry",
+          "type": "date",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [
@@ -1360,6 +1384,62 @@
         "CREATE INDEX idx_seo_metrics_tracked_date ON seo_metrics (tracked_date)",
         "CREATE INDEX idx_seo_metrics_edition ON seo_metrics (edition)",
         "CREATE INDEX idx_seo_metrics_page ON seo_metrics (page)"
+      ]
+    },
+    {
+      "name": "notifications",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "",
+        "update": "",
+        "delete": ""
+      },
+      "fields": [
+        {
+          "name": "title",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "message",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "type",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["info", "warning", "alert"]
+        },
+        {
+          "name": "is_read",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_notifications_is_read ON notifications (is_read)",
+        "CREATE INDEX idx_notifications_created ON notifications (created)"
       ]
     }
   ]

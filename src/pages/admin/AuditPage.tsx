@@ -27,7 +27,9 @@ import {
   CheckCircle2,
   AlertCircle,
   Clock,
+  FileDown,
 } from 'lucide-react'
+import { AuditLogsExport } from '@/components/audit/AuditLogsExport'
 
 export default function AuditPage() {
   const [report, setReport] = useState<AuditReport | null>(null)
@@ -144,6 +146,7 @@ export default function AuditPage() {
           <TabsTrigger value="divergences">Divergências</TabsTrigger>
           <TabsTrigger value="fix">Correções</TabsTrigger>
           <TabsTrigger value="history">Histórico</TabsTrigger>
+          <TabsTrigger value="logs">Exportar Logs</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -196,6 +199,9 @@ export default function AuditPage() {
         </TabsContent>
         <TabsContent value="history">
           <AuditHistory onViewReport={handleViewHistorical} />
+        </TabsContent>
+        <TabsContent value="logs">
+          <AuditLogsExport />
         </TabsContent>
       </Tabs>
     </div>

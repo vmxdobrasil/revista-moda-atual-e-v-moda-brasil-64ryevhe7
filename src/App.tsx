@@ -33,6 +33,10 @@ import PromptRefinementPage from './pages/admin/PromptRefinementPage'
 import PromptsPage from './pages/admin/PromptsPage'
 import About from './pages/About'
 import AboutPage from './pages/admin/AboutPage'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
+import TwoFactorVerify from './pages/TwoFactorVerify'
+import SecuritySettings from './pages/admin/SecuritySettings'
 import MultiFormatGeneratorPage from './pages/admin/MultiFormatGeneratorPage'
 import MultiFormatReviewPage from './pages/admin/MultiFormatReviewPage'
 import AuditPage from './pages/admin/AuditPage'
@@ -71,6 +75,9 @@ const App = () => (
               <Route path="/sobre-nos" element={<About />} />
             </Route>
 
+            <Route path="/esqueci-senha" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/admin/2fa-verify" element={<TwoFactorVerify />} />
             <Route path="/admin/login" element={<Login />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<Navigate to="/admin/editions" replace />} />
@@ -99,6 +106,7 @@ const App = () => (
               <Route path="multi-format-generator" element={<MultiFormatGeneratorPage />} />
               <Route path="multi-format-generator/:id" element={<MultiFormatReviewPage />} />
               <Route path="audit" element={<AuditPage />} />
+              <Route path="security" element={<SecuritySettings />} />
               <Route path="seo-specialist" element={<SeoSpecialistPage />} />
             </Route>
 

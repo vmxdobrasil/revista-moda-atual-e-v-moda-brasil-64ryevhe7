@@ -1,11 +1,18 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import pb from '@/lib/pocketbase/client'
 
+interface SignInResult {
+  error: any
+  requires2FA?: boolean
+  email?: string
+  otp?: string
+}
+
 interface AuthContextType {
   user: any
   isAuthenticated: boolean
   signUp: (email: string, password: string) => Promise<{ error: any }>
-  signIn: (email: string, password: string) => Promise<{ error: any }>
+  signIn: (email: string, password: string) => Promise<SignInResult>
   signOut: () => void
   loading: boolean
   checkBackendHealth: () => Promise<boolean>
@@ -69,9 +76,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): Promise<SignInResult> => {
     try {
-      await pb.collection('users').authWithPassword(email, password)
+      const result = await pb.collection('users').authWithPassword(email, password)
+
+      if (result?.record?.['twofa_enabled']) {
+        try {
+          const otpRes = await pb.send('/backend/v1/auth/2fa/generate-otp', { method: 'POST' })
+          pb.authStore.clear()
+          setUser(null)
+          setIsAuthenticated(false)
+          return { error: null, requires2FA: true, email, otp: otpRes.otp }
+        } catch {
+          pb.authStore.clear()
+          setUser(null)
+          setIsAuthenticated(false)
+          return { error: new Error('Falha ao gerar código 2FA. Tente novamente.') }
+        }
+      }
+
       return { error: null }
     } catch (error) {
       return { error }
