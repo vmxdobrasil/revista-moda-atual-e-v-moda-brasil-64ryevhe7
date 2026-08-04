@@ -1,19 +1,51 @@
 import { useState } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
+import { ClientResponseError } from 'pocketbase'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { getErrorMessage } from '@/lib/pocketbase/errors'
-import { Loader2 } from 'lucide-react'
+import { logAuthFailure } from '@/services/auth-audit'
+import { Loader2, AlertCircle } from 'lucide-react'
+
+function getAuthErrorMessage(error: unknown): string {
+  if (error instanceof ClientResponseError) {
+    if (error.status === 0) {
+      return 'Não foi possível conectar ao servidor. Verifique sua conexão de internet e tente novamente.'
+    }
+    if (error.status === 401) {
+      return 'E-mail ou senha inválidos.'
+    }
+    if (error.status === 400) {
+      return 'Dados inválidos. Verifique o formato do e-mail e a senha.'
+    }
+    return getErrorMessage(error)
+  }
+  return 'Ocorreu um erro inesperado. Tente novamente.'
+}
+
+function validateEmail(email: string): string | null {
+  if (!email.trim()) return 'E-mail é obrigatório'
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Formato de e-mail inválido'
+  return null
+}
+
+function validatePassword(password: string): string | null {
+  if (!password) return 'Senha é obrigatória'
+  if (password.length < 8) return 'A senha deve ter pelo menos 8 caracteres'
+  return null
+}
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
-  const { signIn, isAuthenticated, loading } = useAuth()
+  const [emailError, setEmailError] = useState('')
+  const [passwordError, setPasswordError] = useState('')
+  const { signIn, isAuthenticated, loading, checkBackendHealth } = useAuth()
   const navigate = useNavigate()
   const { toast } = useToast()
 
@@ -26,22 +58,61 @@ export default function Login() {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/admin/editions" replace />
+    return <Navigate to="/admin" replace />
+  }
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value)
+    setEmailError('')
+    setErrorMessage('')
+  }
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value)
+    setPasswordError('')
+    setErrorMessage('')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    const emailErr = validateEmail(email)
+    const passwordErr = validatePassword(password)
+
+    if (emailErr) setEmailError(emailErr)
+    if (passwordErr) setPasswordError(passwordErr)
+
+    if (emailErr || passwordErr) {
+      setErrorMessage('Por favor, corrija os campos destacados.')
+      return
+    }
+
     setIsSubmitting(true)
     setErrorMessage('')
+
+    const isBackendReachable = await checkBackendHealth()
+    if (!isBackendReachable) {
+      const msg =
+        'Não foi possível conectar ao servidor. Verifique sua conexão de internet e tente novamente.'
+      setErrorMessage(msg)
+      toast({ title: 'Erro de Conexão', description: msg, variant: 'destructive' })
+      await logAuthFailure(msg)
+      setIsSubmitting(false)
+      return
+    }
+
     const { error } = await signIn(email, password)
-    setIsSubmitting(false)
+
     if (error) {
-      const msg = getErrorMessage(error)
+      const msg = getAuthErrorMessage(error)
       setErrorMessage(msg)
       toast({ title: 'Erro de Autenticação', description: msg, variant: 'destructive' })
+      await logAuthFailure(msg)
     } else {
-      navigate('/admin/editions')
+      navigate('/admin')
     }
+
+    setIsSubmitting(false)
   }
 
   return (
@@ -55,6 +126,14 @@ export default function Login() {
           />
         </div>
         <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">Acesso Restrito</h1>
+
+        {errorMessage && (
+          <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 flex items-start gap-2 animate-fade-in">
+            <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+            <p className="text-sm text-red-700">{errorMessage}</p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">E-mail</Label>
@@ -63,9 +142,11 @@ export default function Login() {
               type="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={handleEmailChange}
               placeholder="admin@exemplo.com"
+              className={emailError ? 'border-red-500' : ''}
             />
+            {emailError && <p className="text-sm text-red-500">{emailError}</p>}
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Senha</Label>
@@ -74,10 +155,11 @@ export default function Login() {
               type="password"
               required
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={handlePasswordChange}
+              className={passwordError ? 'border-red-500' : ''}
             />
+            {passwordError && <p className="text-sm text-red-500">{passwordError}</p>}
           </div>
-          {errorMessage && <p className="text-sm text-red-500 text-center">{errorMessage}</p>}
           <Button
             type="submit"
             className="w-full bg-orange-500 hover:bg-orange-600 text-white"

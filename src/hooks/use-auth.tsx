@@ -8,6 +8,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>
   signOut: () => void
   loading: boolean
+  checkBackendHealth: () => Promise<boolean>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -81,8 +82,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     pb.authStore.clear()
   }
 
+  const checkBackendHealth = async (): Promise<boolean> => {
+    try {
+      await pb.health.check()
+      return true
+    } catch {
+      return false
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, signUp, signIn, signOut, loading }}>
+    <AuthContext.Provider
+      value={{ user, isAuthenticated, signUp, signIn, signOut, loading, checkBackendHealth }}
+    >
       {children}
     </AuthContext.Provider>
   )
