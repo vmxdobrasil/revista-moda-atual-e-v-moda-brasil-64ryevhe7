@@ -44,6 +44,7 @@ import SeoSpecialistPage from './pages/admin/SeoSpecialistPage'
 import CoverArtDirectorPage from './pages/admin/CoverArtDirectorPage'
 import EditionCoversPage from './pages/admin/EditionCoversPage'
 import EditorialQaPage from './pages/admin/EditorialQaPage'
+import NewsletterPage from './pages/admin/NewsletterPage'
 
 import Partners from './pages/Partners'
 import Advertisements from './pages/Advertisements'
@@ -114,6 +115,7 @@ const App = () => (
               <Route path="seo-specialist" element={<SeoSpecialistPage />} />
               <Route path="cover-art-director" element={<CoverArtDirectorPage />} />
               <Route path="editorial-qa" element={<EditorialQaPage />} />
+              <Route path="newsletter" element={<NewsletterPage />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
