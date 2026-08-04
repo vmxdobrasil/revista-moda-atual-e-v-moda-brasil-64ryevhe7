@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-04T21:02:48.149Z",
+  "generatedAt": "2026-08-04T21:26:24.302Z",
   "collections": [
     {
       "name": "users",
@@ -59,6 +59,12 @@
         {
           "name": "twofa_otp_expiry",
           "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "dashboard_preferences",
+          "type": "json",
           "required": false,
           "system": false
         }

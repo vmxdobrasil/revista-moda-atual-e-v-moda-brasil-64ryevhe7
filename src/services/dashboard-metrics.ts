@@ -1,5 +1,35 @@
 import pb from '@/lib/pocketbase/client'
 
+export type PeriodFilter = '7d' | '30d' | 'this_month' | 'all'
+
+export const PERIOD_LABELS: Record<PeriodFilter, string> = {
+  '7d': 'Últimos 7 dias',
+  '30d': 'Últimos 30 dias',
+  this_month: 'Este mês',
+  all: 'Todo o período',
+}
+
+function periodStart(p: PeriodFilter): string | null {
+  if (p === 'all') return null
+  const n = new Date()
+  if (p === '7d') {
+    const d = new Date(n)
+    d.setDate(d.getDate() - 7)
+    return d.toISOString()
+  }
+  if (p === '30d') {
+    const d = new Date(n)
+    d.setDate(d.getDate() - 30)
+    return d.toISOString()
+  }
+  return new Date(n.getFullYear(), n.getMonth(), 1).toISOString()
+}
+
+function pf(field: string, p: PeriodFilter): string | undefined {
+  const s = periodStart(p)
+  return s ? `${field} >= '${s}'` : undefined
+}
+
 export interface DashboardMetrics {
   editions: { total: number; totalViews: number; totalPages: number }
   socialPosts: {
@@ -37,19 +67,32 @@ export interface DashboardMetrics {
   seoMetrics: { totalKeywords: number; avgPosition: number }
 }
 
-function countByField<T extends Record<string, any>>(
-  items: T[],
-  field: string,
-): Record<string, number> {
-  const result: Record<string, number> = {}
-  for (const item of items) {
-    const val = item[field] || 'unknown'
-    result[val] = (result[val] || 0) + 1
-  }
-  return result
+export interface DashboardRawData {
+  editions: any[]
+  editionPages: any[]
+  socialPosts: any[]
+  workflowResults: any[]
+  deliveryQueue: any[]
+  orders: any[]
+  notifications: any[]
+  seoMetrics: any[]
 }
 
-export async function getDashboardMetrics(): Promise<DashboardMetrics> {
+export interface DashboardData {
+  metrics: DashboardMetrics
+  raw: DashboardRawData
+}
+
+function countBy<T extends Record<string, any>>(items: T[], field: string): Record<string, number> {
+  const r: Record<string, number> = {}
+  for (const i of items) {
+    const v = i[field] || 'unknown'
+    r[v] = (r[v] || 0) + 1
+  }
+  return r
+}
+
+export async function getDashboardData(period: PeriodFilter): Promise<DashboardData> {
   const [
     editions,
     editionPages,
@@ -60,47 +103,58 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     notifications,
     seoMetrics,
   ] = await Promise.all([
-    pb.collection('editions').getFullList<any>(),
+    pb.collection('editions').getFullList<any>({ filter: pf('created', period) }),
     pb.collection('edition_pages').getFullList<any>(),
-    pb.collection('social_posts').getFullList<any>(),
-    pb.collection('workflow_results').getFullList<any>(),
-    pb.collection('delivery_queue').getFullList<any>(),
+    pb.collection('social_posts').getFullList<any>({ filter: pf('post_date', period) }),
+    pb.collection('workflow_results').getFullList<any>({ filter: pf('created', period) }),
+    pb.collection('delivery_queue').getFullList<any>({ filter: pf('created', period) }),
     pb
       .collection('marketplace_orders')
-      .getFullList<any>()
+      .getFullList<any>({ filter: pf('created', period), expand: 'product' })
       .catch(() => []),
-    pb.collection('notifications').getFullList<any>(),
+    pb.collection('notifications').getFullList<any>({ filter: pf('created', period) }),
     pb
       .collection('seo_metrics')
-      .getFullList<any>()
+      .getFullList<any>({ filter: pf('tracked_date', period) })
       .catch(() => []),
   ])
 
-  const spStatus = countByField(socialPosts, 'status')
-  const wfQaStatus = countByField(workflowResults, 'qa_status')
-  const dqStatus = countByField(deliveryQueue, 'status')
-  const ordStatus = countByField(orders, 'status')
-  const totalPosition = seoMetrics.reduce((sum, m) => sum + (m.position || 0), 0)
+  const sp = countBy(socialPosts, 'status')
+  const qa = countBy(workflowResults, 'qa_status')
+  const dq = countBy(deliveryQueue, 'status')
+  const ord = countBy(orders, 'status')
+  const pos = seoMetrics.reduce((s, m) => s + (m.position || 0), 0)
 
-  return {
+  const raw: DashboardRawData = {
+    editions,
+    editionPages,
+    socialPosts,
+    workflowResults,
+    deliveryQueue,
+    orders,
+    notifications,
+    seoMetrics,
+  }
+
+  const metrics: DashboardMetrics = {
     editions: {
       total: editions.length,
-      totalViews: editions.reduce((sum, e) => sum + (e.view_count || 0), 0),
+      totalViews: editions.reduce((s, e) => s + (e.view_count || 0), 0),
       totalPages: editionPages.length,
     },
     socialPosts: {
       total: socialPosts.length,
-      totalViews: socialPosts.reduce((sum, p) => sum + (p.views || 0), 0),
-      totalLikes: socialPosts.reduce((sum, p) => sum + (p.likes || 0), 0),
+      totalViews: socialPosts.reduce((s, p) => s + (p.views || 0), 0),
+      totalLikes: socialPosts.reduce((s, p) => s + (p.likes || 0), 0),
       avgEngagement:
         socialPosts.length > 0
-          ? socialPosts.reduce((sum, p) => sum + (p.engagement_rate || 0), 0) / socialPosts.length
+          ? socialPosts.reduce((s, p) => s + (p.engagement_rate || 0), 0) / socialPosts.length
           : 0,
       byStatus: {
-        pending: spStatus.pending || 0,
-        scheduled: spStatus.scheduled || 0,
-        published: spStatus.published || 0,
-        failed: spStatus.failed || 0,
+        pending: sp.pending || 0,
+        scheduled: sp.scheduled || 0,
+        published: sp.published || 0,
+        failed: sp.failed || 0,
       },
     },
     workflowResults: {
@@ -108,32 +162,32 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
       failed: workflowResults.filter((w) => w.status === 'failed').length,
       processing: workflowResults.filter((w) => w.status === 'processing').length,
       byQaStatus: {
-        aprovado: wfQaStatus.aprovado || 0,
-        revisar: wfQaStatus.revisar || 0,
-        reprovado: wfQaStatus.reprovado || 0,
+        aprovado: qa.aprovado || 0,
+        revisar: qa.revisar || 0,
+        reprovado: qa.reprovado || 0,
       },
     },
     deliveryQueue: {
       total: deliveryQueue.length,
-      published: dqStatus.publicado || 0,
-      pending: (dqStatus.rascunho || 0) + (dqStatus.em_revisao || 0),
+      published: dq.publicado || 0,
+      pending: (dq.rascunho || 0) + (dq.em_revisao || 0),
       byStatus: {
-        rascunho: dqStatus.rascunho || 0,
-        em_revisao: dqStatus.em_revisao || 0,
-        aprovado: dqStatus.aprovado || 0,
-        publicado: dqStatus.publicado || 0,
+        rascunho: dq.rascunho || 0,
+        em_revisao: dq.em_revisao || 0,
+        aprovado: dq.aprovado || 0,
+        publicado: dq.publicado || 0,
       },
     },
     marketplaceOrders: {
       total: orders.length,
-      pending: (ordStatus.pending || 0) + (ordStatus.confirmed || 0),
-      delivered: ordStatus.delivered || 0,
+      pending: (ord.pending || 0) + (ord.confirmed || 0),
+      delivered: ord.delivered || 0,
       byStatus: {
-        pending: ordStatus.pending || 0,
-        confirmed: ordStatus.confirmed || 0,
-        shipped: ordStatus.shipped || 0,
-        delivered: ordStatus.delivered || 0,
-        cancelled: ordStatus.cancelled || 0,
+        pending: ord.pending || 0,
+        confirmed: ord.confirmed || 0,
+        shipped: ord.shipped || 0,
+        delivered: ord.delivered || 0,
+        cancelled: ord.cancelled || 0,
       },
     },
     notifications: {
@@ -142,7 +196,9 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     },
     seoMetrics: {
       totalKeywords: seoMetrics.length,
-      avgPosition: seoMetrics.length > 0 ? totalPosition / seoMetrics.length : 0,
+      avgPosition: seoMetrics.length > 0 ? pos / seoMetrics.length : 0,
     },
   }
+
+  return { metrics, raw }
 }
