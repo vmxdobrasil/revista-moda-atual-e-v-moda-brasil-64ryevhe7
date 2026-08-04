@@ -77,6 +77,31 @@ routerAdd(
         trend_brief: trendBrief,
       }
 
+      currentStep = 'editorial-qa'
+      var qaStatus = 'revisar'
+      var qaComments = ''
+      var qaScore = 0
+      try {
+        var qaContent = copy.body || copy.title || JSON.stringify(copy)
+        var qaMsg =
+          'Revise o seguinte conteúdo editorial e retorne APENAS JSON válido com: classification (aprovado|revisar|reprovado), justification, suggestions[], score (0-100).\n\nCONTEÚDO:\n' +
+          qaContent
+        var qaResult = $ai.agent('editorial-qa').chat({
+          user_id: userId,
+          message: qaMsg,
+        })
+        var qaParsed = parseAgentJson(qaResult.content)
+        agentOutputs.qa = qaParsed
+        var validQa = ['aprovado', 'revisar', 'reprovado']
+        qaStatus =
+          validQa.indexOf(qaParsed.classification) >= 0 ? qaParsed.classification : 'revisar'
+        qaComments = qaParsed.justification || ''
+        qaScore = typeof qaParsed.score === 'number' ? qaParsed.score : 0
+      } catch (qaErr) {
+        qaComments = 'QA automático falhou: ' + (qaErr.message || 'erro desconhecido')
+        agentOutputs.qa = { error: qaComments }
+      }
+
       var wfCol = $app.findCollectionByNameOrId('workflow_results')
       var record = new Record(wfCol)
       if (editionId) record.set('edition_id', editionId)
@@ -92,6 +117,9 @@ routerAdd(
       }
       record.set('agent_outputs', agentOutputs)
       record.set('final_content', finalContent)
+      record.set('qa_status', qaStatus)
+      record.set('qa_comments', qaComments)
+      record.set('qa_score', qaScore)
       $app.save(record)
 
       try {
@@ -102,6 +130,7 @@ routerAdd(
         alRec.set('status', 'success')
         alRec.set('executed_at', new Date().toISOString())
         alRec.set('workflow_id', record.id)
+        alRec.set('agent_name', 'editorial-qa')
         $app.save(alRec)
       } catch (_) {}
 
@@ -112,6 +141,9 @@ routerAdd(
         agent_outputs: agentOutputs,
         final_content: finalContent,
         workflow_result_id: record.id,
+        qa_status: qaStatus,
+        qa_comments: qaComments,
+        qa_score: qaScore,
       })
     } catch (err) {
       var errorMsg = err && err.message ? err.message : 'Unknown error'
@@ -131,6 +163,7 @@ routerAdd(
         alRecE.set('status', 'error')
         alRecE.set('executed_at', new Date().toISOString())
         alRecE.set('error_message', errorMsg)
+        alRecE.set('agent_name', currentStep)
         $app.save(alRecE)
       } catch (_) {}
 

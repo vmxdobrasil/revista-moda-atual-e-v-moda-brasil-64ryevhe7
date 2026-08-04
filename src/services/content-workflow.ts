@@ -19,6 +19,9 @@ export interface WorkflowResult {
   error?: string
   failed_step?: string
   partial_outputs?: WorkflowAgentOutputs
+  qa_status?: string
+  qa_comments?: string
+  qa_score?: number
 }
 
 export async function runContentWorkflow(

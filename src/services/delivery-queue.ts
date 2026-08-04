@@ -15,6 +15,7 @@ export interface DeliveryQueueItem {
   status: DeliveryStatus
   published_at: string | null
   error_note: string
+  qa_approved: boolean
   created: string
   updated: string
   expand?: { product: MarketplaceProduct }
@@ -79,6 +80,10 @@ export async function markAsPublished(id: string): Promise<void> {
   await pb
     .collection('delivery_queue')
     .update(id, { status: 'publicado', published_at: new Date().toISOString() })
+}
+
+export async function setQaApproved(id: string, approved: boolean): Promise<void> {
+  await pb.collection('delivery_queue').update(id, { qa_approved: approved })
 }
 
 export interface DeliveryQueueStats {

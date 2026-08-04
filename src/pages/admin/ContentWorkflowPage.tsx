@@ -17,8 +17,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2, Play, AlertCircle, Save, Check, X, Circle } from 'lucide-react'
+import { Loader2, Play, AlertCircle, Save, Check, X, Circle, ShieldCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const STEPS = [
@@ -26,6 +27,7 @@ const STEPS = [
   { label: 'Pesquisando', agent: 'trend-researcher' },
   { label: 'Escrevendo', agent: 'copywriter' },
   { label: 'Criando Visual', agent: 'visual-designer' },
+  { label: 'QA Editorial', agent: 'editorial-qa' },
 ]
 
 type StepStatus = 'pending' | 'active' | 'done' | 'error'
@@ -42,7 +44,13 @@ export default function ContentWorkflowPage() {
   const [editions, setEditions] = useState<Edition[]>([])
   const [selectedEdition, setSelectedEdition] = useState('')
   const [loading, setLoading] = useState(false)
-  const [steps, setSteps] = useState<StepStatus[]>(['pending', 'pending', 'pending', 'pending'])
+  const [steps, setSteps] = useState<StepStatus[]>([
+    'pending',
+    'pending',
+    'pending',
+    'pending',
+    'pending',
+  ])
   const [result, setResult] = useState<WorkflowResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [failedStep, setFailedStep] = useState<string | null>(null)
@@ -58,12 +66,12 @@ export default function ContentWorkflowPage() {
   }, [])
 
   const startProgress = () => {
-    setSteps(['active', 'pending', 'pending', 'pending'])
+    setSteps(['active', 'pending', 'pending', 'pending', 'pending'])
     intervalRef.current = setInterval(() => {
       setSteps((prev) => {
         const next = [...prev]
         const idx = next.indexOf('active')
-        if (idx >= 0 && idx < 3) {
+        if (idx >= 0 && idx < 4) {
           next[idx] = 'done'
           next[idx + 1] = 'active'
         }
@@ -98,7 +106,7 @@ export default function ContentWorkflowPage() {
       const res = await runContentWorkflow(selectedEdition || undefined, theme.trim() || undefined)
       if (res.success) {
         setResult(res)
-        setSteps(['done', 'done', 'done', 'done'])
+        setSteps(['done', 'done', 'done', 'done', 'done'])
       } else {
         setError(res.error || 'Erro desconhecido')
         setFailedStep(res.failed_step || null)
@@ -108,6 +116,8 @@ export default function ContentWorkflowPage() {
           setSteps((prev) =>
             prev.map((_, i) => (i < failedIdx ? 'done' : i === failedIdx ? 'error' : 'pending')),
           )
+        } else {
+          setSteps(['done', 'done', 'done', 'done', 'done'])
         }
       }
     } catch (err: unknown) {
@@ -240,6 +250,31 @@ export default function ContentWorkflowPage() {
             </Button>
           </div>
           <WorkflowResultDisplay result={result} />
+          {result.qa_status && (
+            <Card className="rounded-xl border-orange-200 bg-orange-50">
+              <CardContent className="p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-orange-500" /> QA Editorial
+                  </h3>
+                  <Badge
+                    className={
+                      result.qa_status === 'aprovado'
+                        ? 'bg-green-500'
+                        : result.qa_status === 'reprovado'
+                          ? 'bg-red-500'
+                          : 'bg-yellow-500'
+                    }
+                  >
+                    {result.qa_status} — {result.qa_score}/100
+                  </Badge>
+                </div>
+                {result.qa_comments && (
+                  <p className="text-sm text-gray-600">{result.qa_comments}</p>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </>
       )}
     </div>

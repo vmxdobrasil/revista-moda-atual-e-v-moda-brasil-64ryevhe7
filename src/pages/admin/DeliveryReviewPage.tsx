@@ -6,17 +6,31 @@ import {
   updateCaption,
   approveDelivery,
   rejectDelivery,
+  setQaApproved,
   STATUS_CONFIG,
   type DeliveryQueueItem,
   type DeliveryStatus,
 } from '@/services/delivery-queue'
+import { reviewContent, type QaParecer } from '@/services/editorial-qa'
+import { QaParecerDisplay } from '@/components/QaParecerDisplay'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/hooks/use-toast'
-import { ArrowLeft, Check, X, Save, Copy, Download, ExternalLink, AlertCircle } from 'lucide-react'
+import {
+  ArrowLeft,
+  Check,
+  X,
+  Save,
+  Copy,
+  Download,
+  ExternalLink,
+  AlertCircle,
+  ShieldCheck,
+  Loader2,
+} from 'lucide-react'
 
 export default function DeliveryReviewPage() {
   const { id } = useParams<{ id: string }>()
@@ -26,6 +40,8 @@ export default function DeliveryReviewPage() {
   const [caption, setCaption] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [qaResult, setQaResult] = useState<QaParecer | null>(null)
+  const [qaLoading, setQaLoading] = useState(false)
 
   const loadData = useCallback(async () => {
     if (!id) return
@@ -70,6 +86,37 @@ export default function DeliveryReviewPage() {
     }
   }
 
+  const handleQaReview = async () => {
+    if (!item) return
+    setQaLoading(true)
+    setQaResult(null)
+    try {
+      const article = getArticleFields(item.article_content)
+      const content = article?.body || item.caption || item.theme
+      const parecer = await reviewContent(content, article ? 'article' : 'caption')
+      setQaResult(parecer)
+      if (parecer.classification === 'aprovado') {
+        await setQaApproved(item.id, true)
+        toast({ title: 'QA Aprovado', description: 'Conteúdo liberado para download.' })
+        loadData()
+      } else {
+        toast({
+          title: 'QA: ' + parecer.classification,
+          description: 'Revise as sugestões antes de publicar.',
+          variant: parecer.classification === 'reprovado' ? 'destructive' : 'default',
+        })
+      }
+    } catch (err: any) {
+      toast({
+        title: 'Erro QA',
+        description: err?.message || 'Falha ao revisar conteúdo.',
+        variant: 'destructive',
+      })
+    } finally {
+      setQaLoading(false)
+    }
+  }
+
   const handleExport = (copy: boolean) => {
     const article = item ? getArticleFields(item.article_content) : null
     const text = `ARTIGO:\n${article?.body || ''}\n\n---\n\nLEGENDA:\n${caption}\n\n---\n\nBIO:\n${item?.bio_text || ''}`
@@ -103,7 +150,7 @@ export default function DeliveryReviewPage() {
   const article = getArticleFields(item.article_content)
   const status = item.status as DeliveryStatus
   const product = item.expand?.product
-  const canExport = status === 'aprovado' || status === 'publicado'
+  const canExport = (status === 'aprovado' || status === 'publicado') && item.qa_approved
 
   return (
     <div className="space-y-6">
@@ -113,7 +160,14 @@ export default function DeliveryReviewPage() {
         </Button>
         <div className="flex-1">
           <h2 className="text-2xl font-bold text-gray-800">{item.theme}</h2>
-          <Badge className={STATUS_CONFIG[status]?.color}>{STATUS_CONFIG[status]?.label}</Badge>
+          <div className="flex items-center gap-2">
+            <Badge className={STATUS_CONFIG[status]?.color}>{STATUS_CONFIG[status]?.label}</Badge>
+            {item.qa_approved ? (
+              <Badge className="bg-green-500">QA Aprovado</Badge>
+            ) : (
+              <Badge variant="outline">QA Pendente</Badge>
+            )}
+          </div>
         </div>
       </div>
 
@@ -123,6 +177,8 @@ export default function DeliveryReviewPage() {
           <p className="text-sm text-red-700">{item.error_note}</p>
         </div>
       )}
+
+      {qaResult && <QaParecerDisplay parecer={qaResult} />}
 
       {article && (
         <Card>
@@ -214,7 +270,15 @@ export default function DeliveryReviewPage() {
             <X className="w-4 h-4" /> Rejeitar
           </Button>
         )}
-        {canExport && (
+        <Button onClick={handleQaReview} disabled={qaLoading} variant="outline" className="gap-2">
+          {qaLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <ShieldCheck className="w-4 h-4" />
+          )}
+          Revisar QA
+        </Button>
+        {canExport ? (
           <>
             <Button onClick={() => handleExport(true)} variant="outline" className="gap-2">
               <Copy className="w-4 h-4" /> Copiar Tudo
@@ -223,6 +287,13 @@ export default function DeliveryReviewPage() {
               <Download className="w-4 h-4" /> Baixar
             </Button>
           </>
+        ) : (
+          status !== 'rascunho' &&
+          !item.qa_approved && (
+            <span className="text-sm text-gray-400 flex items-center gap-1">
+              <ShieldCheck className="w-4 h-4" /> QA aprovado necessário para download
+            </span>
+          )
         )}
       </div>
     </div>

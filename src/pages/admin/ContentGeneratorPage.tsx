@@ -8,6 +8,8 @@ import {
 } from '@/services/content-generator'
 import { GeneratedContentDisplay } from './components/GeneratedContentDisplay'
 import { optimizeSeo, type SeoOptimizationResult } from '@/services/seo'
+import { reviewContent, type QaParecer } from '@/services/editorial-qa'
+import { QaParecerDisplay } from '@/components/QaParecerDisplay'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -32,6 +34,7 @@ import {
   AlertCircle,
   RotateCcw,
   Search,
+  ShieldCheck,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -55,6 +58,8 @@ export default function ContentGeneratorPage() {
   const [saving, setSaving] = useState(false)
   const [seoResult, setSeoResult] = useState<SeoOptimizationResult | null>(null)
   const [seoLoading, setSeoLoading] = useState(false)
+  const [qaResult, setQaResult] = useState<QaParecer | null>(null)
+  const [qaLoading, setQaLoading] = useState(false)
   const { toast } = useToast()
   const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -126,6 +131,25 @@ export default function ContentGeneratorPage() {
       })
     } finally {
       setSeoLoading(false)
+    }
+  }
+
+  const handleQaReview = async () => {
+    if (!result) return
+    setQaLoading(true)
+    setQaResult(null)
+    try {
+      const parecer = await reviewContent(result.materia_completa, 'article')
+      setQaResult(parecer)
+      toast({ title: 'QA concluído', description: `Classificação: ${parecer.classification}` })
+    } catch (err: any) {
+      toast({
+        title: 'Erro QA',
+        description: err?.message || 'Falha ao revisar conteúdo.',
+        variant: 'destructive',
+      })
+    } finally {
+      setQaLoading(false)
     }
   }
 
@@ -255,6 +279,19 @@ export default function ContentGeneratorPage() {
         <>
           <div className="flex justify-end gap-2">
             <Button
+              onClick={handleQaReview}
+              disabled={qaLoading}
+              variant="outline"
+              className="gap-2"
+            >
+              {qaLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <ShieldCheck className="w-4 h-4" />
+              )}
+              Validar QA
+            </Button>
+            <Button
               onClick={handleSeoOptimize}
               disabled={seoLoading}
               variant="outline"
@@ -308,6 +345,7 @@ export default function ContentGeneratorPage() {
             </Card>
           )}
 
+          {qaResult && <QaParecerDisplay parecer={qaResult} />}
           <GeneratedContentDisplay content={result} />
         </>
       )}

@@ -13,9 +13,13 @@ import {
 } from '@/services/delivery-queue'
 import { useRealtime } from '@/hooks/use-realtime'
 import { DeliveryCreateForm } from './components/DeliveryCreateForm'
+import { reviewContent, type QaParecer } from '@/services/editorial-qa'
+import { setQaApproved } from '@/services/delivery-queue'
+import { QaParecerDisplay } from '@/components/QaParecerDisplay'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
   Select,
   SelectContent,
@@ -43,7 +47,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { useToast } from '@/hooks/use-toast'
-import { Plus, Eye, Trash2, Send, ClipboardList } from 'lucide-react'
+import { Plus, Eye, Trash2, Send, ClipboardList, Loader2, ShieldCheck } from 'lucide-react'
 
 export default function DeliveryQueuePage() {
   const navigate = useNavigate()
@@ -54,6 +58,9 @@ export default function DeliveryQueuePage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [stats, setStats] = useState<DeliveryQueueStats | null>(null)
   const [batchProcessing, setBatchProcessing] = useState(false)
+  const [qaResult, setQaResult] = useState<QaParecer | null>(null)
+  const [qaLoading, setQaLoading] = useState(false)
+  const [qaDialogOpen, setQaDialogOpen] = useState(false)
 
   const loadStats = useCallback(async () => {
     try {
@@ -98,6 +105,26 @@ export default function DeliveryQueuePage() {
       })
     } finally {
       setBatchProcessing(false)
+    }
+  }
+
+  const handleQaReview = async (item: DeliveryQueueItem) => {
+    setQaLoading(true)
+    setQaResult(null)
+    setQaDialogOpen(true)
+    try {
+      const content = item.caption || item.theme
+      const parecer = await reviewContent(content, item.caption ? 'caption' : 'article')
+      setQaResult(parecer)
+      if (parecer.classification === 'aprovado') {
+        await setQaApproved(item.id, true)
+        toast({ title: 'QA Aprovado', description: 'Conteúdo liberado para download.' })
+        loadData()
+      }
+    } catch {
+      toast({ title: 'Erro', description: 'Falha ao revisar QA.', variant: 'destructive' })
+    } finally {
+      setQaLoading(false)
     }
   }
 
@@ -224,6 +251,7 @@ export default function DeliveryQueuePage() {
                 <TableHead>Tema</TableHead>
                 <TableHead>Produto</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>QA</TableHead>
                 <TableHead>Criado</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
@@ -243,6 +271,23 @@ export default function DeliveryQueuePage() {
                     >
                       {STATUS_CONFIG[item.status as DeliveryStatus]?.label || item.status}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      {item.qa_approved ? (
+                        <Badge className="bg-green-500">Aprovado</Badge>
+                      ) : (
+                        <Badge variant="outline">Pendente</Badge>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleQaReview(item)}
+                        title="Revisar QA"
+                      >
+                        <ShieldCheck className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                   <TableCell className="text-sm text-gray-500">
                     {new Date(item.created).toLocaleDateString('pt-BR')}
@@ -298,6 +343,25 @@ export default function DeliveryQueuePage() {
           </Table>
         </div>
       )}
+
+      <Dialog open={qaDialogOpen} onOpenChange={setQaDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-orange-500" /> Parecer QA Editorial
+            </DialogTitle>
+          </DialogHeader>
+          {qaLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+            </div>
+          ) : qaResult ? (
+            <QaParecerDisplay parecer={qaResult} />
+          ) : (
+            <p className="text-center text-gray-400 py-8">Nenhum parecer disponível.</p>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <DeliveryCreateForm open={formOpen} onOpenChange={setFormOpen} onSaved={loadData} />
     </div>

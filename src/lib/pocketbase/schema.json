@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-04T11:06:30.036Z",
+  "generatedAt": "2026-08-04T11:33:14.099Z",
   "collections": [
     {
       "name": "users",
@@ -610,11 +610,31 @@
           "type": "text",
           "required": false,
           "system": false
+        },
+        {
+          "name": "qa_status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["aprovado", "revisar", "reprovado"]
+        },
+        {
+          "name": "qa_comments",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "qa_score",
+          "type": "number",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [
         "CREATE INDEX idx_workflow_results_edition ON workflow_results (edition_id)",
-        "CREATE INDEX idx_workflow_results_created ON workflow_results (created)"
+        "CREATE INDEX idx_workflow_results_created ON workflow_results (created)",
+        "CREATE INDEX `idx_workflow_results_qa_status` ON `workflow_results` (qa_status)"
       ]
     },
     {
@@ -1127,9 +1147,18 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "qa_approved",
+          "type": "bool",
+          "required": false,
+          "system": false
         }
       ],
-      "indexes": ["CREATE INDEX idx_delivery_queue_status ON delivery_queue (status)"]
+      "indexes": [
+        "CREATE INDEX idx_delivery_queue_status ON delivery_queue (status)",
+        "CREATE INDEX `idx_delivery_queue_qa_approved` ON `delivery_queue` (qa_approved)"
+      ]
     },
     {
       "name": "about_content",
