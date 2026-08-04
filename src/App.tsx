@@ -42,6 +42,7 @@ import MultiFormatReviewPage from './pages/admin/MultiFormatReviewPage'
 import AuditPage from './pages/admin/AuditPage'
 import SeoSpecialistPage from './pages/admin/SeoSpecialistPage'
 import CoverArtDirectorPage from './pages/admin/CoverArtDirectorPage'
+import EditionCoversPage from './pages/admin/EditionCoversPage'
 
 import Partners from './pages/Partners'
 import Advertisements from './pages/Advertisements'
@@ -85,6 +86,7 @@ const App = () => (
               <Route path="editions" element={<EditionsPage />} />
               <Route path="editions/new" element={<EditionCreatePage />} />
               <Route path="editions/:id" element={<EditionEditPage />} />
+              <Route path="editions/:id/covers" element={<EditionCoversPage />} />
               <Route path="editions/:editionId/pages/:pageId/edit" element={<PageEditPage />} />
               <Route path="analytics" element={<AnalyticsPage />} />
               <Route path="analytics/:editionId" element={<EditionAnalyticsPage />} />

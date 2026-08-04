@@ -15,6 +15,7 @@ export interface SocialPost {
   new_followers: number
   is_top_performer: boolean
   engagement_rate: number
+  edition?: string
   created: string
   updated: string
 }
@@ -31,6 +32,7 @@ export interface SocialPostInput {
   saves: number
   remixes?: number
   new_followers?: number
+  edition?: string
 }
 
 export interface PautaSuggestion {

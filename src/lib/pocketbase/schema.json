@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-04T02:20:06.766Z",
+  "generatedAt": "2026-08-04T11:06:30.036Z",
   "collections": [
     {
       "name": "users",
@@ -531,6 +531,13 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "edition",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "editions"
         }
       ],
       "indexes": [
@@ -1084,7 +1091,7 @@
         {
           "name": "product",
           "type": "relation",
-          "required": true,
+          "required": false,
           "system": false,
           "collectionRef": "marketplace_products"
         },
@@ -1536,6 +1543,65 @@
         }
       ],
       "indexes": ["CREATE UNIQUE INDEX idx_visual_templates_slug ON visual_templates (slug)"]
+    },
+    {
+      "name": "cover_versions",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "edition",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "editions"
+        },
+        {
+          "name": "version_number",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "cover_image",
+          "type": "file",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "cover_alt_text",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "cover_variants",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": ["CREATE INDEX idx_cover_versions_edition ON cover_versions (edition)"]
     }
   ]
 }
