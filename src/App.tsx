@@ -64,18 +64,18 @@ const App = () => (
           <OfflineIndicator />
           <PwaInstallPrompt />
           <Routes>
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Index />} />
-              <Route path="editions" element={<Editions />} />
-              <Route path="partners" element={<Partners />} />
-              <Route path="advertisements" element={<Advertisements />} />
-              <Route path="offers" element={<Offers />} />
-              <Route path="edition/:id" element={<MagazineReader />} />
-              <Route path="reader/latest" element={<MagazineReader isLatest />} />
-              <Route path="reader/:id" element={<MagazineReader />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="texto/:id" element={<StoryTextView />} />
-              <Route path="sobre-nos" element={<About />} />
+            <Route element={<Layout />}>
+              <Route path="/" element={<Index />} />
+              <Route path="/editions" element={<Editions />} />
+              <Route path="/partners" element={<Partners />} />
+              <Route path="/advertisements" element={<Advertisements />} />
+              <Route path="/offers" element={<Offers />} />
+              <Route path="/edition/:id" element={<MagazineReader />} />
+              <Route path="/reader/latest" element={<MagazineReader isLatest />} />
+              <Route path="/reader/:id" element={<MagazineReader />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/texto/:id" element={<StoryTextView />} />
+              <Route path="/sobre-nos" element={<About />} />
             </Route>
 
             <Route path="/esqueci-senha" element={<ForgotPassword />} />

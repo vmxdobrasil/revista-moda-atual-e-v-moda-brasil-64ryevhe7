@@ -1,15 +1,8 @@
-const CACHE_NAME = 'moda-atual-v1'
-const APP_SHELL = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png',
-  '/favicon.ico',
-]
+const CACHE_NAME = 'moda-brasil-v2'
+const STATIC_ASSETS = ['/', '/index.html', '/manifest.json', '/favicon.ico', '/placeholder.svg']
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL).catch(() => {})))
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS)))
   self.skipWaiting()
 })
 
@@ -25,38 +18,40 @@ self.addEventListener('activate', (event) => {
 })
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return
-  const url = new URL(event.request.url)
+  const { request } = event
+
+  if (request.method !== 'GET') return
+
+  const url = new URL(request.url)
+
   if (url.origin !== location.origin) return
 
-  if (event.request.mode === 'navigate') {
+  if (url.pathname.startsWith('/admin')) return
+
+  if (url.pathname.startsWith('/api/')) return
+
+  if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request)
+      fetch(request)
         .then((response) => {
           const clone = response.clone()
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
           return response
         })
-        .catch(() => caches.match(event.request).then((cached) => cached || caches.match('/'))),
+        .catch(() => caches.match(request).then((cached) => cached || caches.match('/'))),
     )
     return
   }
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached
-      return fetch(event.request)
-        .then((response) => {
-          if (
-            response.ok &&
-            (url.pathname.startsWith('/assets/') || url.pathname.startsWith('/icons/'))
-          ) {
-            const clone = response.clone()
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
-          }
+    caches.match(request).then(
+      (cached) =>
+        cached ||
+        fetch(request).then((response) => {
+          const clone = response.clone()
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
           return response
-        })
-        .catch(() => cached)
-    }),
+        }),
+    ),
   )
 })
