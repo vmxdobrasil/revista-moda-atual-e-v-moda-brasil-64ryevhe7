@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-03T23:40:20.433Z",
+  "generatedAt": "2026-08-03T23:59:08.860Z",
   "collections": [
     {
       "name": "users",
@@ -29,19 +29,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
       "indexes": [
@@ -83,19 +78,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         },
         {
           "name": "cover_file",
@@ -115,11 +105,45 @@
           "required": false,
           "system": false,
           "collectionRef": "top60_brands"
+        },
+        {
+          "name": "seo_title",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "seo_description",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "keywords",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "canonical_url",
+          "type": "url",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "slug",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "og_image_url",
+          "type": "url",
+          "required": false,
+          "system": false
         }
       ],
-      "indexes": [
-        "CREATE INDEX `idx_editions_brand` ON `editions` (brand)"
-      ]
+      "indexes": ["CREATE INDEX `idx_editions_brand` ON `editions` (brand)"]
     },
     {
       "name": "edition_pages",
@@ -162,19 +186,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         },
         {
           "name": "image_file",
@@ -187,13 +206,7 @@
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": [
-            "default",
-            "editorial",
-            "marketing",
-            "holofote",
-            "entrevista"
-          ]
+          "selectValues": ["default", "editorial", "marketing", "holofote", "entrevista"]
         },
         {
           "name": "template_data",
@@ -204,6 +217,36 @@
         {
           "name": "view_count",
           "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "seo_title",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "seo_description",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "keywords",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "canonical_url",
+          "type": "url",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "slug",
+          "type": "text",
           "required": false,
           "system": false
         }
@@ -271,19 +314,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         },
         {
           "name": "click_count",
@@ -299,9 +337,7 @@
           "collectionRef": "marketplace_products"
         }
       ],
-      "indexes": [
-        "CREATE INDEX `idx_hotspots_page` ON `page_hotspots` (page)"
-      ]
+      "indexes": ["CREATE INDEX `idx_hotspots_page` ON `page_hotspots` (page)"]
     },
     {
       "name": "generated_social_content",
@@ -338,19 +374,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
       "indexes": []
@@ -383,11 +414,7 @@
           "type": "select",
           "required": true,
           "system": false,
-          "selectValues": [
-            "Reel",
-            "Carousel",
-            "Photo"
-          ]
+          "selectValues": ["Reel", "Carousel", "Photo"]
         },
         {
           "name": "post_date",
@@ -454,19 +481,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
       "indexes": [
@@ -518,30 +540,21 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         },
         {
           "name": "status",
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": [
-            "processing",
-            "completed",
-            "failed"
-          ]
+          "selectValues": ["processing", "completed", "failed"]
         },
         {
           "name": "error_note",
@@ -589,24 +602,17 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
-      "indexes": [
-        "CREATE UNIQUE INDEX idx_top60_categories_slug ON top60_categories (slug)"
-      ]
+      "indexes": ["CREATE UNIQUE INDEX idx_top60_categories_slug ON top60_categories (slug)"]
     },
     {
       "name": "top60_brands",
@@ -679,19 +685,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
       "indexes": [
@@ -768,24 +769,17 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
-      "indexes": [
-        "CREATE INDEX idx_marketplace_products_cat ON marketplace_products (category)"
-      ]
+      "indexes": ["CREATE INDEX idx_marketplace_products_cat ON marketplace_products (category)"]
     },
     {
       "name": "marketplace_orders",
@@ -834,37 +828,24 @@
           "type": "select",
           "required": true,
           "system": false,
-          "selectValues": [
-            "pending",
-            "confirmed",
-            "shipped",
-            "delivered",
-            "cancelled"
-          ]
+          "selectValues": ["pending", "confirmed", "shipped", "delivered", "cancelled"]
         },
         {
           "name": "created",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
-      "indexes": [
-        "CREATE INDEX idx_marketplace_orders_status ON marketplace_orders (status)"
-      ]
+      "indexes": ["CREATE INDEX idx_marketplace_orders_status ON marketplace_orders (status)"]
     },
     {
       "name": "prompt_library",
@@ -906,35 +887,24 @@
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": [
-            "basic",
-            "advanced",
-            "super"
-          ]
+          "selectValues": ["basic", "advanced", "super"]
         },
         {
           "name": "created",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
-      "indexes": [
-        "CREATE UNIQUE INDEX idx_prompt_library_slug ON prompt_library (slug)"
-      ]
+      "indexes": ["CREATE UNIQUE INDEX idx_prompt_library_slug ON prompt_library (slug)"]
     },
     {
       "name": "story_texts",
@@ -970,24 +940,17 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
-      "indexes": [
-        "CREATE INDEX idx_story_texts_created ON story_texts (created)"
-      ]
+      "indexes": ["CREATE INDEX idx_story_texts_created ON story_texts (created)"]
     },
     {
       "name": "advertisements",
@@ -1029,24 +992,17 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
-      "indexes": [
-        "CREATE INDEX idx_advertisements_active ON advertisements (is_active)"
-      ]
+      "indexes": ["CREATE INDEX idx_advertisements_active ON advertisements (is_active)"]
     },
     {
       "name": "delivery_queue",
@@ -1095,12 +1051,7 @@
           "type": "select",
           "required": true,
           "system": false,
-          "selectValues": [
-            "rascunho",
-            "em_revisao",
-            "aprovado",
-            "publicado"
-          ]
+          "selectValues": ["rascunho", "em_revisao", "aprovado", "publicado"]
         },
         {
           "name": "published_at",
@@ -1119,24 +1070,17 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
-      "indexes": [
-        "CREATE INDEX idx_delivery_queue_status ON delivery_queue (status)"
-      ]
+      "indexes": ["CREATE INDEX idx_delivery_queue_status ON delivery_queue (status)"]
     },
     {
       "name": "about_content",
@@ -1166,19 +1110,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
       "indexes": []
@@ -1205,21 +1144,14 @@
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": [
-            "route",
-            "event",
-            "agent"
-          ]
+          "selectValues": ["route", "event", "agent"]
         },
         {
           "name": "status",
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": [
-            "success",
-            "error"
-          ]
+          "selectValues": ["success", "error"]
         },
         {
           "name": "executed_at",
@@ -1250,19 +1182,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
       "indexes": [
@@ -1293,10 +1220,7 @@
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": [
-            "success",
-            "error"
-          ]
+          "selectValues": ["success", "error"]
         },
         {
           "name": "error_message",
@@ -1315,25 +1239,127 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
       "indexes": [
         "CREATE INDEX idx_audit_snapshots_created ON audit_snapshots (created)",
         "CREATE INDEX idx_audit_snapshots_status ON audit_snapshots (status)",
         "CREATE UNIQUE INDEX idx_audit_snapshots_period ON audit_snapshots (period)"
+      ]
+    },
+    {
+      "name": "seo_metrics",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "keyword",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "position",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "search_volume",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "difficulty",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "edition",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "editions"
+        },
+        {
+          "name": "page",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "edition_pages"
+        },
+        {
+          "name": "url",
+          "type": "url",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "tracked_date",
+          "type": "date",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "previous_position",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "clicks",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "impressions",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ctr",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_seo_metrics_keyword ON seo_metrics (keyword)",
+        "CREATE INDEX idx_seo_metrics_tracked_date ON seo_metrics (tracked_date)",
+        "CREATE INDEX idx_seo_metrics_edition ON seo_metrics (edition)",
+        "CREATE INDEX idx_seo_metrics_page ON seo_metrics (page)"
       ]
     }
   ]

@@ -4,9 +4,12 @@ import {
   getDeliveryQueueItems,
   deleteDelivery,
   markAsPublished,
+  getDeliveryQueueStats,
+  batchProcessDeliveries,
   STATUS_CONFIG,
   type DeliveryQueueItem,
   type DeliveryStatus,
+  type DeliveryQueueStats,
 } from '@/services/delivery-queue'
 import { useRealtime } from '@/hooks/use-realtime'
 import { DeliveryCreateForm } from './components/DeliveryCreateForm'
@@ -49,17 +52,54 @@ export default function DeliveryQueuePage() {
   const [loading, setLoading] = useState(true)
   const [formOpen, setFormOpen] = useState(false)
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [stats, setStats] = useState<DeliveryQueueStats | null>(null)
+  const [batchProcessing, setBatchProcessing] = useState(false)
+
+  const loadStats = useCallback(async () => {
+    try {
+      const s = await getDeliveryQueueStats()
+      setStats(s)
+    } catch {
+      // inline error, not crash
+    }
+  }, [])
 
   const loadData = useCallback(async () => {
     try {
       const data = await getDeliveryQueueItems(statusFilter === 'all' ? undefined : statusFilter)
       setItems(data)
+      await loadStats()
     } catch {
       toast({ title: 'Erro', description: 'Falha ao carregar entregas.', variant: 'destructive' })
     } finally {
       setLoading(false)
     }
-  }, [toast, statusFilter])
+  }, [toast, statusFilter, loadStats])
+
+  const handleBatchProcess = async () => {
+    const pendingIds = items.filter((i) => i.status === 'rascunho').map((i) => i.id)
+    if (pendingIds.length === 0) {
+      toast({ title: 'Aviso', description: 'Nenhum item rascunho para processar.' })
+      return
+    }
+    setBatchProcessing(true)
+    try {
+      const result = await batchProcessDeliveries(pendingIds)
+      toast({
+        title: 'Batch concluído',
+        description: `${result.processed} processados, ${result.errors} erros.`,
+      })
+      loadData()
+    } catch {
+      toast({
+        title: 'Erro',
+        description: 'Falha no processamento em lote.',
+        variant: 'destructive',
+      })
+    } finally {
+      setBatchProcessing(false)
+    }
+  }
 
   useRealtime('delivery_queue', () => loadData())
   useEffect(() => {
@@ -106,13 +146,57 @@ export default function DeliveryQueuePage() {
             Gerencie o fluxo de entrega de conteúdo para Instagram.
           </p>
         </div>
-        <Button
-          onClick={() => setFormOpen(true)}
-          className="bg-orange-500 hover:bg-orange-600 gap-2"
-        >
-          <Plus className="w-4 h-4" /> Nova Entrega
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleBatchProcess}
+            disabled={batchProcessing}
+            variant="outline"
+            className="gap-2"
+          >
+            {batchProcessing ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
+            Processar Lote
+          </Button>
+          <Button
+            onClick={() => setFormOpen(true)}
+            className="bg-orange-500 hover:bg-orange-600 gap-2"
+          >
+            <Plus className="w-4 h-4" /> Nova Entrega
+          </Button>
+        </div>
       </div>
+
+      {stats && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="bg-white border rounded-lg p-3 text-center">
+            <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
+            <p className="text-xs text-gray-500">Total</p>
+          </div>
+          <div className="bg-white border rounded-lg p-3 text-center">
+            <p className="text-2xl font-bold text-gray-500">{stats.rascunho}</p>
+            <p className="text-xs text-gray-500">Rascunhos</p>
+          </div>
+          <div className="bg-white border rounded-lg p-3 text-center">
+            <p className="text-2xl font-bold text-blue-500">{stats.em_revisao}</p>
+            <p className="text-xs text-gray-500">Em Revisão</p>
+          </div>
+          <div className="bg-white border rounded-lg p-3 text-center">
+            <p className="text-2xl font-bold text-green-500">{stats.aprovado}</p>
+            <p className="text-xs text-gray-500">Aprovados</p>
+          </div>
+          <div className="bg-white border rounded-lg p-3 text-center">
+            <p className="text-2xl font-bold text-orange-500">{stats.pending}</p>
+            <p className="text-xs text-gray-500">Pendentes</p>
+          </div>
+          <div className="bg-white border rounded-lg p-3 text-center">
+            <p className="text-2xl font-bold text-red-500">{stats.errors}</p>
+            <p className="text-xs text-gray-500">Erros</p>
+          </div>
+        </div>
+      )}
 
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500">Filtrar por status:</span>

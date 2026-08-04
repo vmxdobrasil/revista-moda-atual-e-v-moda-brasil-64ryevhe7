@@ -207,6 +207,50 @@ routerAdd(
         )
       }
 
+      var pautaSuggestions = []
+      if (topThemes.length > 0) {
+        for (var pi = 0; pi < Math.min(topThemes.length, 5); pi++) {
+          var tw = topThemes[pi].word
+          pautaSuggestions.push({
+            topic: tw,
+            rationale: 'Tema presente em ' + topThemes[pi].count + ' dos top posts',
+            suggestedFormat: bestFormat ? bestFormat.format : 'Reel',
+            suggestedHook: hookType === 'provocativo' ? 'Provocativo' : 'Poético',
+            estimatedEngagement: bestFormat ? bestFormat.avgEngagement : avgER,
+          })
+        }
+      }
+      if (topHooks.length > 0) {
+        var top3Hooks = topHooks.slice(0, 3)
+        for (var hi = 0; hi < top3Hooks.length; hi++) {
+          pautaSuggestions.push({
+            topic: 'Variação do hook: "' + top3Hooks[hi].slice(0, 50) + '..."',
+            rationale: 'Hook no top 25% de engajamento',
+            suggestedFormat: bestFormat ? bestFormat.format : 'Reel',
+            suggestedHook: 'Baseado em performance real',
+            estimatedEngagement: avgER * 1.5,
+          })
+        }
+      }
+      var lowER = avgER * 0.5
+      var underperformers = []
+      for (var ui = 0; ui < allPosts.length; ui++) {
+        var upER = allPosts[ui].getFloat('engagement_rate') || 0
+        if (upER < lowER) {
+          underperformers.push({
+            hook: allPosts[ui].getString('hook').slice(0, 60),
+            engagement: upER,
+            format: allPosts[ui].getString('format'),
+          })
+        }
+      }
+      if (underperformers.length > 0) {
+        recommendations.push(
+          underperformers.length +
+            ' posts estão com engajamento abaixo de 50% da média. Evite temas similares.',
+        )
+      }
+
       var totalViews = 0
       var totalER = 0
       for (var i = 0; i < allPosts.length; i++) {
@@ -230,6 +274,8 @@ routerAdd(
           formats: formatAverages,
           themes: topThemes,
         },
+        pauta_suggestions: pautaSuggestions,
+        underperformers: underperformers,
       })
     } catch (err) {
       $app.logger().error('recommendations endpoint error', 'error', err.message)

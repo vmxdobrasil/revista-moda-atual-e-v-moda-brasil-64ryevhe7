@@ -27,6 +27,7 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { extractFieldErrors, type FieldErrors } from '@/lib/pocketbase/errors'
 import { Loader2, Save, Trash2 } from 'lucide-react'
+import { SeoFieldsForm, type SeoFieldValues } from './SeoFieldsForm'
 
 interface EditionFormProps {
   edition?: Edition
@@ -42,6 +43,13 @@ export function EditionForm({ edition, onSaved, onDelete }: EditionFormProps) {
   const [brands, setBrands] = useState<Top60Brand[]>([])
   const [saving, setSaving] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
+  const [seoValues, setSeoValues] = useState<SeoFieldValues>({
+    seo_title: (edition as any)?.seo_title || '',
+    seo_description: (edition as any)?.seo_description || '',
+    keywords: (edition as any)?.keywords || '',
+    canonical_url: (edition as any)?.canonical_url || '',
+    slug: (edition as any)?.slug || '',
+  })
   const { toast } = useToast()
 
   useEffect(() => {
@@ -59,6 +67,11 @@ export function EditionForm({ edition, onSaved, onDelete }: EditionFormProps) {
       formData.append('title', title)
       formData.append('description', description)
       formData.append('brand', brandId || '')
+      formData.append('seo_title', seoValues.seo_title)
+      formData.append('seo_description', seoValues.seo_description)
+      formData.append('keywords', seoValues.keywords)
+      formData.append('canonical_url', seoValues.canonical_url)
+      formData.append('slug', seoValues.slug)
       if (file) formData.append('cover_file', file)
 
       const saved = edition
@@ -155,6 +168,8 @@ export function EditionForm({ edition, onSaved, onDelete }: EditionFormProps) {
               )}
               {edition ? 'Salvar Alterações' : 'Criar Edição'}
             </Button>
+            <SeoFieldsForm values={seoValues} onChange={setSeoValues} />
+
             {edition && onDelete && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>

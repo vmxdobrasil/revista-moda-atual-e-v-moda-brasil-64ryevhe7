@@ -33,6 +33,20 @@ export interface SocialPostInput {
   new_followers?: number
 }
 
+export interface PautaSuggestion {
+  topic: string
+  rationale: string
+  suggestedFormat: string
+  suggestedHook: string
+  estimatedEngagement: number
+}
+
+export interface Underperformer {
+  hook: string
+  engagement: number
+  format: string
+}
+
 export interface RecommendationResponse {
   recommendations: string[]
   patterns: {
@@ -40,6 +54,8 @@ export interface RecommendationResponse {
     formats: Array<{ format: string; avgEngagement: number; avgViews: number; count: number }>
     themes: Array<{ word: string; count: number }>
   }
+  pauta_suggestions?: PautaSuggestion[]
+  underperformers?: Underperformer[]
 }
 
 const COLLECTION = 'social_posts'

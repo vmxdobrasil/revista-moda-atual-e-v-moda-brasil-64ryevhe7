@@ -55,6 +55,60 @@ export function RecommendationsCard({ data }: { data: RecommendationResponse }) 
             </div>
           </div>
         )}
+        {data.pauta_suggestions && data.pauta_suggestions.length > 0 && (
+          <div>
+            <h4 className="text-sm font-semibold text-gray-700 mb-2">
+              Pautas Sugeridas (Tópicos Editoriais)
+            </h4>
+            <div className="space-y-2">
+              {data.pauta_suggestions.map((p, i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-2 p-3 rounded-lg bg-orange-50 border border-orange-100"
+                >
+                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold shrink-0">
+                    {i + 1}
+                  </span>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-800">{p.topic}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{p.rationale}</p>
+                    <div className="flex gap-2 mt-1">
+                      <Badge variant="secondary" className="text-xs">
+                        {p.suggestedFormat}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {p.suggestedHook}
+                      </Badge>
+                      <span className="text-xs text-gray-400">
+                        ER est.: {(p.estimatedEngagement * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {data.underperformers && data.underperformers.length > 0 && (
+          <div>
+            <h4 className="text-sm font-semibold text-red-700 mb-2">Posts com Baixo Engajamento</h4>
+            <div className="space-y-1">
+              {data.underperformers.slice(0, 5).map((u, i) => (
+                <div key={i} className="flex items-center gap-2 text-xs text-gray-600">
+                  <Badge variant="destructive" className="text-xs">
+                    {(u.engagement * 100).toFixed(1)}%
+                  </Badge>
+                  <span className="truncate">{u.hook}</span>
+                  <Badge variant="outline" className="text-xs">
+                    {u.format}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div>
           <h4 className="text-sm font-semibold text-gray-700 mb-2">Recomendações</h4>
           <ul className="space-y-2">

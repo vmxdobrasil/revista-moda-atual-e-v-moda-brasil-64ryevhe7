@@ -7,10 +7,12 @@ import {
   type GeneratedContent,
 } from '@/services/content-generator'
 import { GeneratedContentDisplay } from './components/GeneratedContentDisplay'
+import { optimizeSeo, type SeoOptimizationResult } from '@/services/seo'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   Command,
@@ -29,6 +31,7 @@ import {
   Save,
   AlertCircle,
   RotateCcw,
+  Search,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -50,6 +53,8 @@ export default function ContentGeneratorPage() {
   const [result, setResult] = useState<GeneratedContent | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [seoResult, setSeoResult] = useState<SeoOptimizationResult | null>(null)
+  const [seoLoading, setSeoLoading] = useState(false)
   const { toast } = useToast()
   const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -103,6 +108,25 @@ export default function ContentGeneratorPage() {
     setSelectedEdition(ed.id)
     setTheme(`${ed.title}. ${ed.description || ''}`.trim())
     setComboboxOpen(false)
+  }
+
+  const handleSeoOptimize = async () => {
+    if (!result) return
+    setSeoLoading(true)
+    try {
+      const articleText = result.materia_completa || ''
+      const seo = await optimizeSeo(articleText, theme.trim())
+      setSeoResult(seo)
+      toast({ title: 'SEO Otimizado', description: 'Metadados SEO aplicados ao artigo.' })
+    } catch (err: any) {
+      toast({
+        title: 'Erro SEO',
+        description: err?.message || 'Falha ao otimizar SEO.',
+        variant: 'destructive',
+      })
+    } finally {
+      setSeoLoading(false)
+    }
   }
 
   const handleSave = async () => {
@@ -229,12 +253,61 @@ export default function ContentGeneratorPage() {
 
       {result && !loading && (
         <>
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
+            <Button
+              onClick={handleSeoOptimize}
+              disabled={seoLoading}
+              variant="outline"
+              className="gap-2"
+            >
+              {seoLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Search className="w-4 h-4" />
+              )}
+              Otimizar SEO
+            </Button>
             <Button onClick={handleSave} disabled={saving} variant="outline" className="gap-2">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Salvar no historico
             </Button>
           </div>
+
+          {seoResult && (
+            <Card className="rounded-xl border-orange-200 bg-orange-50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Search className="w-5 h-5 text-orange-500" /> SEO Metadata Aplicado
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div>
+                  <span className="text-xs text-gray-500">Meta Title:</span>
+                  <p className="text-sm font-medium">{seoResult.meta_title}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-gray-500">Meta Description:</span>
+                  <p className="text-sm">{seoResult.meta_description}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-gray-500">Slug:</span>
+                  <Badge variant="outline" className="ml-2 font-mono">
+                    /{seoResult.slug}
+                  </Badge>
+                </div>
+                {seoResult.lsi_keywords?.length > 0 && (
+                  <div className="flex flex-wrap gap-1 pt-1">
+                    {seoResult.lsi_keywords.map((k, i) => (
+                      <Badge key={i} variant="secondary" className="text-xs">
+                        {k}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           <GeneratedContentDisplay content={result} />
         </>
       )}

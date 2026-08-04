@@ -81,6 +81,59 @@ export async function markAsPublished(id: string): Promise<void> {
     .update(id, { status: 'publicado', published_at: new Date().toISOString() })
 }
 
+export interface DeliveryQueueStats {
+  total: number
+  rascunho: number
+  em_revisao: number
+  aprovado: number
+  publicado: number
+  pending: number
+  errors: number
+  oldestPendingDate: string | null
+}
+
+export async function getDeliveryQueueStats(): Promise<DeliveryQueueStats> {
+  const all = await pb.collection('delivery_queue').getFullList({ sort: '-created' })
+  const stats: DeliveryQueueStats = {
+    total: all.length,
+    rascunho: 0,
+    em_revisao: 0,
+    aprovado: 0,
+    publicado: 0,
+    pending: 0,
+    errors: 0,
+    oldestPendingDate: null,
+  }
+  let oldest: string | null = null
+  for (const item of all as any[]) {
+    const status = item.status as DeliveryStatus
+    if (status in stats) (stats as any)[status]++
+    if (status === 'rascunho' || status === 'em_revisao') {
+      stats.pending++
+      if (!oldest || item.created < oldest) oldest = item.created
+    }
+    if (item.error_note) stats.errors++
+  }
+  stats.oldestPendingDate = oldest
+  return stats
+}
+
+export async function batchProcessDeliveries(
+  ids: string[],
+): Promise<{ processed: number; errors: number }> {
+  let processed = 0
+  let errors = 0
+  for (const id of ids) {
+    try {
+      await pb.collection('delivery_queue').update(id, { status: 'em_revisao' })
+      processed++
+    } catch {
+      errors++
+    }
+  }
+  return { processed, errors }
+}
+
 export async function createDeliveryWithGeneration(
   theme: string,
   productId: string,

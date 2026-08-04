@@ -7,6 +7,29 @@ export interface MultiFormatFinalContent {
   reel_script?: any
   seo_title?: string[]
   youtube_description?: string
+  youtube_content?: {
+    title?: string
+    script?: string
+    description?: string
+    tags?: string[]
+    raw?: string
+  }
+  newsletter_content?: {
+    subject?: string
+    preheader?: string
+    body?: string
+    cta?: string
+    raw?: string
+  }
+  blog_content?: {
+    seo_title?: string
+    meta_description?: string
+    slug?: string
+    body?: string
+    keywords?: string[]
+    internal_links?: string[]
+    raw?: string
+  }
 }
 
 export interface MultiFormatResult {

@@ -27,6 +27,7 @@ import {
   Library,
   Layers,
   ShieldCheck,
+  Search,
 } from 'lucide-react'
 import { CommandBar } from '@/components/CommandBar'
 import { useFailureAlerts } from '@/hooks/use-failure-alerts'
@@ -199,6 +200,13 @@ export function AdminLayout() {
               {failureAlerts.unacknowledged.length}
             </span>
           )}
+        </Link>
+        <Link
+          to="/admin/seo-specialist"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <Search className="w-5 h-5" /> SEO Specialist
         </Link>
         <Link
           to="/admin/multi-format-generator"

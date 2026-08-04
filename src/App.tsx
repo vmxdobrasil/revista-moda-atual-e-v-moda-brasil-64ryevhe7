@@ -36,6 +36,7 @@ import AboutPage from './pages/admin/AboutPage'
 import MultiFormatGeneratorPage from './pages/admin/MultiFormatGeneratorPage'
 import MultiFormatReviewPage from './pages/admin/MultiFormatReviewPage'
 import AuditPage from './pages/admin/AuditPage'
+import SeoSpecialistPage from './pages/admin/SeoSpecialistPage'
 
 import Partners from './pages/Partners'
 import Advertisements from './pages/Advertisements'
@@ -98,6 +99,7 @@ const App = () => (
               <Route path="multi-format-generator" element={<MultiFormatGeneratorPage />} />
               <Route path="multi-format-generator/:id" element={<MultiFormatReviewPage />} />
               <Route path="audit" element={<AuditPage />} />
+              <Route path="seo-specialist" element={<SeoSpecialistPage />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

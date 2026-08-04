@@ -136,6 +136,74 @@ routerAdd(
       record.set('agent_outputs', outputs)
       $app.save(record)
 
+      var ytSys = 'Você é um especialista em conteúdo para YouTube. Retorne APENAS JSON válido.'
+      var ytPrompt =
+        'Crie conteúdo completo para YouTube sobre: ' +
+        (titulo || theme) +
+        '.\nInclua: title (título otimizado), script (roteiro detalhado), description (descrição), tags (lista de tags).'
+      if (pName) ytPrompt += '\nProduto em destaque: ' + pName
+      var ytRaw = aiChat(ytPrompt, ytSys)
+      var ytContent = { raw: ytRaw }
+      try {
+        var ytJson = ytRaw
+        var ytFence = ytRaw.match(/```(?:json)?\s*([\s\S]*?)```/)
+        if (ytFence) ytJson = ytFence[1].trim()
+        else {
+          var ytBrace = ytRaw.match(/\{[\s\S]*\}/)
+          if (ytBrace) ytJson = ytBrace[0]
+        }
+        ytContent = JSON.parse(ytJson)
+      } catch (_) {}
+      outputs.youtube_content = ytContent
+      record.set('agent_outputs', outputs)
+      $app.save(record)
+
+      var nlSys = 'Você é um especialista em email marketing para moda. Retorne APENAS JSON válido.'
+      var nlPrompt =
+        'Crie uma newsletter sobre: ' +
+        (titulo || theme) +
+        '.\nInclua: subject (linha de assunto), preheader (pre-header), body (cor do email em texto), cta (call to action).'
+      if (pName) nlPrompt += '\nProduto em destaque: ' + pName
+      var nlRaw = aiChat(nlPrompt, nlSys)
+      var nlContent = { raw: nlRaw }
+      try {
+        var nlJson = nlRaw
+        var nlFence = nlRaw.match(/```(?:json)?\s*([\s\S]*?)```/)
+        if (nlFence) nlJson = nlFence[1].trim()
+        else {
+          var nlBrace = nlRaw.match(/\{[\s\S]*\}/)
+          if (nlBrace) nlJson = nlBrace[0]
+        }
+        nlContent = JSON.parse(nlJson)
+      } catch (_) {}
+      outputs.newsletter_content = nlContent
+      record.set('agent_outputs', outputs)
+      $app.save(record)
+
+      var blSys =
+        'Você é um especialista em SEO e copywriting para blogs. Retorne APENAS JSON válido.'
+      var blPrompt =
+        'Crie um artigo de blog otimizado para SEO sobre: ' +
+        (titulo || theme) +
+        '.\nInclua: seo_title (máx 60 chars), meta_description (máx 160 chars), slug (URL amigável), body (artigo completo com H1/H2/H3), keywords (lista de palavras-chave), internal_links (sugestões).'
+      if (pName) blPrompt += '\nProduto em destaque: ' + pName
+      if (pLink) blPrompt += '\nLink: ' + pLink
+      var blRaw = aiChat(blPrompt, blSys)
+      var blContent = { raw: blRaw }
+      try {
+        var blJson = blRaw
+        var blFence = blRaw.match(/```(?:json)?\s*([\s\S]*?)```/)
+        if (blFence) blJson = blFence[1].trim()
+        else {
+          var blBrace = blRaw.match(/\{[\s\S]*\}/)
+          if (blBrace) blJson = blBrace[0]
+        }
+        blContent = JSON.parse(blJson)
+      } catch (_) {}
+      outputs.blog_content = blContent
+      record.set('agent_outputs', outputs)
+      $app.save(record)
+
       var finalContent = {
         trend_analysis: outputs.trend_analysis,
         article_content: outputs.article_content,
@@ -143,6 +211,9 @@ routerAdd(
         reel_script: outputs.reel_script,
         seo_title: outputs.seo_title,
         youtube_description: outputs.youtube_description,
+        youtube_content: outputs.youtube_content,
+        newsletter_content: outputs.newsletter_content,
+        blog_content: outputs.blog_content,
       }
       record.set('final_content', finalContent)
       record.set('status', 'completed')
