@@ -1,13 +1,23 @@
 import pb from '@/lib/pocketbase/client'
 
+export interface NewsletterProductCallout {
+  name: string
+  price: string | number
+  link: string
+  vendor?: string
+}
+
 export interface NewsletterContentSection {
   title: string
   summary: string
   link: string
+  products?: NewsletterProductCallout[]
 }
 
 export interface NewsletterContent {
-  opening: string
+  header?: { title: string; description: string }
+  intro?: string
+  opening?: string
   sections: NewsletterContentSection[]
   cta: string
 }
@@ -67,6 +77,13 @@ export interface GenerateNewsletterParams {
   segments?: string[]
 }
 
+export interface EditionOption {
+  id: string
+  title: string
+  description?: string
+  slug?: string
+}
+
 export const generateNewsletter = async (
   params: GenerateNewsletterParams = {},
 ): Promise<NewsletterCampaign> => {
@@ -75,6 +92,10 @@ export const generateNewsletter = async (
     body: JSON.stringify(params),
     headers: { 'Content-Type': 'application/json' },
   })
+}
+
+export const getEditionsForSelect = async (): Promise<EditionOption[]> => {
+  return pb.collection('editions').getFullList({ sort: '-created' })
 }
 
 export const getNewsletterCampaigns = async (filter: string = '', sort: string = '-created') => {

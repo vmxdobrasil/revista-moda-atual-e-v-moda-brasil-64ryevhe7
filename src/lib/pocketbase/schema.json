@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-04T22:04:19.846Z",
+  "generatedAt": "2026-08-04T22:20:19.612Z",
   "collections": [
     {
       "name": "users",
@@ -1778,7 +1778,10 @@
         "CREATE UNIQUE INDEX idx_subscribers_email ON subscribers (email)",
         "CREATE INDEX idx_subscribers_segment ON subscribers (segment)",
         "CREATE INDEX idx_subscribers_status ON subscribers (status)",
-        "CREATE INDEX idx_subscribers_engagement ON subscribers (engagement_score)"
+        "CREATE INDEX idx_subscribers_engagement ON subscribers (engagement_score)",
+        "CREATE INDEX `idx_subscribers_opened_count` ON `subscribers` (opened_count)",
+        "CREATE INDEX `idx_subscribers_clicked_count` ON `subscribers` (clicked_count)",
+        "CREATE INDEX `idx_subscribers_last_opened_at` ON `subscribers` (last_opened_at)"
       ]
     },
     {
