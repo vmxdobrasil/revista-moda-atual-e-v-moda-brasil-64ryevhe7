@@ -8,7 +8,7 @@ import { PwaInstallPrompt } from '@/components/PwaInstallPrompt'
 import Index from './pages/Index'
 import Editions from './pages/Editions'
 import NotFound from './pages/NotFound'
-import Layout from './components/Layout'
+import { Layout } from '@/components/Layout'
 import MagazineReader from './pages/MagazineReader'
 import Login from './pages/Login'
 import { AdminLayout } from './pages/admin/AdminLayout'
@@ -55,7 +55,7 @@ import DeliveryReviewPage from './pages/admin/DeliveryReviewPage'
 import { AuthProvider } from './hooks/use-auth'
 
 const App = () => (
-  <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: false }}>
+  <BrowserRouter>
     <ErrorBoundary>
       <AuthProvider>
         <TooltipProvider>
@@ -64,18 +64,18 @@ const App = () => (
           <OfflineIndicator />
           <PwaInstallPrompt />
           <Routes>
-            <Route element={<Layout />}>
-              <Route path="/" element={<Index />} />
-              <Route path="/editions" element={<Editions />} />
-              <Route path="/partners" element={<Partners />} />
-              <Route path="/advertisements" element={<Advertisements />} />
-              <Route path="/offers" element={<Offers />} />
-              <Route path="/edition/:id" element={<MagazineReader />} />
-              <Route path="/reader/latest" element={<MagazineReader isLatest />} />
-              <Route path="/reader/:id" element={<MagazineReader />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/texto/:id" element={<StoryTextView />} />
-              <Route path="/sobre-nos" element={<About />} />
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Index />} />
+              <Route path="editions" element={<Editions />} />
+              <Route path="partners" element={<Partners />} />
+              <Route path="advertisements" element={<Advertisements />} />
+              <Route path="offers" element={<Offers />} />
+              <Route path="edition/:id" element={<MagazineReader />} />
+              <Route path="reader/latest" element={<MagazineReader isLatest />} />
+              <Route path="reader/:id" element={<MagazineReader />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="texto/:id" element={<StoryTextView />} />
+              <Route path="sobre-nos" element={<About />} />
             </Route>
 
             <Route path="/esqueci-senha" element={<ForgotPassword />} />
