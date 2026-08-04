@@ -1,22 +1,15 @@
 import pb from '@/lib/pocketbase/client'
 
-export interface Subscriber {
-  id: string
-  name: string
-  email: string
-  segment: 'varejo' | 'atacado' | 'consumidora'
-  interests: string[]
-  preferences: Record<string, unknown>
-  source: string
-  engagement_score: number
-  status: 'ativo' | 'descadastrado' | 'inativo'
-  opened_count: number
-  clicked_count: number
-  last_opened_at: string
-  last_clicked_at: string
-  unsubscribed_at: string
-  created: string
-  updated: string
+export interface NewsletterContentSection {
+  title: string
+  summary: string
+  link: string
+}
+
+export interface NewsletterContent {
+  opening: string
+  sections: NewsletterContentSection[]
+  cta: string
 }
 
 export interface NewsletterCampaign {
@@ -24,20 +17,36 @@ export interface NewsletterCampaign {
   title: string
   subject: string
   preheader: string
-  content: Record<string, unknown>
-  edition?: string
+  content: NewsletterContent
   segments: string[]
-  audience_size: number
-  scheduled_at: string
-  send_date: string
   status: string
-  opened_count: number
-  open_rate: number
-  click_count: number
-  click_rate: number
-  unsubscribe_count: number
+  edition?: string
+  audience_size: number
+  created: string
+  opened_count?: number
+  click_count?: number
+}
+
+export interface Subscriber {
+  id: string
+  name: string
+  email: string
+  segment: string
+  engagement_score: number
+  status: string
+  interests?: string[]
+  preferences?: Record<string, unknown>
+  source?: string
+  opened_count?: number
+  clicked_count?: number
   created: string
   updated: string
+}
+
+export interface NewsletterSequenceStep {
+  day: number
+  subject: string
+  content_summary: string
 }
 
 export interface NewsletterSequence {
@@ -46,63 +55,64 @@ export interface NewsletterSequence {
   description: string
   segment: string
   trigger: string
-  steps: Array<{ day: number; subject: string; content_summary: string }>
+  steps: NewsletterSequenceStep[]
   status: string
   created: string
   updated: string
 }
 
 export interface GenerateNewsletterParams {
+  week_start?: string
   edition_id?: string
   segments?: string[]
 }
 
-export interface GenerateNewsletterResult {
-  success: boolean
-  campaign_id?: string
-  subject: string
-  preheader: string
-  content: Record<string, unknown>
-  audience_size: number
-  segments: string[]
-}
-
-export const getSubscribers = () =>
-  pb.collection('subscribers').getFullList<Subscriber>({ sort: '-created' })
-
-export const createSubscriber = (data: Partial<Subscriber>) =>
-  pb.collection('subscribers').create<Subscriber>(data)
-
-export const updateSubscriber = (id: string, data: Partial<Subscriber>) =>
-  pb.collection('subscribers').update<Subscriber>(id, data)
-
-export const deleteSubscriber = (id: string) => pb.collection('subscribers').delete(id)
-
-export const getCampaigns = () =>
-  pb.collection('newsletter_campaigns').getFullList<NewsletterCampaign>({ sort: '-created' })
-
-export const getCampaign = (id: string) =>
-  pb.collection('newsletter_campaigns').getOne<NewsletterCampaign>(id)
-
-export const updateCampaign = (id: string, data: Partial<NewsletterCampaign>) =>
-  pb.collection('newsletter_campaigns').update<NewsletterCampaign>(id, data)
-
-export const deleteCampaign = (id: string) => pb.collection('newsletter_campaigns').delete(id)
-
-export const getSequences = () =>
-  pb.collection('newsletter_sequences').getFullList<NewsletterSequence>({ sort: '-created' })
-
-export const createSequence = (data: Partial<NewsletterSequence>) =>
-  pb.collection('newsletter_sequences').create<NewsletterSequence>(data)
-
-export const updateSequence = (id: string, data: Partial<NewsletterSequence>) =>
-  pb.collection('newsletter_sequences').update<NewsletterSequence>(id, data)
-
-export const deleteSequence = (id: string) => pb.collection('newsletter_sequences').delete(id)
-
-export const generateNewsletter = (params: GenerateNewsletterParams) =>
-  pb.send('/backend/v1/newsletter', {
+export const generateNewsletter = async (
+  params: GenerateNewsletterParams = {},
+): Promise<NewsletterCampaign> => {
+  return pb.send('/backend/v1/newsletter', {
     method: 'POST',
     body: JSON.stringify(params),
     headers: { 'Content-Type': 'application/json' },
-  }) as Promise<GenerateNewsletterResult>
+  })
+}
+
+export const getNewsletterCampaigns = async (filter: string = '', sort: string = '-created') => {
+  return pb.collection('newsletter_campaigns').getFullList({ filter, sort })
+}
+
+export const getNewsletterCampaign = async (id: string) => {
+  return pb.collection('newsletter_campaigns').getOne(id)
+}
+
+export const updateNewsletterCampaign = async (id: string, data: Record<string, unknown>) => {
+  return pb.collection('newsletter_campaigns').update(id, data)
+}
+
+export const deleteNewsletterCampaign = async (id: string) => {
+  return pb.collection('newsletter_campaigns').delete(id)
+}
+
+export const getSubscribers = async (filter: string = '', sort: string = '-created') => {
+  return pb.collection('subscribers').getFullList({ filter, sort })
+}
+
+export const getCampaigns = async (filter: string = '', sort: string = '-created') => {
+  return pb.collection('newsletter_campaigns').getFullList({ filter, sort })
+}
+
+export const getSequences = async (filter: string = '', sort: string = '-created') => {
+  return pb.collection('newsletter_sequences').getFullList({ filter, sort })
+}
+
+export const deleteCampaign = async (id: string) => {
+  return pb.collection('newsletter_campaigns').delete(id)
+}
+
+export const deleteSubscriber = async (id: string) => {
+  return pb.collection('subscribers').delete(id)
+}
+
+export const deleteSequence = async (id: string) => {
+  return pb.collection('newsletter_sequences').delete(id)
+}
