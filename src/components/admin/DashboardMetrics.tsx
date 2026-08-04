@@ -1,5 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getDashboardMetrics, type DashboardMetrics as Metrics } from '@/services/dashboard-metrics'
+import {
+  getDashboardData,
+  type DashboardMetrics as Metrics,
+  type PeriodFilter,
+} from '@/services/dashboard-metrics'
 import { useRealtime } from '@/hooks/use-realtime'
 import { MetricCard } from '@/components/admin/MetricCard'
 import { StatusBreakdowns } from '@/components/admin/StatusBreakdowns'
@@ -42,18 +46,23 @@ export function DashboardMetrics() {
   const [metrics, setMetrics] = useState<Metrics | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [period] = useState<PeriodFilter>('all')
 
-  const load = useCallback(async (showLoading = true) => {
-    if (showLoading) setLoading(true)
-    setError(null)
-    try {
-      setMetrics(await getDashboardMetrics())
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Falha ao carregar métricas.')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const load = useCallback(
+    async (showLoading = true) => {
+      if (showLoading) setLoading(true)
+      setError(null)
+      try {
+        const data = await getDashboardData(period)
+        setMetrics(data.metrics)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Falha ao carregar métricas.')
+      } finally {
+        setLoading(false)
+      }
+    },
+    [period],
+  )
 
   useEffect(() => {
     load(true)
