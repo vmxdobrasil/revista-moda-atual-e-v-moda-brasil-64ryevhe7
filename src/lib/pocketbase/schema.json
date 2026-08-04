@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-04T11:33:14.099Z",
+  "generatedAt": "2026-08-04T12:48:38.544Z",
   "collections": [
     {
       "name": "users",
@@ -538,6 +538,32 @@
           "required": false,
           "system": false,
           "collectionRef": "editions"
+        },
+        {
+          "name": "scheduled_at",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "published_at",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "platform",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["instagram", "facebook", "youtube", "whatsapp"]
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["pending", "scheduled", "published", "failed"]
         }
       ],
       "indexes": [
@@ -545,7 +571,10 @@
         "CREATE INDEX idx_social_posts_views ON social_posts (views)",
         "CREATE INDEX idx_social_posts_likes ON social_posts (likes)",
         "CREATE INDEX idx_social_posts_format ON social_posts (format)",
-        "CREATE INDEX idx_social_posts_engagement ON social_posts (engagement_rate)"
+        "CREATE INDEX idx_social_posts_engagement ON social_posts (engagement_rate)",
+        "CREATE INDEX `idx_social_posts_scheduled_at` ON `social_posts` (scheduled_at)",
+        "CREATE INDEX `idx_social_posts_status` ON `social_posts` (status)",
+        "CREATE INDEX `idx_social_posts_platform` ON `social_posts` (platform)"
       ]
     },
     {

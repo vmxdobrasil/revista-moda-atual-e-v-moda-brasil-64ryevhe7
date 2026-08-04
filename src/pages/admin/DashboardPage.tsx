@@ -3,13 +3,16 @@ import { useRealtime } from '@/hooks/use-realtime'
 import { useToast } from '@/hooks/use-toast'
 import { getAllStoryTexts, deleteStoryText, type StoryText } from '@/services/story-texts'
 import { getSavedContent, type SavedContent } from '@/services/content-generator'
+import { getAllSocialPosts, type SocialPost } from '@/services/social-posts'
+import { PLATFORM_LABELS, STATUS_CONFIG } from '@/services/social-publisher'
 import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
 import { StoriesTable } from './components/StoriesTable'
 import { StoryTextEditModal } from './components/StoryTextEditModal'
 import { StoryTextScheduleModal } from './components/StoryTextScheduleModal'
-import { LayoutDashboard, Sparkles, CalendarClock, AlertTriangle } from 'lucide-react'
+import { LayoutDashboard, Sparkles, CalendarClock, AlertTriangle, Send } from 'lucide-react'
 import { useFailureAlerts } from '@/hooks/use-failure-alerts'
 import { FailureAlertBanner, FailureAlertsList } from '@/components/admin/FailureAlerts'
 import { DashboardMetrics } from '@/components/admin/DashboardMetrics'
@@ -43,6 +46,7 @@ function CaptionsList({ items }: { items: SavedContent[] }) {
 export default function DashboardPage() {
   const [stories, setStories] = useState<StoryText[]>([])
   const [captions, setCaptions] = useState<SavedContent[]>([])
+  const [socialPosts, setSocialPosts] = useState<SocialPost[]>([])
   const [loading, setLoading] = useState(true)
   const [editOpen, setEditOpen] = useState(false)
   const [scheduleOpen, setScheduleOpen] = useState(false)
@@ -52,9 +56,14 @@ export default function DashboardPage() {
 
   const loadData = useCallback(async () => {
     try {
-      const [s, c] = await Promise.all([getAllStoryTexts(), getSavedContent()])
+      const [s, c, sp] = await Promise.all([
+        getAllStoryTexts(),
+        getSavedContent(),
+        getAllSocialPosts(),
+      ])
       setStories(s)
       setCaptions(c)
+      setSocialPosts(sp)
     } catch {
       toast({ title: 'Erro', description: 'Falha ao carregar.', variant: 'destructive' })
     } finally {
@@ -67,6 +76,7 @@ export default function DashboardPage() {
   }, [loadData])
   useRealtime('story_texts', () => loadData())
   useRealtime('generated_social_content', () => loadData())
+  useRealtime('social_posts', () => loadData())
 
   const scheduled = stories
     .filter((s) => s.scheduled_date)
@@ -120,6 +130,11 @@ export default function DashboardPage() {
           <TabsTrigger value="scheduled" className="gap-2">
             <CalendarClock className="w-4 h-4" /> Agendados ({scheduled.length})
           </TabsTrigger>
+          <TabsTrigger value="publicacoes" className="gap-2">
+            <Send className="w-4 h-4" /> Publicações (
+            {socialPosts.filter((p) => p.status === 'scheduled' || p.status === 'published').length}
+            )
+          </TabsTrigger>
           <TabsTrigger value="alerts" className="gap-2">
             <AlertTriangle className="w-4 h-4" /> Alertas
             {failureAlerts.unacknowledged.length > 0 && (
@@ -169,6 +184,52 @@ export default function DashboardPage() {
                 }}
                 onDelete={handleDelete}
               />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="publicacoes">
+          <Card className="rounded-xl border-none bg-white shadow-sm">
+            <CardContent className="p-0">
+              <div className="p-4 border-b">
+                <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                  <Send className="w-4 h-4 text-orange-500" />
+                  Publicações Agendadas e Realizadas
+                </h3>
+              </div>
+              <div className="divide-y max-h-96 overflow-y-auto">
+                {socialPosts.filter((p) => p.status && p.status !== 'pending').length === 0 ? (
+                  <p className="text-center text-gray-400 py-10">
+                    Nenhuma publicação agendada ou realizada.
+                  </p>
+                ) : (
+                  socialPosts
+                    .filter((p) => p.status && p.status !== 'pending')
+                    .map((post) => {
+                      const config =
+                        STATUS_CONFIG[post.status || 'pending'] || STATUS_CONFIG.pending
+                      return (
+                        <div key={post.id} className="p-4 flex items-center justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-gray-900 truncate">{post.hook}</p>
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              {post.platform
+                                ? PLATFORM_LABELS[post.platform] || post.platform
+                                : '—'}
+                              {post.published_at &&
+                                ` • ${new Date(post.published_at).toLocaleString('pt-BR')}`}
+                              {post.scheduled_at &&
+                                !post.published_at &&
+                                ` • ${new Date(post.scheduled_at).toLocaleString('pt-BR')}`}
+                            </p>
+                          </div>
+                          <Badge variant="secondary" className={`shrink-0 ${config.badgeClass}`}>
+                            {config.label}
+                          </Badge>
+                        </div>
+                      )
+                    })
+                )}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

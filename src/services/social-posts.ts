@@ -16,6 +16,10 @@ export interface SocialPost {
   is_top_performer: boolean
   engagement_rate: number
   edition?: string
+  scheduled_at?: string
+  published_at?: string
+  platform?: string
+  status?: string
   created: string
   updated: string
 }
@@ -33,6 +37,10 @@ export interface SocialPostInput {
   remixes?: number
   new_followers?: number
   edition?: string
+  scheduled_at?: string
+  published_at?: string
+  platform?: string
+  status?: string
 }
 
 export interface PautaSuggestion {
@@ -82,7 +90,8 @@ export async function getAllSocialPosts(sort = '-post_date'): Promise<SocialPost
 }
 
 export async function createSocialPost(data: SocialPostInput): Promise<SocialPost> {
-  return (await pb.collection(COLLECTION).create(data)) as unknown as SocialPost
+  const payload = { ...data, status: data.status || 'pending' }
+  return (await pb.collection(COLLECTION).create(payload)) as unknown as SocialPost
 }
 
 export async function updateSocialPost(
@@ -115,6 +124,10 @@ export function exportToCSV(posts: SocialPost[]): string {
     'New Followers',
     'Engagement Rate',
     'Top Performer',
+    'Platform',
+    'Status',
+    'Scheduled At',
+    'Published At',
   ]
   const rows = posts.map((p) => [
     `"${p.hook.replace(/"/g, '""')}"`,
@@ -130,6 +143,10 @@ export function exportToCSV(posts: SocialPost[]): string {
     p.new_followers || 0,
     ((p.engagement_rate || 0) * 100).toFixed(2) + '%',
     p.is_top_performer ? 'Yes' : 'No',
+    p.platform || '',
+    p.status || '',
+    p.scheduled_at || '',
+    p.published_at || '',
   ])
   return [headers.join(','), ...rows.map((r) => r.join(','))].join('\n')
 }

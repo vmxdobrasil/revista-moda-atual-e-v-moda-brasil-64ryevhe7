@@ -10,6 +10,9 @@ onRecordCreate((e) => {
   } else {
     e.record.set('engagement_rate', 0)
   }
+  if (!e.record.getString('status')) {
+    e.record.set('status', 'pending')
+  }
   e.next()
 }, 'social_posts')
 
