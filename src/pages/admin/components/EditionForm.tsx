@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Edition, createEdition, updateEdition, getFileUrl } from '@/services/magazine'
 import { getBrands, type Top60Brand } from '@/services/top60'
+import { generateCover } from '@/services/cover-art-director'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -26,7 +27,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { extractFieldErrors, type FieldErrors } from '@/lib/pocketbase/errors'
-import { Loader2, Save, Trash2 } from 'lucide-react'
+import { Loader2, Save, Trash2, ImagePlus } from 'lucide-react'
 import { SeoFieldsForm, type SeoFieldValues } from './SeoFieldsForm'
 
 interface EditionFormProps {
@@ -42,6 +43,7 @@ export function EditionForm({ edition, onSaved, onDelete }: EditionFormProps) {
   const [brandId, setBrandId] = useState(edition?.brand || '')
   const [brands, setBrands] = useState<Top60Brand[]>([])
   const [saving, setSaving] = useState(false)
+  const [generatingCover, setGeneratingCover] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [seoValues, setSeoValues] = useState<SeoFieldValues>({
     seo_title: (edition as any)?.seo_title || '',
@@ -89,6 +91,24 @@ export function EditionForm({ edition, onSaved, onDelete }: EditionFormProps) {
       toast({ title: 'Erro', description: 'Verifique os campos.', variant: 'destructive' })
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleGenerateCover = async () => {
+    if (!edition) return
+    setGeneratingCover(true)
+    try {
+      await generateCover(title || edition.title, edition.id)
+      toast({ title: 'Sucesso', description: 'Capa gerada e salva na edição!' })
+      onSaved(edition.id)
+    } catch (err: any) {
+      toast({
+        title: 'Erro',
+        description: err?.message || 'Falha ao gerar capa.',
+        variant: 'destructive',
+      })
+    } finally {
+      setGeneratingCover(false)
     }
   }
 
@@ -155,6 +175,22 @@ export function EditionForm({ edition, onSaved, onDelete }: EditionFormProps) {
               <p className="text-sm text-red-500">{fieldErrors.cover_file}</p>
             )}
           </div>
+          {edition && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleGenerateCover}
+              disabled={generatingCover}
+              className="w-full gap-2 border-orange-300 text-orange-600 hover:bg-orange-50"
+            >
+              {generatingCover ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <ImagePlus className="w-4 h-4" />
+              )}
+              Gerar Capa com IA
+            </Button>
+          )}
           <div className="flex gap-2">
             <Button
               type="submit"

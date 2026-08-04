@@ -11,7 +11,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/hooks/use-toast'
-import { ArrowLeft, Copy, Loader2, AlertCircle, RefreshCw, Layers } from 'lucide-react'
+import {
+  ArrowLeft,
+  Copy,
+  Loader2,
+  AlertCircle,
+  RefreshCw,
+  Layers,
+  Video,
+  Youtube,
+} from 'lucide-react'
+import { generateThumbnail, type CoverComposition } from '@/services/cover-art-director'
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   processing: { label: 'Processando', color: 'bg-blue-500' },
@@ -50,6 +60,8 @@ export default function MultiFormatReviewPage() {
   const [item, setItem] = useState<MultiFormatResult | null>(null)
   const [loading, setLoading] = useState(true)
   const [regenerating, setRegenerating] = useState(false)
+  const [thumbnailLoading, setThumbnailLoading] = useState<string | null>(null)
+  const [thumbnailResult, setThumbnailResult] = useState<CoverComposition | null>(null)
 
   const loadData = useCallback(async () => {
     if (!id) return
@@ -87,6 +99,25 @@ export default function MultiFormatReviewPage() {
     if (fc.youtube_description) parts.push(`=== DESCRIÇÃO YOUTUBE ===\n${fc.youtube_description}`)
     if (fc.trend_analysis?.raw) parts.push(`=== ANÁLISE DE TENDÊNCIA ===\n${fc.trend_analysis.raw}`)
     copyText(parts.join('\n\n'), 'Pacote completo')
+  }
+
+  const handleThumbnail = async (format: 'Reels' | 'YouTube') => {
+    if (!item?.theme) return
+    setThumbnailLoading(format)
+    setThumbnailResult(null)
+    try {
+      const res = await generateThumbnail(item.theme, format)
+      setThumbnailResult(res)
+      toast({ title: 'Sucesso', description: `Thumbnail ${format} gerado!` })
+    } catch (err: any) {
+      toast({
+        title: 'Erro',
+        description: err?.message || 'Falha ao gerar thumbnail.',
+        variant: 'destructive',
+      })
+    } finally {
+      setThumbnailLoading(null)
+    }
   }
 
   const handleRegenerate = async () => {
@@ -238,6 +269,79 @@ export default function MultiFormatReviewPage() {
           onCopy={() => copyText(fc.trend_analysis.raw, 'Análise')}
         />
       )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Layers className="w-5 h-5 text-orange-500" /> Thumbnails por Canal
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex gap-2">
+            <Button
+              onClick={() => handleThumbnail('Reels')}
+              disabled={!!thumbnailLoading}
+              variant="outline"
+              className="gap-2"
+            >
+              {thumbnailLoading === 'Reels' ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Video className="w-4 h-4" />
+              )}
+              Thumbnail Reels
+            </Button>
+            <Button
+              onClick={() => handleThumbnail('YouTube')}
+              disabled={!!thumbnailLoading}
+              variant="outline"
+              className="gap-2"
+            >
+              {thumbnailLoading === 'YouTube' ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Youtube className="w-4 h-4" />
+              )}
+              Thumbnail YouTube
+            </Button>
+          </div>
+          {thumbnailResult && (
+            <div className="space-y-3 border rounded-lg p-4">
+              <div>
+                <h4 className="text-sm font-semibold mb-2">
+                  Paleta: {thumbnailResult.palette?.name}
+                </h4>
+                <div className="flex gap-2">
+                  {thumbnailResult.palette?.colors?.map((c, i) => (
+                    <div key={i} className="flex flex-col items-center gap-1">
+                      <div className="w-10 h-10 rounded-lg border" style={{ backgroundColor: c }} />
+                      <span className="text-xs text-gray-500 font-mono">{c}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="text-sm text-gray-700">
+                <p>
+                  <strong>Hierarquia:</strong> {thumbnailResult.hierarchy}
+                </p>
+                <p className="mt-1">
+                  <strong>Layout:</strong> {thumbnailResult.layout}
+                </p>
+              </div>
+              {thumbnailResult.variants?.length > 0 && (
+                <div className="grid grid-cols-2 gap-2">
+                  {thumbnailResult.variants.map((v, i) => (
+                    <div key={i} className="border rounded p-2">
+                      <Badge>{v.name}</Badge>
+                      <p className="text-xs text-gray-600 mt-1">{v.description}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }

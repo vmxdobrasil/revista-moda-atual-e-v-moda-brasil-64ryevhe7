@@ -41,6 +41,7 @@ import MultiFormatGeneratorPage from './pages/admin/MultiFormatGeneratorPage'
 import MultiFormatReviewPage from './pages/admin/MultiFormatReviewPage'
 import AuditPage from './pages/admin/AuditPage'
 import SeoSpecialistPage from './pages/admin/SeoSpecialistPage'
+import CoverArtDirectorPage from './pages/admin/CoverArtDirectorPage'
 
 import Partners from './pages/Partners'
 import Advertisements from './pages/Advertisements'
@@ -108,6 +109,7 @@ const App = () => (
               <Route path="audit" element={<AuditPage />} />
               <Route path="security" element={<SecuritySettings />} />
               <Route path="seo-specialist" element={<SeoSpecialistPage />} />
+              <Route path="cover-art-director" element={<CoverArtDirectorPage />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

@@ -29,6 +29,7 @@ import {
   ShieldCheck,
   Search,
   Lock,
+  Palette,
 } from 'lucide-react'
 import { CommandBar } from '@/components/CommandBar'
 import { useFailureAlerts } from '@/hooks/use-failure-alerts'
@@ -216,6 +217,13 @@ export function AdminLayout() {
           onClick={() => setSidebarOpen(false)}
         >
           <Layers className="w-5 h-5" /> Multi-Formato
+        </Link>
+        <Link
+          to="/admin/cover-art-director"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <Palette className="w-5 h-5" /> Capa & Arte
         </Link>
         <Link
           to="/admin/security"
