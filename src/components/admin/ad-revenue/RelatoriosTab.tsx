@@ -18,6 +18,7 @@ import {
   STATUS_BADGE_CLASSES,
 } from '@/services/ad-proposals'
 import { useRealtime } from '@/hooks/use-realtime'
+import { ReachEvolutionSection } from './ReachEvolutionSection'
 
 export function RelatoriosTab() {
   const [ads, setAds] = useState<Advertisement[]>([])
@@ -145,6 +146,8 @@ export function RelatoriosTab() {
           </div>
         </CardContent>
       </Card>
+
+      <ReachEvolutionSection proposals={proposals} />
     </div>
   )
 }

@@ -3,32 +3,40 @@ import pb from '@/lib/pocketbase/client'
 export interface AdProposal {
   id: string
   advertiser: string
-  campaign?: string
-  edition?: string
-  format?: string
-  position?: string
-  audience_reach?: number
-  suggested_price?: number
-  match_score?: number
-  proposal_data?: any
-  status?: string
-  contract_date?: string
-  delivery_date?: string
+  campaign: string
+  edition: string
+  format: string
+  position: string
+  audience_reach: number
+  suggested_price: number
+  match_score: number
+  proposal_data: any
+  status: string
+  contract_date: string
+  delivery_date: string
   created: string
   updated: string
   expand?: {
-    edition?: { id: string; title: string }
+    edition?: { id: string; title: string; description: string }
   }
 }
 
-export const PROPOSAL_STATUSES = [
-  'rascunho',
-  'enviado',
-  'aceito',
-  'recusado',
-  'contrato',
-  'entregue',
-]
+export interface GenerateProposalParams {
+  advertiser: string
+  campaign?: string
+  edition_id?: string
+  format?: string
+  position?: string
+}
+
+export interface PriceResult {
+  suggested_price: number
+  base_price: number
+  reach_adjustment: number
+  position_adjustment: number
+  rationale: string
+}
+
 export const AD_FORMATS = [
   'banner',
   'capa',
@@ -37,13 +45,32 @@ export const AD_FORMATS = [
   'story',
   'editorial_destaque',
 ]
-export const AD_STATUSES = [
+
+export const FORMAT_LABELS: Record<string, string> = {
+  banner: 'Banner',
+  capa: 'Capa',
+  pagina_inteira: 'Página Inteira',
+  sponsored_content: 'Conteúdo Patrocinado',
+  story: 'Story',
+  editorial_destaque: 'Editorial Destaque',
+}
+
+export const AD_POSITIONS = [
+  'Capa principal',
+  'Página interior topo',
+  'Página interior meio',
+  'Página interior rodapé',
+  'Banner lateral',
+  'Story destaque',
+]
+
+export const PROPOSAL_STATUSES = [
   'rascunho',
-  'aprovado',
-  'em_entrega',
+  'enviado',
+  'aceito',
+  'recusado',
+  'contrato',
   'entregue',
-  'concluido',
-  'cancelado',
 ]
 
 export const PROPOSAL_STATUS_LABELS: Record<string, string> = {
@@ -55,6 +82,15 @@ export const PROPOSAL_STATUS_LABELS: Record<string, string> = {
   entregue: 'Entregue',
 }
 
+export const AD_STATUSES = [
+  'rascunho',
+  'aprovado',
+  'em_entrega',
+  'entregue',
+  'concluido',
+  'cancelado',
+]
+
 export const AD_STATUS_LABELS: Record<string, string> = {
   rascunho: 'Rascunho',
   aprovado: 'Aprovado',
@@ -62,15 +98,6 @@ export const AD_STATUS_LABELS: Record<string, string> = {
   entregue: 'Entregue',
   concluido: 'Concluído',
   cancelado: 'Cancelado',
-}
-
-export const FORMAT_LABELS: Record<string, string> = {
-  banner: 'Banner',
-  capa: 'Capa',
-  pagina_inteira: 'Página Inteira',
-  sponsored_content: 'Conteúdo Patrocinado',
-  story: 'Story',
-  editorial_destaque: 'Editorial Destaque',
 }
 
 export const STATUS_BADGE_CLASSES: Record<string, string> = {
@@ -82,49 +109,45 @@ export const STATUS_BADGE_CLASSES: Record<string, string> = {
   entregue: 'bg-emerald-100 text-emerald-700',
   aprovado: 'bg-green-100 text-green-700',
   em_entrega: 'bg-amber-100 text-amber-700',
-  concluido: 'bg-teal-100 text-teal-700',
+  concluido: 'bg-emerald-100 text-emerald-700',
   cancelado: 'bg-red-100 text-red-700',
 }
 
 export async function getProposals(): Promise<AdProposal[]> {
-  return await pb.collection('ad_proposals').getFullList<AdProposal>({
+  return (await pb.collection('ad_proposals').getFullList({
     sort: '-created',
     expand: 'edition',
-  })
-}
-
-export async function createProposal(data: Partial<AdProposal>): Promise<AdProposal> {
-  return await pb.collection('ad_proposals').create<AdProposal>(data)
+  })) as unknown as AdProposal[]
 }
 
 export async function updateProposal(id: string, data: Partial<AdProposal>): Promise<AdProposal> {
-  return await pb.collection('ad_proposals').update<AdProposal>(id, data)
+  return (await pb.collection('ad_proposals').update(id, data)) as unknown as AdProposal
 }
 
 export async function deleteProposal(id: string): Promise<void> {
   await pb.collection('ad_proposals').delete(id)
 }
 
-export interface PropostaResult {
-  match_score?: number
-  suggested_price?: number
-  edition?: string
-  edition_title?: string
-  format?: string
-  position?: string
-  audience_reach?: number
-}
-
-export async function generateProposta(data: {
-  advertiser: string
-  campaign?: string
-  edition?: string
-  format?: string
-  position?: string
-}): Promise<PropostaResult> {
+export async function generateProposal(params: GenerateProposalParams): Promise<AdProposal> {
   return await pb.send('/backend/v1/proposta', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify(params),
     headers: { 'Content-Type': 'application/json' },
   })
+}
+
+export async function priceAd(
+  format: string,
+  audience_reach: number,
+  position: string,
+): Promise<PriceResult> {
+  return await pb.send('/backend/v1/precificar', {
+    method: 'POST',
+    body: JSON.stringify({ format, audience_reach, position }),
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+
+export function formatCurrency(value: number): string {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0)
 }

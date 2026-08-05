@@ -5,6 +5,7 @@ import { OverviewTab } from '@/components/admin/ad-revenue/OverviewTab'
 import { PropostasTab } from '@/components/admin/ad-revenue/PropostasTab'
 import { AnunciantesTab } from '@/components/admin/ad-revenue/AnunciantesTab'
 import { InventarioTab } from '@/components/admin/ad-revenue/InventarioTab'
+import { PrecificacaoTab } from '@/components/admin/ad-revenue/PrecificacaoTab'
 import { EntregasTab } from '@/components/admin/ad-revenue/EntregasTab'
 import { RelatoriosTab } from '@/components/admin/ad-revenue/RelatoriosTab'
 import { DocumentacaoTab } from '@/components/admin/ad-revenue/DocumentacaoTab'
@@ -34,6 +35,7 @@ export default function AdRevenuePage() {
           <TabsTrigger value="propostas">Propostas</TabsTrigger>
           <TabsTrigger value="anunciantes">Anunciantes</TabsTrigger>
           <TabsTrigger value="inventario">Inventário</TabsTrigger>
+          <TabsTrigger value="precificacao">Precificação</TabsTrigger>
           <TabsTrigger value="entregas">Entregas</TabsTrigger>
           <TabsTrigger value="relatorios">Relatórios</TabsTrigger>
           <TabsTrigger value="documentacao">Documentação</TabsTrigger>
@@ -49,6 +51,9 @@ export default function AdRevenuePage() {
         </TabsContent>
         <TabsContent value="inventario">
           <InventarioTab />
+        </TabsContent>
+        <TabsContent value="precificacao">
+          <PrecificacaoTab />
         </TabsContent>
         <TabsContent value="entregas">
           <EntregasTab />

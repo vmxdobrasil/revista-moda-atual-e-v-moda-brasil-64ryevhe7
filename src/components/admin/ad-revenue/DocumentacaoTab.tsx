@@ -1,16 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { FileText, Handshake, Package, BarChart3 } from 'lucide-react'
+import { FileText, Handshake, Package, BarChart3, FileDown, Settings, Users } from 'lucide-react'
 
 const STEPS = [
   {
     icon: FileText,
     title: '1. Proposta',
-    desc: 'O anunciante solicita uma proposta comercial. O sistema gera automaticamente um match score, preço sugerido e edição recomendada com base no perfil do anunciante e na audiência da edição.',
+    desc: 'O anunciante solicita uma proposta comercial. O sistema gera automaticamente um match score, preço sugerido (baseado nas regras de precificação calibradas) e edição recomendada com base no perfil do anunciante e na audiência da edição. A proposta inclui ainda públicos sugeridos calculados a partir dos assinantes ativos.',
   },
   {
     icon: Handshake,
     title: '2. Contrato',
-    desc: 'Após a proposta ser enviada e aceita pelo anunciante, o status é atualizado para "contrato". As datas de contrato e entrega são definidas nesta etapa.',
+    desc: 'Após a proposta ser enviada e aceita pelo anunciante, o status é atualizado para "contrato". As datas de contrato e entrega são definidas nesta etapa. A proposta pode ser exportada em HTML/PDF para envio ao anunciante.',
   },
   {
     icon: Package,
@@ -20,7 +20,30 @@ const STEPS = [
   {
     icon: BarChart3,
     title: '4. Relatório',
-    desc: 'Após a entrega, o desempenho da campanha é registrado na aba "Relatórios", incluindo alcance, investimento e status final para análise de ROI.',
+    desc: 'Após a entrega, o desempenho da campanha é registrado na aba "Relatórios", incluindo alcance, investimento, evolução de views e métricas de engajamento ao longo do tempo para análise de ROI.',
+  },
+]
+
+const FEATURES = [
+  {
+    icon: FileDown,
+    title: 'Exportação de Propostas (HTML/PDF)',
+    desc: 'Cada proposta pode ser exportada em um documento HTML com a identidade visual da revista, contendo todos os dados comerciais, conteúdo da proposta gerado por IA e públicos sugeridos. O documento pode ser impresso ou salvo como PDF diretamente pelo navegador, sem dependências externas.',
+  },
+  {
+    icon: Settings,
+    title: 'Calibração de Precificação',
+    desc: 'A aba "Precificação" permite ao administrador editar preços base e multiplicadores (alcance e posição) por formato de anúncio. As regras são armazenadas na coleção ad_pricing_rules e usadas em tempo real pelos hooks /precificar e /proposta para calcular preços sugeridos.',
+  },
+  {
+    icon: BarChart3,
+    title: 'Evolução de Alcance',
+    desc: 'A aba "Relatórios" inclui um gráfico de evolução temporal de views e métricas de engajamento (likes, comentários, shares, saves, remixes e taxa de engajamento) por proposta/campanha, extraídos dos social_posts vinculados à edição da proposta.',
+  },
+  {
+    icon: Users,
+    title: 'Sugestão de Públicos',
+    desc: 'Ao gerar uma proposta, o sistema calcula automaticamente públicos sugeridos a partir dos assinantes ativos, agregados por segmento (varejo, atacado, consumidora), incluindo tamanho estimado, score médio de engajamento e principais interesses. Os públicos são exibidos no detalhe da proposta e no documento exportado.',
   },
 ]
 
@@ -48,6 +71,27 @@ export function DocumentacaoTab() {
                 <div className="pb-4">
                   <h3 className="font-semibold text-gray-900">{step.title}</h3>
                   <p className="text-sm text-gray-600 mt-1">{step.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Capacidades do Módulo</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {FEATURES.map((f, i) => (
+              <div key={i} className="flex gap-4">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-100 shrink-0">
+                  <f.icon className="w-5 h-5 text-orange-500" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 text-sm">{f.title}</h3>
+                  <p className="text-sm text-gray-600 mt-1">{f.desc}</p>
                 </div>
               </div>
             ))}

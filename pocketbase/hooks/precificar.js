@@ -10,34 +10,82 @@ routerAdd(
     var audienceReach = body.audience_reach || 0
     var position = (body.position || '').trim()
 
-    var basePrices = {
-      banner: 500,
-      capa: 5000,
-      pagina_inteira: 3000,
-      sponsored_content: 2500,
-      story: 800,
-      editorial_destaque: 4000,
-    }
-
-    if (!basePrices[format]) {
+    var validFormats = [
+      'banner',
+      'capa',
+      'pagina_inteira',
+      'sponsored_content',
+      'story',
+      'editorial_destaque',
+    ]
+    if (validFormats.indexOf(format) === -1) {
       return e.badRequestError('Formato inválido', {
         format:
           'Valores aceitos: banner, capa, pagina_inteira, sponsored_content, story, editorial_destaque.',
       })
     }
 
-    var basePrice = basePrices[format]
-    var reachMultiplier = 1 + Math.min(audienceReach / 10000, 2)
-    var positionMultiplier = 1
+    var basePrice = 500
+    var reachDivisor = 10000
+    var reachMaxAddition = 2
+    var posPremium = 1.3
+    var posStandard = 1.0
+    var posBottom = 0.8
+
+    try {
+      var rules = $app.findRecordsByFilter(
+        'ad_pricing_rules',
+        'format = "' + format + '" && active = true',
+        '',
+        1,
+        0,
+      )
+      if (rules.length > 0) {
+        var rule = rules[0]
+        basePrice = rule.getInt('base_price') || basePrice
+
+        var reachMultRaw = rule.get('reach_multiplier')
+        var reachMult = reachMultRaw
+        if (typeof reachMultRaw === 'string') {
+          try {
+            reachMult = JSON.parse(reachMultRaw)
+          } catch (_) {
+            reachMult = {}
+          }
+        }
+        if (reachMult && typeof reachMult === 'object') {
+          if (typeof reachMult.divisor === 'number') reachDivisor = reachMult.divisor
+          if (typeof reachMult.max_addition === 'number') reachMaxAddition = reachMult.max_addition
+        }
+
+        var posMultRaw = rule.get('position_multiplier')
+        var posMult = posMultRaw
+        if (typeof posMultRaw === 'string') {
+          try {
+            posMult = JSON.parse(posMultRaw)
+          } catch (_) {
+            posMult = {}
+          }
+        }
+        if (posMult && typeof posMult === 'object') {
+          if (typeof posMult.premium === 'number') posPremium = posMult.premium
+          if (typeof posMult.standard === 'number') posStandard = posMult.standard
+          if (typeof posMult.bottom === 'number') posBottom = posMult.bottom
+        }
+      }
+    } catch (_) {}
+
+    var reachMultiplier = 1 + Math.min(audienceReach / reachDivisor, reachMaxAddition)
+    var positionMultiplier = posStandard
     var posLower = position.toLowerCase()
     if (
       posLower.indexOf('premium') !== -1 ||
       posLower.indexOf('topo') !== -1 ||
       posLower.indexOf('capa') !== -1
     ) {
-      positionMultiplier = 1.3
+      positionMultiplier = posPremium
     } else if (posLower.indexOf('rodape') !== -1 || posLower.indexOf('bottom') !== -1) {
-      positionMultiplier = 0.8
+      positionMultiplier = posBottom
     }
 
     var suggestedPrice = Math.round(basePrice * reachMultiplier * positionMultiplier)

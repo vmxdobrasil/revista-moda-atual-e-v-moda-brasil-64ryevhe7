@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-05T02:50:51.362Z",
+  "generatedAt": "2026-08-05T11:14:57.316Z",
   "collections": [
     {
       "name": "users",
@@ -2130,6 +2130,75 @@
         "CREATE INDEX idx_ad_proposals_status ON ad_proposals (status)",
         "CREATE INDEX idx_ad_proposals_edition ON ad_proposals (edition)",
         "CREATE INDEX idx_ad_proposals_advertiser ON ad_proposals (advertiser)"
+      ]
+    },
+    {
+      "name": "ad_pricing_rules",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "format",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": [
+            "banner",
+            "capa",
+            "pagina_inteira",
+            "sponsored_content",
+            "story",
+            "editorial_destaque"
+          ]
+        },
+        {
+          "name": "base_price",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "reach_multiplier",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "position_multiplier",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "active",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_ad_pricing_rules_format ON ad_pricing_rules (format)",
+        "CREATE INDEX idx_ad_pricing_rules_active ON ad_pricing_rules (active)"
       ]
     }
   ]

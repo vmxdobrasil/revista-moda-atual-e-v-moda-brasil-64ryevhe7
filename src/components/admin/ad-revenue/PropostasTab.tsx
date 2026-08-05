@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Loader2, Plus, Trash2 } from 'lucide-react'
+import { Loader2, Plus, Trash2, FileDown, Eye } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   getProposals,
@@ -30,11 +30,14 @@ import {
 import { getErrorMessage } from '@/lib/pocketbase/errors'
 import { useRealtime } from '@/hooks/use-realtime'
 import { PropostaFormDialog } from './PropostaFormDialog'
+import { PropostaDetailDialog } from './PropostaDetailDialog'
+import { exportProposalHTML } from '@/lib/proposal-export'
 
 export function PropostasTab() {
   const [proposals, setProposals] = useState<AdProposal[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [detailProposal, setDetailProposal] = useState<AdProposal | null>(null)
 
   const loadData = async () => {
     try {
@@ -116,7 +119,7 @@ export function PropostasTab() {
               <TableHead>Status</TableHead>
               <TableHead>Contrato</TableHead>
               <TableHead>Entrega</TableHead>
-              <TableHead className="w-10"></TableHead>
+              <TableHead className="w-24"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -169,9 +172,17 @@ export function PropostasTab() {
                   />
                 </TableCell>
                 <TableCell>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(p.id)}>
-                    <Trash2 className="w-4 h-4 text-red-500" />
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" onClick={() => setDetailProposal(p)}>
+                      <Eye className="w-4 h-4 text-blue-500" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => exportProposalHTML(p)}>
+                      <FileDown className="w-4 h-4 text-green-500" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(p.id)}>
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -187,6 +198,13 @@ export function PropostasTab() {
       </div>
 
       <PropostaFormDialog open={dialogOpen} onOpenChange={setDialogOpen} onCreated={loadData} />
+
+      <PropostaDetailDialog
+        proposal={detailProposal}
+        onOpenChange={(open) => {
+          if (!open) setDetailProposal(null)
+        }}
+      />
     </div>
   )
 }

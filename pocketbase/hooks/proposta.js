@@ -76,26 +76,65 @@ routerAdd(
     } catch (_) {}
     var audienceReach = editionViews + Math.round(socialReach / 3)
 
-    var basePrices = {
-      banner: 500,
-      capa: 5000,
-      pagina_inteira: 3000,
-      sponsored_content: 2500,
-      story: 800,
-      editorial_destaque: 4000,
-    }
-    var basePrice = basePrices[format] || 500
-    var reachMultiplier = 1 + Math.min(audienceReach / 10000, 2)
-    var positionMultiplier = 1
+    var basePrice = 500
+    var reachDivisor = 10000
+    var reachMaxAddition = 2
+    var posPremium = 1.3
+    var posStandard = 1.0
+    var posBottom = 0.8
+
+    try {
+      var pRules = $app.findRecordsByFilter(
+        'ad_pricing_rules',
+        'format = "' + format + '" && active = true',
+        '',
+        1,
+        0,
+      )
+      if (pRules.length > 0) {
+        var pRule = pRules[0]
+        basePrice = pRule.getInt('base_price') || basePrice
+        var pReachRaw = pRule.get('reach_multiplier')
+        var pReach = pReachRaw
+        if (typeof pReachRaw === 'string') {
+          try {
+            pReach = JSON.parse(pReachRaw)
+          } catch (_) {
+            pReach = {}
+          }
+        }
+        if (pReach && typeof pReach === 'object') {
+          if (typeof pReach.divisor === 'number') reachDivisor = pReach.divisor
+          if (typeof pReach.max_addition === 'number') reachMaxAddition = pReach.max_addition
+        }
+        var pPosRaw = pRule.get('position_multiplier')
+        var pPos = pPosRaw
+        if (typeof pPosRaw === 'string') {
+          try {
+            pPos = JSON.parse(pPosRaw)
+          } catch (_) {
+            pPos = {}
+          }
+        }
+        if (pPos && typeof pPos === 'object') {
+          if (typeof pPos.premium === 'number') posPremium = pPos.premium
+          if (typeof pPos.standard === 'number') posStandard = pPos.standard
+          if (typeof pPos.bottom === 'number') posBottom = pPos.bottom
+        }
+      }
+    } catch (_) {}
+
+    var reachMultiplier = 1 + Math.min(audienceReach / reachDivisor, reachMaxAddition)
+    var positionMultiplier = posStandard
     var posLower = position.toLowerCase()
     if (
       posLower.indexOf('premium') !== -1 ||
       posLower.indexOf('topo') !== -1 ||
       posLower.indexOf('capa') !== -1
     ) {
-      positionMultiplier = 1.3
+      positionMultiplier = posPremium
     } else if (posLower.indexOf('rodape') !== -1 || posLower.indexOf('bottom') !== -1) {
-      positionMultiplier = 0.8
+      positionMultiplier = posBottom
     }
     var suggestedPrice = Math.round(basePrice * reachMultiplier * positionMultiplier)
 
@@ -173,6 +212,74 @@ routerAdd(
           cta: 'Entre em contato para confirmar.',
         }
       }
+
+      var suggestedAudiences = []
+      try {
+        var activeSubs = $app.findRecordsByFilter('subscribers', 'status = "ativo"', '', 0, 0)
+        var segmentAgg = {}
+        for (var sai = 0; sai < activeSubs.length; sai++) {
+          var asub = activeSubs[sai]
+          var aseg = asub.getString('segment')
+          if (!aseg) continue
+          if (!segmentAgg[aseg]) {
+            segmentAgg[aseg] = {
+              segment: aseg,
+              audience_size: 0,
+              total_engagement: 0,
+              interests: {},
+            }
+          }
+          segmentAgg[aseg].audience_size++
+          segmentAgg[aseg].total_engagement += asub.getFloat('engagement_score') || 0
+          var asubIntsRaw = asub.get('interests')
+          if (asubIntsRaw) {
+            var asubInts = asubIntsRaw
+            if (typeof asubInts === 'string') {
+              try {
+                asubInts = JSON.parse(asubInts)
+              } catch (_) {
+                asubInts = []
+              }
+            }
+            if (Array.isArray(asubInts)) {
+              for (var aii = 0; aii < asubInts.length; aii++) {
+                var aintKey = String(asubInts[aii])
+                if (aintKey) {
+                  segmentAgg[aseg].interests[aintKey] =
+                    (segmentAgg[aseg].interests[aintKey] || 0) + 1
+                }
+              }
+            }
+          }
+        }
+        var segKeys = Object.keys(segmentAgg)
+        for (var sk = 0; sk < segKeys.length; sk++) {
+          var sData = segmentAgg[segKeys[sk]]
+          var avgEng =
+            sData.audience_size > 0
+              ? Math.round((sData.total_engagement / sData.audience_size) * 100) / 100
+              : 0
+          var engLevel = avgEng >= 70 ? 'alta' : avgEng >= 35 ? 'media' : 'baixa'
+          var sortedInts = Object.keys(sData.interests)
+            .sort(function (a, b) {
+              return sData.interests[b] - sData.interests[a]
+            })
+            .slice(0, 5)
+            .map(function (k) {
+              return { interest: k, count: sData.interests[k] }
+            })
+          suggestedAudiences.push({
+            segment: sData.segment,
+            audience_size: sData.audience_size,
+            avg_engagement_score: avgEng,
+            engagement_level: engLevel,
+            top_interests: sortedInts,
+          })
+        }
+      } catch (_) {
+        suggestedAudiences = []
+      }
+      parsed.suggested_audiences = suggestedAudiences
 
       var col = $app.findCollectionByNameOrId('ad_proposals')
       var record = new Record(col)
