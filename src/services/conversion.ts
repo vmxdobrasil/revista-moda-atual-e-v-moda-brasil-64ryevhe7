@@ -1,5 +1,5 @@
 import pb from '@/lib/pocketbase/client'
-import { streamAgentChat } from '@/lib/skipAi'
+import { streamAgentChat, displayableMessages, type AgentMessage } from '@/lib/skipAi'
 
 export interface CtaSuggestion {
   cta_variant: string
@@ -42,12 +42,24 @@ export interface FunilContentItem {
   conversion_rate: number
 }
 
+export type ContentRanking = FunilContentItem
+
 export interface FunilBreakdown {
   impressions: number
   clicks: number
   orders: number
   avg_conversion_rate: number
   count: number
+}
+
+export interface OriginBreakdown extends FunilBreakdown {
+  link_origin: string
+  conversion_rate: number
+}
+
+export interface VariantBreakdown extends FunilBreakdown {
+  cta_variant: string
+  conversion_rate: number
 }
 
 export interface FunilResponse {
@@ -87,6 +99,35 @@ export interface FunilParams {
   period?: string
 }
 
+export interface DisplayMessage {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  created: string
+}
+
+export interface StreamConversionResult {
+  conversationId: string
+  messageId: string
+  content: string
+}
+
+export function breakdownToArray(
+  breakdown: Record<string, FunilBreakdown>,
+  keyField: string,
+): Array<OriginBreakdown | VariantBreakdown> {
+  return Object.entries(breakdown).map(([key, value]) => ({
+    ...value,
+    [keyField]: key,
+    conversion_rate: value.avg_conversion_rate,
+  }))
+}
+
+export function buildWhatsAppUrl(phone: string, message: string): string {
+  const cleanPhone = phone.replace(/\D/g, '')
+  return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`
+}
+
 export async function suggestCtas(params: CtaParams): Promise<CtaResponse> {
   return pb.send('/backend/v1/cta', {
     method: 'POST',
@@ -105,17 +146,16 @@ export async function getFunilReport(params?: FunilParams): Promise<FunilRespons
   return pb.send(`/backend/v1/funil${qs}`, { method: 'GET' })
 }
 
-export interface DisplayMessage {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-  created: string
+export async function listConversionConversations(limit = 20) {
+  return pb.send(`/backend/v1/conversion/chats?limit=${limit}`, { method: 'GET' })
 }
 
-export interface StreamConversionResult {
-  conversationId: string
-  messageId: string
-  content: string
+export async function listConversionMessages(conversationId: string): Promise<DisplayMessage[]> {
+  const payload = await pb.send(`/backend/v1/conversion/chats/${conversationId}/messages`, {
+    method: 'GET',
+  })
+  const data = payload as { messages: AgentMessage[] }
+  return displayableMessages(data.messages || [])
 }
 
 export async function streamConversionChat(
@@ -124,7 +164,7 @@ export async function streamConversionChat(
   onChunk: (delta: string, full: string) => void,
 ): Promise<StreamConversionResult> {
   const res = await fetch(
-    `${import.meta.env.VITE_POCKETBASE_URL}/backend/v1/conversion-agent-stream`,
+    `${import.meta.env.VITE_POCKETBASE_URL}/backend/v1/conversion/chat-stream`,
     {
       method: 'POST',
       headers: {

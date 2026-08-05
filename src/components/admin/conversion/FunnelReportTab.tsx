@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRealtime } from '@/hooks/use-realtime'
@@ -10,7 +10,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { getFunilReport, type FunilResponse, type FunilParams } from '@/services/conversion'
+import {
+  getFunilReport,
+  breakdownToArray,
+  type FunilResponse,
+  type FunilParams,
+  type OriginBreakdown,
+  type VariantBreakdown,
+} from '@/services/conversion'
 import { FunnelCharts } from '@/components/admin/conversion/FunnelCharts'
 import { TopContentsTable } from '@/components/admin/conversion/TopContentsTable'
 
@@ -38,7 +45,25 @@ export function FunnelReportTab() {
   useEffect(() => {
     loadData()
   }, [loadData])
+
   useRealtime('conversion_metrics', () => loadData())
+  useRealtime('page_hotspots', () => loadData())
+  useRealtime('marketplace_orders', () => loadData())
+
+  const originData = useMemo<OriginBreakdown[]>(
+    () =>
+      report
+        ? (breakdownToArray(report.breakdowns.by_link_origin, 'link_origin') as OriginBreakdown[])
+        : [],
+    [report],
+  )
+  const variantData = useMemo<VariantBreakdown[]>(
+    () =>
+      report
+        ? (breakdownToArray(report.breakdowns.by_cta_variant, 'cta_variant') as VariantBreakdown[])
+        : [],
+    [report],
+  )
 
   if (loading || !report) {
     return (
@@ -150,10 +175,7 @@ export function FunnelReportTab() {
         ))}
       </div>
 
-      <FunnelCharts
-        byOrigin={report.breakdowns.by_link_origin}
-        byVariant={report.breakdowns.by_cta_variant}
-      />
+      <FunnelCharts byOrigin={originData} byVariant={variantData} />
 
       <TopContentsTable contents={report.top_10_content} />
     </div>
