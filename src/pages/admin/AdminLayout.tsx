@@ -33,6 +33,7 @@ import {
   Mail,
   DollarSign,
   Target,
+  Eye,
 } from 'lucide-react'
 import { CommandBar } from '@/components/CommandBar'
 import { useFailureAlerts } from '@/hooks/use-failure-alerts'
@@ -253,6 +254,13 @@ export function AdminLayout() {
           onClick={() => setSidebarOpen(false)}
         >
           <Target className="w-5 h-5" /> Conversion
+        </Link>
+        <Link
+          to="/admin/market-watch"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <Eye className="w-5 h-5" /> Market Watch
         </Link>
         <Link
           to="/admin/security"

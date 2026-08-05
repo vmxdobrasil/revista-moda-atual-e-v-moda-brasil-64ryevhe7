@@ -20,6 +20,7 @@ import { RankingTable } from '@/components/admin/RankingTable'
 import { AnalyticsCharts } from '@/components/admin/AnalyticsCharts'
 import { TopBottomCards } from '@/components/admin/TopBottomCards'
 import { RecommendationsCard } from '@/components/admin/RecommendationsCard'
+import { MarketBenchmarks } from '@/components/admin/MarketBenchmarks'
 import { Download, TrendingUp, Eye, Heart, Star, FileText } from 'lucide-react'
 
 export default function SocialAnalyticsPage() {
@@ -162,6 +163,7 @@ export default function SocialAnalyticsPage() {
       />
       <AnalyticsCharts posts={posts} />
       {recommendations && <RecommendationsCard data={recommendations} />}
+      <MarketBenchmarks />
     </div>
   )
 }

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-05T18:53:25.805Z",
+  "generatedAt": "2026-08-05T19:27:56.790Z",
   "collections": [
     {
       "name": "users",
@@ -2372,6 +2372,221 @@
         "CREATE INDEX idx_conversion_metrics_link_origin ON conversion_metrics (link_origin)",
         "CREATE INDEX idx_conversion_metrics_cta_variant ON conversion_metrics (cta_variant)",
         "CREATE INDEX idx_conversion_metrics_conversion_rate ON conversion_metrics (conversion_rate)"
+      ]
+    },
+    {
+      "name": "competitors",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": null,
+        "update": null,
+        "delete": null
+      },
+      "fields": [
+        {
+          "name": "name",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "category",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "top60_categories"
+        },
+        {
+          "name": "platform",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["instagram", "facebook", "youtube", "tiktok", "site"]
+        },
+        {
+          "name": "social_handle",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "website",
+          "type": "url",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "logo_file",
+          "type": "file",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "followers",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "engagement_rate",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "post_frequency",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "content_themes",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "last_checked_at",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "notes",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_competitors_platform ON competitors (platform)",
+        "CREATE INDEX idx_competitors_category ON competitors (category)"
+      ]
+    },
+    {
+      "name": "market_signals",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": null,
+        "update": null,
+        "delete": null
+      },
+      "fields": [
+        {
+          "name": "signal_type",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": [
+            "tendencia",
+            "alerta_concorrente",
+            "mencao_marca",
+            "comportamento_consumidor"
+          ]
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "competitor",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "competitors"
+        },
+        {
+          "name": "severity",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["info", "atencao", "critico"]
+        },
+        {
+          "name": "source",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "detected_at",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["novo", "em_analise", "notificado", "arquivado"]
+        },
+        {
+          "name": "related_data",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "embedding",
+          "type": "vector",
+          "required": false,
+          "system": false,
+          "vectorDimensions": 1536,
+          "vectorDistance": "cosine"
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_market_signals_signal_type ON market_signals (signal_type)",
+        "CREATE INDEX idx_market_signals_severity ON market_signals (severity)",
+        "CREATE INDEX idx_market_signals_status ON market_signals (status)",
+        "CREATE INDEX idx_market_signals_detected_at ON market_signals (detected_at)"
       ]
     }
   ]

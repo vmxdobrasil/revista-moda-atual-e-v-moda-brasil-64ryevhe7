@@ -16,6 +16,47 @@ routerAdd(
     var promptTemplate = promptRecord.getString('prompt_content')
     var prompt = promptTemplate.replace(/\[TENDÊNCIA\]/g, tendencia)
 
+    var marketContext = ''
+    try {
+      var mComps = $app.findRecordsByFilter('competitors', '', '-engagement_rate', 5, 0)
+      if (mComps.length > 0) {
+        marketContext = '\n\nCONTEXTO DE MERCADO (concorrentes monitorados):\n'
+        for (var mci = 0; mci < mComps.length; mci++) {
+          marketContext +=
+            '- ' +
+            mComps[mci].getString('name') +
+            ' (' +
+            mComps[mci].getString('platform') +
+            '): ' +
+            mComps[mci].getInt('followers') +
+            ' seguidores, ' +
+            (mComps[mci].getFloat('engagement_rate') || 0) +
+            '% engajamento, ' +
+            (mComps[mci].getFloat('post_frequency') || 0) +
+            ' posts/semana\n'
+        }
+      }
+      var mSigs = $app.findRecordsByFilter(
+        'market_signals',
+        'status != "arquivado"',
+        '-detected_at',
+        5,
+        0,
+      )
+      if (mSigs.length > 0) {
+        marketContext += '\nSINAIS DE MERCADO RECENTES:\n'
+        for (var msi = 0; msi < mSigs.length; msi++) {
+          marketContext +=
+            '- [' +
+            mSigs[msi].getString('signal_type') +
+            '] ' +
+            mSigs[msi].getString('title') +
+            '\n'
+        }
+      }
+    } catch (_) {}
+    prompt += marketContext
+
     try {
       var reply = $ai.chat({
         model: 'fast',
