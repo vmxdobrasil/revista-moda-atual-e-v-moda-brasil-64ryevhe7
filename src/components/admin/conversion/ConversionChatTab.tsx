@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react'
 import { Send, Loader2, Bot, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import type { DisplayMessage } from '@/services/conversion'
 import { streamConversionChat } from '@/services/conversion'
 

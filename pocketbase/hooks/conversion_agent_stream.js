@@ -1,6 +1,6 @@
 routerAdd(
   'POST',
-  '/backend/v1/conversion/chat-stream',
+  '/backend/v1/conversion-agent-stream',
   (e) => {
     try {
       var body = e.requestInfo().body || {}

@@ -50,6 +50,38 @@ const METRICS = [
   },
 ]
 
+const ORIGINS = [
+  {
+    name: 'revista',
+    label: 'Revista',
+    color: 'border-blue-400',
+    textColor: 'text-blue-600',
+    desc: 'O leitor acessa o conteúdo diretamente pela revista digital. O CTA direciona para uma página interna ou produto do marketplace. Registrado em link_origin = "revista".',
+  },
+  {
+    name: 'hotspot',
+    label: 'Hotspot',
+    color: 'border-orange-400',
+    textColor: 'text-orange-600',
+    desc: 'O leitor clica em um hotspot interativo sobre uma imagem da revista. O hotspot abre um produto ou detalhe. Registrado em link_origin = "hotspot".',
+  },
+  {
+    name: 'whatsapp',
+    label: 'WhatsApp',
+    color: 'border-green-400',
+    textColor: 'text-green-600',
+    desc: 'O leitor é direcionado para uma conversa no WhatsApp via link wa.me. Ideal para conversão direta e atendimento personalizado. Registrado em link_origin = "whatsapp".',
+  },
+]
+
+const AB_TESTING_STEPS = [
+  'Cada hotspot e CTA recebe um cta_variant (A, B, C…) que identifica a versão testada.',
+  'O funil rastreia cliques, pedidos e taxa de conversão por variante em conversion_metrics.',
+  'O relatório de funil mostra a comparação no gráfico "A/B Test — Taxa de Conversão por Variante".',
+  'O agente Conversion analisa os dados e recomenda a variante com melhor performance histórica.',
+  'O endpoint POST /backend/v1/cta sugere novas variantes baseadas nos dados reais de conversão.',
+]
+
 export function AttributionFlowTab() {
   return (
     <div className="space-y-6 max-w-4xl">
@@ -134,6 +166,41 @@ export function AttributionFlowTab() {
                 clicks, orders, conversion_rate, cta_variant, link_origin.
               </p>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Origens de Atribuição (link_origin)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {ORIGINS.map((o) => (
+              <div key={o.name} className={`border-l-4 ${o.color} pl-3`}>
+                <span className={`font-mono font-bold ${o.textColor}`}>{o.name}</span>
+                <span className="text-gray-500 ml-2">({o.label})</span>
+                <p className="text-gray-600 mt-1 text-sm">{o.desc}</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>A/B Testing com cta_variant</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {AB_TESTING_STEPS.map((step, i) => (
+              <div key={i} className="flex gap-3">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-600 text-xs font-bold flex items-center justify-center">
+                  {i + 1}
+                </span>
+                <p className="text-sm text-gray-600">{step}</p>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
