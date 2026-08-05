@@ -168,8 +168,8 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
 
   useEffect(() => {
     if (!currentVisiblePageId || !isValidPages) return
-    trackPageView(currentVisiblePageId).catch(() => {})
-  }, [currentVisiblePageId, isValidPages])
+    trackPageView(currentVisiblePageId, edition?.id).catch(() => {})
+  }, [currentVisiblePageId, isValidPages, edition])
 
   if (loadingEdition) {
     return (

@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useRealtime } from '@/hooks/use-realtime'
+import { getFunilReport, type FunilResponse, type FunilParams } from '@/services/conversion'
+import { FunnelCharts } from '@/components/admin/conversion/FunnelCharts'
+import { TopContentsTable } from '@/components/admin/conversion/TopContentsTable'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useRealtime } from '@/hooks/use-realtime'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   Select,
@@ -10,9 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { getFunilReport, type FunilResponse, type FunilParams } from '@/services/conversion'
-import { FunnelCharts } from '@/components/admin/conversion/FunnelCharts'
-import { TopContentsTable } from '@/components/admin/conversion/TopContentsTable'
 
 const PERIODS = ['2026-05', '2026-06', '2026-07']
 const CONTENT_TYPES = ['materia', 'legenda', 'story', 'banner', 'hotspot']
@@ -39,6 +39,8 @@ export function FunnelReportTab() {
     loadData()
   }, [loadData])
   useRealtime('conversion_metrics', () => loadData())
+  useRealtime('page_hotspots', () => loadData())
+  useRealtime('marketplace_orders', () => loadData())
 
   if (loading || !report) {
     return (

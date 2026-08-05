@@ -3,38 +3,82 @@ routerAdd(
   '/backend/v1/track/page-view',
   (e) => {
     try {
-      const body = e.requestInfo().body || {}
+      var body = e.requestInfo().body || {}
 
-      const editionId = (body.edition_id || '').trim()
-      const pageId = (body.page_id || '').trim()
-      const readerId = (body.reader_id || '').trim()
-      const sessionId = (body.session_id || '').trim()
-      const referrer = (body.referrer || '').trim()
-      const duration = Number(body.duration) || 0
+      var pageId = (body.page_id || '').trim()
+      var editionId = (body.edition_id || '').trim()
 
-      if (!editionId && !pageId) {
+      if (!pageId && !editionId) {
         return e.json(200, { ok: true, skipped: true })
       }
 
-      let col
-      try {
-        col = $app.findCollectionByNameOrId('page_views')
-      } catch (_) {
-        return e.json(200, { ok: true, skipped: true, reason: 'collection_missing' })
-      }
+      if (pageId) {
+        var contentType = 'materia'
+        var contentTitle = ''
 
-      const record = new Record(col)
-      if (editionId) record.set('edition_id', editionId)
-      if (pageId) record.set('page_id', pageId)
-      if (readerId) record.set('reader_id', readerId)
-      if (sessionId) record.set('session_id', sessionId)
-      if (referrer) record.set('referrer', referrer)
-      record.set('duration', duration)
+        try {
+          var page = $app.findRecordById('edition_pages', pageId)
+          var tmpl = page.getString('template') || 'default'
+          var templateMap = {
+            default: 'materia',
+            editorial: 'materia',
+            marketing: 'banner',
+            holofote: 'hotspot',
+            entrevista: 'materia',
+          }
+          contentType = templateMap[tmpl] || 'materia'
+          contentTitle = page.getString('toc_title') || ''
+          if (!editionId) {
+            editionId = page.getString('edition') || ''
+          }
+          var vc = page.getInt('view_count') || 0
+          page.set('view_count', vc + 1)
+          $app.saveNoValidate(page)
+        } catch (_) {}
 
-      try {
-        $app.saveNoValidate(record)
-      } catch (saveErr) {
-        $app.logger().warn('page_view_track save failed', 'error', String(saveErr))
+        var period = new Date().toISOString().slice(0, 7)
+        var contentId = pageId
+
+        var metricsRecord = null
+        try {
+          var existing = $app.findRecordsByFilter(
+            'conversion_metrics',
+            'content_id = {:cid} && period = {:p}',
+            '-created',
+            1,
+            0,
+            { cid: contentId, p: period },
+          )
+          if (existing.length > 0) metricsRecord = existing[0]
+        } catch (_) {}
+
+        if (metricsRecord) {
+          var impressions = (metricsRecord.getInt('impressions') || 0) + 1
+          var orders = metricsRecord.getInt('orders') || 0
+          var cr = impressions > 0 ? Math.round((orders / impressions) * 10000) / 100 : 0
+          metricsRecord.set('impressions', impressions)
+          metricsRecord.set('conversion_rate', cr)
+          if (contentTitle && !metricsRecord.getString('content_title')) {
+            metricsRecord.set('content_title', contentTitle)
+          }
+          $app.saveNoValidate(metricsRecord)
+        } else {
+          try {
+            var col = $app.findCollectionByNameOrId('conversion_metrics')
+            var rec = new Record(col)
+            rec.set('content_id', contentId)
+            rec.set('content_title', contentTitle)
+            rec.set('content_type', contentType)
+            rec.set('period', period)
+            rec.set('impressions', 1)
+            rec.set('clicks', 0)
+            rec.set('orders', 0)
+            rec.set('conversion_rate', 0)
+            rec.set('cta_variant', 'default')
+            rec.set('link_origin', 'revista')
+            $app.saveNoValidate(rec)
+          } catch (_) {}
+        }
       }
 
       return e.json(200, { ok: true })

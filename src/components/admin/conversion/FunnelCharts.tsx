@@ -6,7 +6,7 @@ import {
   type ChartConfig,
 } from '@/components/ui/chart'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
-import type { OriginBreakdown, VariantBreakdown } from '@/services/conversion'
+import type { FunilBreakdown } from '@/services/conversion'
 
 const chartConfig: ChartConfig = {
   clicks: { label: 'Cliques', color: 'hsl(142, 71%, 45%)' },
@@ -15,11 +15,20 @@ const chartConfig: ChartConfig = {
 }
 
 interface Props {
-  byOrigin: OriginBreakdown[]
-  byVariant: VariantBreakdown[]
+  byOrigin: Record<string, FunilBreakdown>
+  byVariant: Record<string, FunilBreakdown>
 }
 
 export function FunnelCharts({ byOrigin, byVariant }: Props) {
+  const originData = Object.entries(byOrigin).map(([key, val]) => ({
+    link_origin: key,
+    ...val,
+  }))
+  const variantData = Object.entries(byVariant).map(([key, val]) => ({
+    cta_variant: key,
+    ...val,
+  }))
+
   return (
     <div className="grid md:grid-cols-2 gap-6">
       <Card>
@@ -28,7 +37,7 @@ export function FunnelCharts({ byOrigin, byVariant }: Props) {
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[260px] w-full">
-            <BarChart data={byOrigin}>
+            <BarChart data={originData}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis dataKey="link_origin" tickLine={false} axisLine={false} fontSize={12} />
               <YAxis tickLine={false} axisLine={false} fontSize={12} />
@@ -46,12 +55,12 @@ export function FunnelCharts({ byOrigin, byVariant }: Props) {
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[260px] w-full">
-            <BarChart data={byVariant}>
+            <BarChart data={variantData}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis dataKey="cta_variant" tickLine={false} axisLine={false} fontSize={12} />
               <YAxis tickLine={false} axisLine={false} fontSize={12} />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="conversion_rate" fill="var(--color-conversion_rate)" radius={4} />
+              <Bar dataKey="avg_conversion_rate" fill="var(--color-conversion_rate)" radius={4} />
             </BarChart>
           </ChartContainer>
         </CardContent>

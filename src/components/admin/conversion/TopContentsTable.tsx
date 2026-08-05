@@ -8,10 +8,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import type { ContentRanking } from '@/services/conversion'
+import type { FunilContentItem } from '@/services/conversion'
 
 interface Props {
-  contents: ContentRanking[]
+  contents: FunilContentItem[]
 }
 
 export function TopContentsTable({ contents }: Props) {
@@ -23,7 +23,7 @@ export function TopContentsTable({ contents }: Props) {
       <CardContent>
         {contents.length === 0 ? (
           <p className="text-sm text-gray-500 py-8 text-center">
-            Nenhum conteúdo com cliques suficientes (mínimo 5) no período selecionado.
+            Nenhum conteúdo com dados suficientes no período selecionado.
           </p>
         ) : (
           <Table>

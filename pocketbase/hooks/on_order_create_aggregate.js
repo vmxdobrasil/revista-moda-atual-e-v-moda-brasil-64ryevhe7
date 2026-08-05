@@ -8,6 +8,12 @@ onRecordAfterCreateSuccess((e) => {
 
   var period = new Date().toISOString().slice(0, 7)
 
+  var contentTitle = ''
+  try {
+    var page = $app.findRecordById('edition_pages', contentId)
+    contentTitle = page.getString('toc_title') || ''
+  } catch (_) {}
+
   var metricsRecord = null
   try {
     var existing = $app.findRecordsByFilter(
@@ -27,13 +33,22 @@ onRecordAfterCreateSuccess((e) => {
     var cr = impressions > 0 ? Math.round((orders / impressions) * 10000) / 100 : 0
     metricsRecord.set('orders', orders)
     metricsRecord.set('conversion_rate', cr)
+    if (contentTitle && !metricsRecord.getString('content_title')) {
+      metricsRecord.set('content_title', contentTitle)
+    }
+    if (!metricsRecord.getString('cta_variant')) {
+      metricsRecord.set('cta_variant', ctaVariant)
+    }
+    if (!metricsRecord.getString('link_origin')) {
+      metricsRecord.set('link_origin', origin)
+    }
     $app.save(metricsRecord)
   } else {
     try {
       var col = $app.findCollectionByNameOrId('conversion_metrics')
       var rec = new Record(col)
       rec.set('content_id', contentId)
-      rec.set('content_title', '')
+      rec.set('content_title', contentTitle)
       rec.set('content_type', 'materia')
       rec.set('period', period)
       rec.set('impressions', 0)

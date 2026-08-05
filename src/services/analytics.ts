@@ -3,13 +3,13 @@ import pb from '@/lib/pocketbase/client'
 const clickedHotspots = new Set<string>()
 const viewedPages = new Set<string>()
 
-export async function trackPageView(pageId: string): Promise<void> {
+export async function trackPageView(pageId: string, editionId?: string): Promise<void> {
   if (viewedPages.has(pageId)) return
   viewedPages.add(pageId)
   try {
-    await pb.send('/backend/v1/analytics/page-view', {
+    await pb.send('/backend/v1/track/page-view', {
       method: 'POST',
-      body: JSON.stringify({ pageId }),
+      body: JSON.stringify({ page_id: pageId, edition_id: editionId || '' }),
       headers: { 'Content-Type': 'application/json' },
     })
   } catch (err) {
