@@ -19,6 +19,7 @@ import {
 } from '@/services/ad-proposals'
 import { useRealtime } from '@/hooks/use-realtime'
 import { ReachEvolutionSection } from './ReachEvolutionSection'
+import { CrossCampaignComparison } from './CrossCampaignComparison'
 
 export function RelatoriosTab() {
   const [ads, setAds] = useState<Advertisement[]>([])
@@ -148,6 +149,8 @@ export function RelatoriosTab() {
       </Card>
 
       <ReachEvolutionSection proposals={proposals} />
+
+      <CrossCampaignComparison proposals={proposals} />
     </div>
   )
 }

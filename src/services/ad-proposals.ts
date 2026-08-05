@@ -14,6 +14,10 @@ export interface AdProposal {
   status: string
   contract_date: string
   delivery_date: string
+  contract_number?: string
+  contract_date_formal?: string
+  contract_terms?: any
+  contract_signed_at?: string
   created: string
   updated: string
   expand?: {
@@ -150,4 +154,37 @@ export async function priceAd(
 
 export function formatCurrency(value: number): string {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0)
+}
+
+export async function sendProposalEmail(id: string, email: string): Promise<void> {
+  await pb.send('/backend/v1/proposta-email', {
+    method: 'POST',
+    body: JSON.stringify({ proposal_id: id, email }),
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+
+export async function generateContract(id: string, specialTerms?: string): Promise<AdProposal> {
+  return await pb.send('/backend/v1/proposta-contrato', {
+    method: 'POST',
+    body: JSON.stringify({ proposal_id: id, special_terms: specialTerms }),
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+
+export async function getPublicAdvertiserData(advertiser: string): Promise<any> {
+  return await pb.send(
+    `/backend/v1/public/anunciante?advertiser=${encodeURIComponent(advertiser)}`,
+    {
+      method: 'GET',
+    },
+  )
+}
+
+export async function getSocialPostsByEdition(editionId: string): Promise<any[]> {
+  if (!editionId) return []
+  return await pb.collection('social_posts').getFullList({
+    filter: `edition = "${editionId}"`,
+    sort: '-post_date',
+  })
 }

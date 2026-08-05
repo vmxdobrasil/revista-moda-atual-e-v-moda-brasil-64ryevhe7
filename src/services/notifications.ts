@@ -28,3 +28,11 @@ export async function markAllNotificationsRead(): Promise<void> {
     unread.map((n) => pb.collection('notifications').update(n.id, { is_read: true })),
   )
 }
+
+export async function getUnreadAlerts(limit = 20): Promise<Notification[]> {
+  const result = await pb.collection('notifications').getList(1, limit, {
+    filter: 'is_read = false && (type = "warning" || type = "alert")',
+    sort: '-created',
+  })
+  return result.items as unknown as Notification[]
+}

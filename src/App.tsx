@@ -46,6 +46,7 @@ import EditionCoversPage from './pages/admin/EditionCoversPage'
 import EditorialQaPage from './pages/admin/EditorialQaPage'
 import NewsletterPage from './pages/admin/NewsletterPage'
 import AdRevenuePage from './pages/admin/AdRevenuePage'
+import PublicAdvertiser from './pages/PublicAdvertiser'
 
 import Partners from './pages/Partners'
 import Advertisements from './pages/Advertisements'
@@ -78,6 +79,7 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/texto/:id" element={<StoryTextView />} />
               <Route path="/sobre-nos" element={<About />} />
+              <Route path="/public/anunciante" element={<PublicAdvertiser />} />
             </Route>
 
             <Route path="/esqueci-senha" element={<ForgotPassword />} />

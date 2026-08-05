@@ -9,6 +9,7 @@ import { PrecificacaoTab } from '@/components/admin/ad-revenue/PrecificacaoTab'
 import { EntregasTab } from '@/components/admin/ad-revenue/EntregasTab'
 import { RelatoriosTab } from '@/components/admin/ad-revenue/RelatoriosTab'
 import { DocumentacaoTab } from '@/components/admin/ad-revenue/DocumentacaoTab'
+import { DeadlineAlerts } from '@/components/admin/ad-revenue/DeadlineAlerts'
 
 export default function AdRevenuePage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -29,6 +30,7 @@ export default function AdRevenuePage() {
           <p className="text-sm text-gray-500">Gestão de monetização e conteúdo patrocinado</p>
         </div>
       </div>
+      <DeadlineAlerts />
       <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="overview">Overview</TabsTrigger>
