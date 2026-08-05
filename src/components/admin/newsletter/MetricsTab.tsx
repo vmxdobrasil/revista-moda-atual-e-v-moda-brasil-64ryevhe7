@@ -6,150 +6,177 @@ import {
   ChartTooltipContent,
   ChartConfig,
 } from '@/components/ui/chart'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts'
-import { Mail, MousePointerClick, Eye, UserMinus } from 'lucide-react'
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  ResponsiveContainer,
+} from 'recharts'
+import { MetricCard } from '@/components/admin/MetricCard'
+import { MailOpen, MousePointerClick, UserMinus, Eye } from 'lucide-react'
 import type { NewsletterCampaign } from '@/services/newsletter'
 
-function MetricCard({
-  icon: Icon,
-  label,
-  value,
-  color,
-}: {
-  icon: typeof Mail
-  label: string
-  value: string | number
-  color: string
-}) {
-  return (
-    <Card className="rounded-xl border-none bg-white shadow-sm">
-      <CardContent className="p-4 flex items-center gap-3">
-        <div
-          className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-          style={{ backgroundColor: color + '1a' }}
-        >
-          <Icon className="w-5 h-5" style={{ color }} />
-        </div>
-        <div>
-          <p className="text-2xl font-bold text-gray-800">{value}</p>
-          <p className="text-xs text-gray-500">{label}</p>
-        </div>
-      </CardContent>
-    </Card>
-  )
+interface MetricsTabProps {
+  campaigns: NewsletterCampaign[]
 }
 
-export function MetricsTab({ campaigns }: { campaigns: NewsletterCampaign[] }) {
-  const chartConfig: ChartConfig = { value: { label: 'Valor', color: 'hsl(24, 95%, 53%)' } }
-
-  const stats = useMemo(() => {
-    const sent = campaigns.filter((c) => c.status === 'enviado')
-    const totalOpens = sent.reduce((s, c) => s + (c.opened_count || 0), 0)
-    const totalClicks = sent.reduce((s, c) => s + (c.click_count || 0), 0)
-    const totalUnsub = sent.reduce((s, c) => s + (c.unsubscribe_count || 0), 0)
-    const avgOpenRate =
-      sent.length > 0 ? sent.reduce((s, c) => s + (c.open_rate || 0), 0) / sent.length : 0
-    const avgClickRate =
-      sent.length > 0 ? sent.reduce((s, c) => s + (c.click_rate || 0), 0) / sent.length : 0
-    return {
-      sent: sent.length,
-      totalOpens,
-      totalClicks,
-      totalUnsub,
-      avgOpenRate,
-      avgClickRate,
+export function MetricsTab({ campaigns }: MetricsTabProps) {
+  const totals = useMemo(() => {
+    let opened = 0,
+      clicked = 0,
+      unsubscribed = 0,
+      totalAudience = 0
+    for (const c of campaigns) {
+      opened += c.opened_count || 0
+      clicked += c.click_count || 0
+      unsubscribed += c.unsubscribe_count || 0
+      totalAudience += c.audience_size || 0
     }
+    const avgOpenRate =
+      campaigns.length > 0
+        ? campaigns.reduce((s, c) => s + (c.open_rate || 0), 0) / campaigns.length
+        : 0
+    const avgClickRate =
+      campaigns.length > 0
+        ? campaigns.reduce((s, c) => s + (c.click_rate || 0), 0) / campaigns.length
+        : 0
+    const retention =
+      totalAudience > 0
+        ? Math.round(((totalAudience - unsubscribed) / totalAudience) * 1000) / 10
+        : 100
+    return { opened, clicked, unsubscribed, avgOpenRate, avgClickRate, retention }
   }, [campaigns])
 
-  const chartData = useMemo(
-    () =>
-      campaigns
-        .filter((c) => c.status === 'enviado')
-        .slice(0, 10)
-        .map((c) => ({
-          name: (c.title || '').length > 20 ? (c.title || '').slice(0, 20) + '…' : c.title || '',
-          Aberturas: c.opened_count || 0,
-          Cliques: c.click_count || 0,
-          Descadastros: c.unsubscribe_count || 0,
-        })),
-    [campaigns],
-  )
+  const chartConfig: ChartConfig = {
+    opened: { label: 'Aberturas', color: 'hsl(24,95%,53%)' },
+    clicked: { label: 'Cliques', color: 'hsl(280,65%,55%)' },
+  }
+
+  const timeData = useMemo(() => {
+    return [...campaigns]
+      .filter((c) => c.created)
+      .sort((a, b) => new Date(a.created).getTime() - new Date(b.created).getTime())
+      .map((c) => ({
+        name: c.title?.length > 20 ? c.title.slice(0, 20) + '…' : c.title,
+        opened: c.opened_count || 0,
+        clicked: c.click_count || 0,
+      }))
+  }, [campaigns])
+
+  const barData = useMemo(() => {
+    return [...campaigns]
+      .sort((a, b) => (b.open_rate || 0) - (a.open_rate || 0))
+      .slice(0, 10)
+      .map((c) => ({
+        name: c.title?.length > 15 ? c.title.slice(0, 15) + '…' : c.title,
+        open_rate: Math.round((c.open_rate || 0) * 100) / 100,
+        click_rate: Math.round((c.click_rate || 0) * 100) / 100,
+      }))
+  }, [campaigns])
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
-          icon={Mail}
-          label="Campanhas Enviadas"
-          value={stats.sent}
-          color="hsl(24, 95%, 53%)"
-        />
-        <MetricCard
-          icon={Eye}
-          label="Total Aberturas"
-          value={stats.totalOpens}
-          color="hsl(142, 71%, 45%)"
+          icon={MailOpen}
+          label="Total de Aberturas"
+          value={totals.opened}
+          color="hsl(24,95%,53%)"
         />
         <MetricCard
           icon={MousePointerClick}
-          label="Total Cliques"
-          value={stats.totalClicks}
-          color="hsl(200, 80%, 50%)"
+          label="Total de Cliques"
+          value={totals.clicked}
+          color="hsl(280,65%,55%)"
         />
         <MetricCard
           icon={UserMinus}
           label="Descadastros"
-          value={stats.totalUnsub}
-          color="hsl(0, 84%, 60%)"
+          value={totals.unsubscribed}
+          color="hsl(0,80%,50%)"
+        />
+        <MetricCard
+          icon={Eye}
+          label="Retenção (%)"
+          value={totals.retention}
+          color="hsl(140,70%,45%)"
         />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card className="rounded-xl border-none bg-white shadow-sm">
-          <CardContent className="p-4 text-center">
-            <p className="text-3xl font-bold text-orange-600">
-              {(stats.avgOpenRate * 100).toFixed(1)}%
+          <CardContent className="p-4">
+            <p className="text-sm font-semibold text-gray-700">Taxa Média de Abertura</p>
+            <p className="text-3xl font-bold text-orange-500 mt-1">
+              {totals.avgOpenRate.toFixed(1)}%
             </p>
-            <p className="text-xs text-gray-500 mt-1">Taxa de Abertura Média</p>
           </CardContent>
         </Card>
         <Card className="rounded-xl border-none bg-white shadow-sm">
-          <CardContent className="p-4 text-center">
-            <p className="text-3xl font-bold text-blue-600">
-              {(stats.avgClickRate * 100).toFixed(1)}%
+          <CardContent className="p-4">
+            <p className="text-sm font-semibold text-gray-700">Taxa Média de Clique</p>
+            <p className="text-3xl font-bold text-purple-500 mt-1">
+              {totals.avgClickRate.toFixed(1)}%
             </p>
-            <p className="text-xs text-gray-500 mt-1">Taxa de Clique Média</p>
           </CardContent>
         </Card>
       </div>
-      {chartData.length > 0 && (
-        <Card className="rounded-xl border-none bg-white shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-gray-800">Métricas por Campanha Enviada</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} layout="vertical" margin={{ left: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                  <XAxis type="number" fontSize={12} />
-                  <YAxis type="category" dataKey="name" width={120} fontSize={11} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="Aberturas" fill="hsl(24, 95%, 53%)" radius={[0, 4, 4, 0]} />
-                  <Bar dataKey="Cliques" fill="hsl(200, 80%, 50%)" radius={[0, 4, 4, 0]} />
-                  <Bar dataKey="Descadastros" fill="hsl(0, 84%, 60%)" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      )}
-      {stats.sent === 0 && (
-        <Card className="rounded-xl border-none bg-white shadow-sm">
-          <CardContent className="p-8 text-center text-gray-500">
-            Nenhuma campanha enviada ainda. As métricas aparecerão após o envio.
-          </CardContent>
-        </Card>
-      )}
+
+      <Card className="rounded-xl border-none bg-white shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-gray-800">Aberturas e Cliques por Campanha</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer config={chartConfig} className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={timeData} margin={{ left: 10, right: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" fontSize={10} angle={-45} textAnchor="end" height={70} />
+                <YAxis fontSize={11} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="opened" fill="hsl(24,95%,53%)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="clicked" fill="hsl(280,65%,55%)" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-xl border-none bg-white shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-gray-800">Taxas de Performance (Top 10)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer config={chartConfig} className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={barData} margin={{ left: 10, right: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" fontSize={10} angle={-45} textAnchor="end" height={70} />
+                <YAxis fontSize={11} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Line
+                  type="monotone"
+                  dataKey="open_rate"
+                  stroke="hsl(24,95%,53%)"
+                  strokeWidth={2}
+                  dot={{ r: 4 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="click_rate"
+                  stroke="hsl(280,65%,55%)"
+                  strokeWidth={2}
+                  dot={{ r: 4 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </CardContent>
+      </Card>
     </div>
   )
 }
