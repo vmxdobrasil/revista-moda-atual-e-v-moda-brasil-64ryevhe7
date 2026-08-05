@@ -8,8 +8,10 @@ import {
 import { getCategories, type Top60Category } from '@/services/top60'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Trophy, Users, TrendingUp, Calendar, Crown } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Loader2, Trophy, Users, TrendingUp, Calendar, Crown, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
+import { extractFieldErrors, type FieldErrors } from '@/lib/pocketbase/errors'
 import {
   Select,
   SelectContent,
@@ -32,18 +34,32 @@ const SORT_OPTIONS = [
   { value: 'post_frequency', label: 'Frequência' },
 ]
 
+const LIMIT_OPTIONS = [
+  { value: '0', label: 'Todos' },
+  { value: '5', label: '5' },
+  { value: '10', label: '10' },
+  { value: '25', label: '25' },
+]
+
 export function CompetitorsPanel() {
   const [report, setReport] = useState<ConcorrentesReport | null>(null)
   const [categories, setCategories] = useState<Top60Category[]>([])
   const [loading, setLoading] = useState(true)
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [filters, setFilters] = useState<ConcorrentesParams>({ sort: 'followers' })
 
   const loadData = useCallback(async () => {
     try {
+      setFieldErrors({})
       const data = await getConcorrentesReport(filters)
       setReport(data)
-    } catch {
-      toast.error('Erro ao carregar concorrentes.')
+    } catch (err) {
+      const errors = extractFieldErrors(err)
+      if (Object.keys(errors).length > 0) {
+        setFieldErrors(errors)
+      } else {
+        toast.error('Erro ao carregar concorrentes.')
+      }
     } finally {
       setLoading(false)
     }
@@ -103,6 +119,19 @@ export function CompetitorsPanel() {
 
   return (
     <div className="space-y-6">
+      {Object.keys(fieldErrors).length > 0 && (
+        <Alert variant="destructive">
+          <AlertCircle className="w-4 h-4" />
+          <AlertDescription>
+            {Object.entries(fieldErrors).map(([field, msg]) => (
+              <p key={field}>
+                <strong>{field}:</strong> {msg}
+              </p>
+            ))}
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex flex-wrap gap-3">
         <Select
           onValueChange={(v) =>
@@ -144,6 +173,22 @@ export function CompetitorsPanel() {
           </SelectTrigger>
           <SelectContent>
             {SORT_OPTIONS.map((o) => (
+              <SelectItem key={o.value} value={o.value}>
+                {o.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          onValueChange={(v) =>
+            setFilters((f) => ({ ...f, limit: v === '0' ? undefined : Number(v) }))
+          }
+        >
+          <SelectTrigger className="w-[120px]">
+            <SelectValue placeholder="Limite" />
+          </SelectTrigger>
+          <SelectContent>
+            {LIMIT_OPTIONS.map((o) => (
               <SelectItem key={o.value} value={o.value}>
                 {o.label}
               </SelectItem>

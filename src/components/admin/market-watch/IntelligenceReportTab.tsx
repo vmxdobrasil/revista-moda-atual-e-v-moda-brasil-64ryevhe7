@@ -7,7 +7,7 @@ import {
 } from '@/services/market-watch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, TrendingUp, AlertTriangle, Trophy, FileBarChart } from 'lucide-react'
+import { Loader2, TrendingUp, AlertTriangle, Trophy, FileBarChart, BarChart3 } from 'lucide-react'
 
 export function IntelligenceReportTab() {
   const [concorrentes, setConcorrentes] = useState<ConcorrentesReport | null>(null)
@@ -32,10 +32,21 @@ export function IntelligenceReportTab() {
     )
   }
 
-  const top3 = concorrentes.competitors.slice(0, 3)
+  const allCompetitors = concorrentes.competitors
   const criticalSignals = alertas.signals.filter((s) => s.severity === 'critico')
   const attentionSignals = alertas.signals.filter((s) => s.severity === 'atencao')
   const newSignals = alertas.signals.filter((s) => s.status === 'novo')
+  const trendSignals = alertas.signals.filter((s) => s.signal_type === 'tendencia')
+  const competitorAlerts = alertas.signals.filter((s) => s.signal_type === 'alerta_concorrente')
+
+  const platformDist: Record<string, number> = {}
+  allCompetitors.forEach((c) => {
+    platformDist[c.platform] = (platformDist[c.platform] || 0) + 1
+  })
+
+  const avgEngagement = concorrentes.summary.avg_engagement_rate
+  const aboveAvg = allCompetitors.filter((c) => c.engagement_rate > avgEngagement)
+  const belowAvg = allCompetitors.filter((c) => c.engagement_rate <= avgEngagement)
 
   return (
     <div className="space-y-6">
@@ -88,26 +99,105 @@ export function IntelligenceReportTab() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Top 3 Concorrentes por Engajamento</CardTitle>
+          <CardTitle className="text-lg">Ranking Completo de Concorrentes</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {top3.map((c, i) => (
-            <div key={c.id} className="flex items-center gap-3">
+          {allCompetitors.map((c, i) => (
+            <div key={c.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
               <Badge variant="secondary" className="bg-orange-100 text-orange-700 text-sm">
                 #{i + 1}
               </Badge>
               <div className="flex-1">
                 <p className="font-medium text-gray-800">{c.name}</p>
                 <p className="text-xs text-gray-400">
-                  {c.platform} • {c.followers.toLocaleString('pt-BR')} seguidores
+                  {c.platform} • {c.social_handle} • {c.followers.toLocaleString('pt-BR')}{' '}
+                  seguidores
                 </p>
               </div>
-              <div className="text-right">
-                <p className="font-bold text-green-600">{c.engagement_rate}%</p>
-                <p className="text-xs text-gray-400">{c.post_frequency} posts/sem</p>
+              <div className="flex gap-6 text-sm">
+                <div className="text-center">
+                  <p className="font-bold text-green-600">{c.engagement_rate}%</p>
+                  <p className="text-xs text-gray-400">Engaj.</p>
+                </div>
+                <div className="text-center">
+                  <p className="font-bold text-gray-700">{c.post_frequency}</p>
+                  <p className="text-xs text-gray-400">Posts/sem</p>
+                </div>
               </div>
             </div>
           ))}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-blue-500" /> Análise Comparativa
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 bg-blue-50 rounded-lg">
+              <p className="text-sm font-semibold text-gray-700 mb-2">
+                Distribuição por Plataforma
+              </p>
+              <div className="space-y-1">
+                {Object.entries(platformDist).map(([platform, count]) => (
+                  <div key={platform} className="flex justify-between text-sm">
+                    <span className="text-gray-600 capitalize">{platform}</span>
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                      {count}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="p-4 bg-green-50 rounded-lg">
+              <p className="text-sm font-semibold text-gray-700 mb-2">
+                Engajamento vs Média ({avgEngagement}%)
+              </p>
+              <div className="space-y-1">
+                <p className="text-sm text-green-700">
+                  Acima da média: <strong>{aboveAvg.length}</strong> concorrentes
+                </p>
+                <p className="text-sm text-gray-600">
+                  Abaixo da média: <strong>{belowAvg.length}</strong> concorrentes
+                </p>
+                {aboveAvg.length > 0 && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    Destaques: {aboveAvg.map((c) => c.name).join(', ')}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Tendências Emergentes e Movimentações</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {[...trendSignals, ...competitorAlerts].slice(0, 8).map((s) => (
+            <div key={s.id} className="flex items-start gap-2 py-2 border-b last:border-0">
+              <Badge
+                variant="secondary"
+                className={`text-xs ${s.signal_type === 'tendencia' ? 'bg-purple-100 text-purple-700' : 'bg-orange-100 text-orange-700'}`}
+              >
+                {s.signal_type === 'tendencia' ? 'Tendência' : 'Alerta'}
+              </Badge>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-700">{s.title}</p>
+                {s.competitor_name && <p className="text-xs text-gray-400">{s.competitor_name}</p>}
+              </div>
+            </div>
+          ))}
+          {trendSignals.length === 0 && competitorAlerts.length === 0 && (
+            <p className="text-sm text-gray-400 py-4 text-center">
+              Nenhuma tendência ou movimentação detectada.
+            </p>
+          )}
         </CardContent>
       </Card>
 

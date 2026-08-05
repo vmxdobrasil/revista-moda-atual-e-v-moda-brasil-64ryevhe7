@@ -9,8 +9,10 @@ import {
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Loader2, AlertCircle, Info, AlertTriangle } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Loader2, AlertCircle, Info, AlertTriangle, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
+import { extractFieldErrors, type FieldErrors } from '@/lib/pocketbase/errors'
 import {
   Select,
   SelectContent,
@@ -32,6 +34,15 @@ const TYPE_LABELS: Record<string, string> = {
   comportamento_consumidor: 'Comportamento do Consumidor',
 }
 
+const TYPE_HIGHLIGHT: Record<string, { border: string; bg: string; badge: string }> = {
+  tendencia: { border: 'border-l-purple-500', bg: 'bg-purple-50/50', badge: 'bg-purple-500' },
+  alerta_concorrente: {
+    border: 'border-l-orange-500',
+    bg: 'bg-orange-50/50',
+    badge: 'bg-orange-500',
+  },
+}
+
 const STATUS_LABELS: Record<string, string> = {
   novo: 'Novo',
   em_analise: 'Em Análise',
@@ -43,14 +54,21 @@ export function SignalsPanel() {
   const [report, setReport] = useState<AlertasReport | null>(null)
   const [competitors, setCompetitors] = useState<Array<{ id: string; name: string }>>([])
   const [loading, setLoading] = useState(true)
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [filters, setFilters] = useState<AlertaParams>({})
 
   const loadData = useCallback(async () => {
     try {
+      setFieldErrors({})
       const data = await getAlertas(filters)
       setReport(data)
-    } catch {
-      toast.error('Erro ao carregar sinais de mercado.')
+    } catch (err) {
+      const errors = extractFieldErrors(err)
+      if (Object.keys(errors).length > 0) {
+        setFieldErrors(errors)
+      } else {
+        toast.error('Erro ao carregar sinais de mercado.')
+      }
     } finally {
       setLoading(false)
     }
@@ -77,6 +95,19 @@ export function SignalsPanel() {
 
   return (
     <div className="space-y-6">
+      {Object.keys(fieldErrors).length > 0 && (
+        <Alert variant="destructive">
+          <AlertCircle className="w-4 h-4" />
+          <AlertDescription>
+            {Object.entries(fieldErrors).map(([field, msg]) => (
+              <p key={field}>
+                <strong>{field}:</strong> {msg}
+              </p>
+            ))}
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <Select
           onValueChange={(v) =>
@@ -189,8 +220,12 @@ export function SignalsPanel() {
         ) : (
           report.signals.map((sig) => {
             const sevCfg = SEVERITY_CONFIG[sig.severity] || SEVERITY_CONFIG.info
+            const highlight = TYPE_HIGHLIGHT[sig.signal_type]
             return (
-              <Card key={sig.id}>
+              <Card
+                key={sig.id}
+                className={highlight ? `${highlight.border} ${highlight.bg} border-l-4` : ''}
+              >
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     <div
@@ -201,6 +236,12 @@ export function SignalsPanel() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <h4 className="font-semibold text-gray-800">{sig.title}</h4>
+                        {highlight && (
+                          <Badge className={`text-xs text-white ${highlight.badge}`}>
+                            <Sparkles className="w-3 h-3 mr-1" />
+                            Destaque
+                          </Badge>
+                        )}
                         <Badge variant="secondary" className={`text-xs ${sevCfg.color}`}>
                           {sevCfg.label}
                         </Badge>
