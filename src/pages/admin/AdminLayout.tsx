@@ -31,6 +31,7 @@ import {
   Lock,
   Palette,
   Mail,
+  DollarSign,
 } from 'lucide-react'
 import { CommandBar } from '@/components/CommandBar'
 import { useFailureAlerts } from '@/hooks/use-failure-alerts'
@@ -237,6 +238,13 @@ export function AdminLayout() {
           onClick={() => setSidebarOpen(false)}
         >
           <ShieldCheck className="w-5 h-5" /> Editorial QA
+        </Link>
+        <Link
+          to="/admin/ad-revenue"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <DollarSign className="w-5 h-5" /> Ad Revenue
         </Link>
         <Link
           to="/admin/security"

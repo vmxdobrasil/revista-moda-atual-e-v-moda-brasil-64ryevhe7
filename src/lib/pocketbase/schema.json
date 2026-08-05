@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-05T02:00:03.659Z",
+  "generatedAt": "2026-08-05T02:32:22.125Z",
   "collections": [
     {
       "name": "users",
@@ -1104,9 +1104,50 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "advertiser",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "campaign",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "price",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": [
+            "rascunho",
+            "aprovado",
+            "em_entrega",
+            "entregue",
+            "concluido",
+            "cancelado"
+          ]
+        },
+        {
+          "name": "delivery",
+          "type": "date",
+          "required": false,
+          "system": false
         }
       ],
-      "indexes": ["CREATE INDEX idx_advertisements_active ON advertisements (is_active)"]
+      "indexes": [
+        "CREATE INDEX idx_advertisements_active ON advertisements (is_active)",
+        "CREATE INDEX `idx_advertisements_status` ON `advertisements` (status)"
+      ]
     },
     {
       "name": "delivery_queue",
@@ -1975,6 +2016,120 @@
       "indexes": [
         "CREATE INDEX idx_newsletter_sequences_segment ON newsletter_sequences (segment)",
         "CREATE INDEX idx_newsletter_sequences_status ON newsletter_sequences (status)"
+      ]
+    },
+    {
+      "name": "ad_proposals",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "advertiser",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "campaign",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "edition",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "editions"
+        },
+        {
+          "name": "format",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": [
+            "banner",
+            "capa",
+            "pagina_inteira",
+            "sponsored_content",
+            "story",
+            "editorial_destaque"
+          ]
+        },
+        {
+          "name": "position",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "audience_reach",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "suggested_price",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "match_score",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "proposal_data",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["rascunho", "enviado", "aceito", "recusado", "contrato", "entregue"]
+        },
+        {
+          "name": "contract_date",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "delivery_date",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_ad_proposals_status ON ad_proposals (status)",
+        "CREATE INDEX idx_ad_proposals_edition ON ad_proposals (edition)",
+        "CREATE INDEX idx_ad_proposals_advertiser ON ad_proposals (advertiser)"
       ]
     }
   ]

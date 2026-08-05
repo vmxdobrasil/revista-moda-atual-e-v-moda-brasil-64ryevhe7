@@ -45,6 +45,7 @@ import CoverArtDirectorPage from './pages/admin/CoverArtDirectorPage'
 import EditionCoversPage from './pages/admin/EditionCoversPage'
 import EditorialQaPage from './pages/admin/EditorialQaPage'
 import NewsletterPage from './pages/admin/NewsletterPage'
+import AdRevenuePage from './pages/admin/AdRevenuePage'
 
 import Partners from './pages/Partners'
 import Advertisements from './pages/Advertisements'
@@ -116,6 +117,7 @@ const App = () => (
               <Route path="cover-art-director" element={<CoverArtDirectorPage />} />
               <Route path="editorial-qa" element={<EditorialQaPage />} />
               <Route path="newsletter" element={<NewsletterPage />} />
+              <Route path="ad-revenue" element={<AdRevenuePage />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

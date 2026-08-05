@@ -6,6 +6,11 @@ export interface Advertisement {
   url: string
   title: string
   is_active: boolean
+  advertiser?: string
+  campaign?: string
+  price?: number
+  status?: string
+  delivery?: string
   created: string
   updated: string
 }
