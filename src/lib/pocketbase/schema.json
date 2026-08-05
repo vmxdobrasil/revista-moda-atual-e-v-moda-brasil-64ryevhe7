@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-05T17:33:47.398Z",
+  "generatedAt": "2026-08-05T17:42:29.513Z",
   "collections": [
     {
       "name": "users",
@@ -973,6 +973,18 @@
           "required": false,
           "system": false,
           "selectValues": ["revista", "hotspot", "whatsapp"]
+        },
+        {
+          "name": "content_id",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "cta_variant",
+          "type": "text",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": ["CREATE INDEX idx_marketplace_orders_status ON marketplace_orders (status)"]
