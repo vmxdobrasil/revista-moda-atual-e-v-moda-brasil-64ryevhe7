@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-05T16:03:02.990Z",
+  "generatedAt": "2026-08-05T17:17:44.098Z",
   "collections": [
     {
       "name": "users",
@@ -383,6 +383,25 @@
           "required": false,
           "system": false,
           "collectionRef": "marketplace_products"
+        },
+        {
+          "name": "link_origin",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["revista", "hotspot", "whatsapp"]
+        },
+        {
+          "name": "conversion_rate",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "cta_variant",
+          "type": "text",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": ["CREATE INDEX `idx_hotspots_page` ON `page_hotspots` (page)"]
@@ -947,6 +966,13 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "origin",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["revista", "hotspot", "whatsapp"]
         }
       ],
       "indexes": ["CREATE INDEX idx_marketplace_orders_status ON marketplace_orders (status)"]
@@ -2238,6 +2264,102 @@
       "indexes": [
         "CREATE INDEX idx_ad_pricing_rules_format ON ad_pricing_rules (format)",
         "CREATE INDEX idx_ad_pricing_rules_active ON ad_pricing_rules (active)"
+      ]
+    },
+    {
+      "name": "conversion_metrics",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": null,
+        "update": null,
+        "delete": null
+      },
+      "fields": [
+        {
+          "name": "content_id",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "content_title",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "content_type",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["materia", "legenda", "story", "banner", "hotspot"]
+        },
+        {
+          "name": "period",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "impressions",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "clicks",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "orders",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "conversion_rate",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "cta_variant",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "link_origin",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["revista", "hotspot", "whatsapp"]
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_conversion_metrics_content_id ON conversion_metrics (content_id)",
+        "CREATE INDEX idx_conversion_metrics_period ON conversion_metrics (period)",
+        "CREATE INDEX idx_conversion_metrics_link_origin ON conversion_metrics (link_origin)",
+        "CREATE INDEX idx_conversion_metrics_cta_variant ON conversion_metrics (cta_variant)",
+        "CREATE INDEX idx_conversion_metrics_conversion_rate ON conversion_metrics (conversion_rate)"
       ]
     }
   ]

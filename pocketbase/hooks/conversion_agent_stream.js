@@ -1,0 +1,47 @@
+routerAdd(
+  'POST',
+  '/backend/v1/conversion/chat-stream',
+  (e) => {
+    try {
+      var body = e.requestInfo().body || {}
+      var userId = e.auth ? e.auth.id : ''
+      if (!userId) return e.unauthorizedError('auth required')
+      if (!body.message || !String(body.message).trim()) {
+        return e.badRequestError('message is required')
+      }
+
+      var conv = $ai.agent('conversion').getOrCreateConversation({
+        user_id: userId,
+        id: body.conversation_id || null,
+      })
+
+      var iter = $ai.agent('conversion').chat({
+        user_id: userId,
+        conversation_id: conv.id,
+        message: body.message,
+        stream: true,
+      })
+
+      e.response.header().set('Content-Type', 'text/event-stream')
+      e.response.header().set('Cache-Control', 'no-cache')
+      e.response.header().set('X-Conversation-Id', conv.id)
+      $response.stream(e, iter)
+    } catch (err) {
+      if (err instanceof SkipAiConfigError) {
+        return e.json(503, { error: 'AI temporarily unavailable' })
+      }
+      if (err instanceof SkipAiAgentsError) {
+        var status = err.status || 500
+        return e.json(status, { error: status >= 500 ? 'agent request failed' : err.message })
+      }
+      if (err instanceof SkipAiError) {
+        var status2 = err.status || 502
+        return e.json(status2, {
+          error: status2 >= 500 ? 'AI temporarily unavailable' : err.message,
+        })
+      }
+      throw err
+    }
+  },
+  $apis.requireAuth(),
+)

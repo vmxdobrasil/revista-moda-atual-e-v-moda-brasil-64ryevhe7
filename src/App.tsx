@@ -46,6 +46,7 @@ import EditionCoversPage from './pages/admin/EditionCoversPage'
 import EditorialQaPage from './pages/admin/EditorialQaPage'
 import NewsletterPage from './pages/admin/NewsletterPage'
 import AdRevenuePage from './pages/admin/AdRevenuePage'
+import ConversionPage from './pages/admin/ConversionPage'
 import PublicAdvertiser from './pages/PublicAdvertiser'
 
 import Partners from './pages/Partners'
@@ -120,6 +121,7 @@ const App = () => (
               <Route path="editorial-qa" element={<EditorialQaPage />} />
               <Route path="newsletter" element={<NewsletterPage />} />
               <Route path="ad-revenue" element={<AdRevenuePage />} />
+              <Route path="conversion" element={<ConversionPage />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
