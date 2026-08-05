@@ -1,8 +1,8 @@
 import { useState, MouseEvent } from 'react'
-import { MapPin, X, ExternalLink, ShoppingBag } from 'lucide-react'
+import { MapPin, X, ExternalLink, ShoppingBag, MessageCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Hotspot, getFileUrl } from '@/services/magazine'
-import { trackHotspotClick } from '@/services/analytics'
+import { trackHotspotClick, trackWhatsAppClick } from '@/services/analytics'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -10,6 +10,13 @@ import { Badge } from '@/components/ui/badge'
 interface HotspotMarkerProps {
   hotspot: Hotspot
   className?: string
+}
+
+function getWhatsAppUrl(hotspot: Hotspot): string | null {
+  if (hotspot.link_origin !== 'whatsapp') return null
+  if (hotspot.link && hotspot.link.includes('wa.me')) return hotspot.link
+  const message = `Olá! Vim da Revista MODA ATUAL e tenho interesse em: ${hotspot.title}`
+  return `https://wa.me/5562900000000?text=${encodeURIComponent(message)}`
 }
 
 export function HotspotMarker({ hotspot, className }: HotspotMarkerProps) {
@@ -28,6 +35,8 @@ export function HotspotMarker({ hotspot, className }: HotspotMarkerProps) {
   }
 
   const product = hotspot.expand?.product
+  const whatsappUrl = getWhatsAppUrl(hotspot)
+  const isWhatsApp = hotspot.link_origin === 'whatsapp'
 
   return (
     <>
@@ -37,15 +46,27 @@ export function HotspotMarker({ hotspot, className }: HotspotMarkerProps) {
       >
         <button
           onClick={handleToggle}
-          className="relative flex items-center justify-center w-8 h-8 rounded-full bg-orange-500/90 hover:bg-orange-600 shadow-lg ring-2 ring-white transition-all duration-200 hover:scale-110 active:scale-95"
+          className={cn(
+            'relative flex items-center justify-center w-8 h-8 rounded-full shadow-lg ring-2 ring-white transition-all duration-200 hover:scale-110 active:scale-95',
+            isWhatsApp
+              ? 'bg-green-500/90 hover:bg-green-600'
+              : 'bg-orange-500/90 hover:bg-orange-600',
+          )}
           aria-label={hotspot.title}
         >
-          {product ? (
+          {isWhatsApp ? (
+            <MessageCircle className="w-4 h-4 text-white" />
+          ) : product ? (
             <ShoppingBag className="w-4 h-4 text-white" />
           ) : (
             <MapPin className="w-4 h-4 text-white" />
           )}
-          <span className="absolute inset-0 rounded-full bg-orange-400 animate-ping opacity-60" />
+          <span
+            className={cn(
+              'absolute inset-0 rounded-full animate-ping opacity-60',
+              isWhatsApp ? 'bg-green-400' : 'bg-orange-400',
+            )}
+          />
         </button>
         {open && !product && (
           <div
@@ -64,20 +85,39 @@ export function HotspotMarker({ hotspot, className }: HotspotMarkerProps) {
             {hotspot.price && (
               <p className="text-sm font-bold text-orange-600 mb-2">{hotspot.price}</p>
             )}
-            {hotspot.link && (
-              <a
-                href={hotspot.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  trackHotspotClick(hotspot.id)
-                }}
-                className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium"
-              >
-                Ver produto <ExternalLink className="w-3 h-3" />
-              </a>
+            {hotspot.cta_variant && (
+              <Badge variant="secondary" className="text-xs mb-2">
+                CTA: {hotspot.cta_variant}
+              </Badge>
             )}
+            <div className="flex flex-col gap-2 mt-2">
+              {whatsappUrl && (
+                <Button
+                  asChild
+                  size="sm"
+                  className="bg-green-500 hover:bg-green-600 text-white"
+                  onClick={() => trackWhatsAppClick(hotspot.id)}
+                >
+                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                    <MessageCircle className="w-4 h-4 mr-1" /> Pedir no WhatsApp
+                  </a>
+                </Button>
+              )}
+              {!whatsappUrl && hotspot.link && (
+                <a
+                  href={hotspot.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    trackHotspotClick(hotspot.id)
+                  }}
+                  className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  Ver produto <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -118,13 +158,27 @@ export function HotspotMarker({ hotspot, className }: HotspotMarkerProps) {
                 </div>
                 {product.category && <Badge variant="secondary">{product.category}</Badge>}
               </div>
-              {product.link && (
-                <Button asChild className="w-full bg-orange-500 hover:bg-orange-600">
-                  <a href={product.link} target="_blank" rel="noopener noreferrer">
-                    <ShoppingBag className="w-4 h-4 mr-2" /> Comprar agora
-                  </a>
-                </Button>
-              )}
+              <div className="flex gap-2">
+                {product.link && (
+                  <Button asChild className="flex-1 bg-orange-500 hover:bg-orange-600">
+                    <a href={product.link} target="_blank" rel="noopener noreferrer">
+                      <ShoppingBag className="w-4 h-4 mr-2" /> Comprar agora
+                    </a>
+                  </Button>
+                )}
+                {whatsappUrl && (
+                  <Button asChild className="flex-1 bg-green-500 hover:bg-green-600">
+                    <a
+                      href={whatsappUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => trackWhatsAppClick(hotspot.id)}
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2" /> WhatsApp
+                    </a>
+                  </Button>
+                )}
+              </div>
             </div>
           </DialogContent>
         </Dialog>

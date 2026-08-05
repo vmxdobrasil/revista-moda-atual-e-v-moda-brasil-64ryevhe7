@@ -56,6 +56,9 @@ export interface Hotspot {
   link: string
   product?: string
   click_count?: number
+  link_origin?: 'revista' | 'hotspot' | 'whatsapp'
+  conversion_rate?: number
+  cta_variant?: string
   created: string
   updated: string
   expand?: {
@@ -130,4 +133,4 @@ export const updateHotspot = (id: string, data: Partial<Hotspot>) =>
   pb.collection('page_hotspots').update<Hotspot>(id, data)
 export const deleteHotspot = (id: string) => pb.collection('page_hotspots').delete(id)
 
-export const getFileUrl = (record: any, filename: string) => pb.files.getURL(record, filename)
+export const getFileUrl = (record: any, filename: string) => pb.files.getUrl(record, filename)
