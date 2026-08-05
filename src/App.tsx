@@ -79,9 +79,9 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/texto/:id" element={<StoryTextView />} />
               <Route path="/sobre-nos" element={<About />} />
-              <Route path="/public/anunciante" element={<PublicAdvertiser />} />
             </Route>
 
+            <Route path="/public/anunciante" element={<PublicAdvertiser />} />
             <Route path="/esqueci-senha" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/admin/2fa-verify" element={<TwoFactorVerify />} />

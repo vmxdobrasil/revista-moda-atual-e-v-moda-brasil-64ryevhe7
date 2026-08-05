@@ -95,7 +95,14 @@ export function PropostaDetailDialog({ proposal, onOpenChange }: Props) {
 
             {proposal.contract_number && (
               <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 space-y-2">
-                <h3 className="font-semibold text-orange-700 text-sm">Contrato</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-orange-700 text-sm">Contrato</h3>
+                  {proposal.contract_signed_at && (
+                    <Badge className="bg-green-100 text-green-700" variant="secondary">
+                      Aprovado pelo anunciante
+                    </Badge>
+                  )}
+                </div>
                 <div className="grid grid-cols-3 gap-2 text-sm">
                   <div>
                     <span className="text-gray-500 text-xs">Número</span>
