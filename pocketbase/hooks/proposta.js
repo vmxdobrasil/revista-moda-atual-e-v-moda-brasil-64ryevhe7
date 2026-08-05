@@ -8,6 +8,7 @@ routerAdd(
 
     var advertiser = (body.advertiser || '').trim()
     var campaign = (body.campaign || '').trim()
+    var advertiserEmail = (body.advertiser_email || '').trim()
     if (!advertiser) {
       return e.badRequestError('Anunciante é obrigatório', {
         advertiser: 'Informe o nome do anunciante.',
@@ -285,6 +286,7 @@ routerAdd(
       var record = new Record(col)
       record.set('advertiser', advertiser)
       record.set('campaign', campaign)
+      record.set('advertiser_email', advertiserEmail)
       record.set('edition', matchedEdition.id)
       record.set('format', format)
       record.set('position', position)

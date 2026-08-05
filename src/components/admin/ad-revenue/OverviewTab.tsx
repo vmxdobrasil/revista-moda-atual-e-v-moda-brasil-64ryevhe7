@@ -13,6 +13,7 @@ import {
 } from '@/services/ad-proposals'
 import { getAllAds, type Advertisement } from '@/services/advertisements'
 import { useRealtime } from '@/hooks/use-realtime'
+import { MonthlyRevenueChart } from './MonthlyRevenueChart'
 
 export function OverviewTab() {
   const [proposals, setProposals] = useState<AdProposal[]>([])
@@ -142,6 +143,8 @@ export function OverviewTab() {
           </CardContent>
         </Card>
       </div>
+
+      <MonthlyRevenueChart proposals={proposals} />
     </div>
   )
 }

@@ -31,6 +31,7 @@ export interface GenerateProposalParams {
   edition_id?: string
   format?: string
   position?: string
+  advertiser_email?: string
 }
 
 export interface PriceResult {
@@ -172,13 +173,12 @@ export async function generateContract(id: string, specialTerms?: string): Promi
   })
 }
 
-export async function getPublicAdvertiserData(advertiser: string): Promise<any> {
-  return await pb.send(
-    `/backend/v1/public/anunciante?advertiser=${encodeURIComponent(advertiser)}`,
-    {
-      method: 'GET',
-    },
-  )
+export async function getPublicAdvertiserData(advertiser: string, token?: string): Promise<any> {
+  const params = new URLSearchParams({ advertiser })
+  if (token) params.set('token', token)
+  return await pb.send(`/backend/v1/public/anunciante?${params.toString()}`, {
+    method: 'GET',
+  })
 }
 
 export async function getSocialPostsByEdition(editionId: string): Promise<any[]> {

@@ -1,28 +1,30 @@
 routerAdd('GET', '/backend/v1/public/anunciante', (e) => {
   var advertiser = e.requestInfo().query['advertiser'] || ''
+  var accessToken = e.requestInfo().query['token'] || ''
+
   if (!advertiser) {
     return e.badRequestError('Parâmetro "advertiser" é obrigatório')
+  }
+  if (!accessToken) {
+    return e.json(401, { message: 'Token de acesso é obrigatório. Faça login para continuar.' })
   }
 
   var proposals = []
   try {
-    proposals = $app.findRecordsByFilter('ad_proposals', 'advertiser = {:adv}', '-created', 0, 0, {
-      adv: advertiser,
-    })
+    proposals = $app.findRecordsByFilter(
+      'ad_proposals',
+      'advertiser = {:adv} && access_token = {:tok}',
+      '-created',
+      0,
+      0,
+      { adv: advertiser, tok: accessToken },
+    )
   } catch (_) {
-    return e.json(200, {
-      advertiser: advertiser,
-      campaigns: [],
-      summary: { total_campaigns: 0, total_reach: 0, total_engagement: 0 },
-    })
+    return e.json(401, { message: 'Credenciais inválidas' })
   }
 
   if (proposals.length === 0) {
-    return e.json(200, {
-      advertiser: advertiser,
-      campaigns: [],
-      summary: { total_campaigns: 0, total_reach: 0, total_engagement: 0 },
-    })
+    return e.json(401, { message: 'Credenciais inválidas' })
   }
 
   var formatLabels = {
@@ -49,13 +51,13 @@ routerAdd('GET', '/backend/v1/public/anunciante', (e) => {
       } catch (_) {}
     }
 
-    var totalViews = 0
-    var totalLikes = 0
-    var totalComments = 0
-    var totalShares = 0
-    var totalSaves = 0
-    var avgEngagement = 0
-    var postCount = 0
+    var totalViews = 0,
+      totalLikes = 0,
+      totalComments = 0,
+      totalShares = 0,
+      totalSaves = 0,
+      avgEngagement = 0,
+      postCount = 0
 
     if (editionId) {
       try {

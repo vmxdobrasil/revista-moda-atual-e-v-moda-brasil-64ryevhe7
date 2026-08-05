@@ -20,11 +20,17 @@ import {
 import { useRealtime } from '@/hooks/use-realtime'
 import { ReachEvolutionSection } from './ReachEvolutionSection'
 import { CrossCampaignComparison } from './CrossCampaignComparison'
+import { ReportFilters, type ReportFilterState } from './ReportFilters'
 
 export function RelatoriosTab() {
   const [ads, setAds] = useState<Advertisement[]>([])
   const [proposals, setProposals] = useState<AdProposal[]>([])
   const [loading, setLoading] = useState(true)
+  const [filters, setFilters] = useState<ReportFilterState>({
+    period: 'all',
+    format: 'all',
+    position: 'all',
+  })
 
   const loadData = async () => {
     try {
@@ -48,17 +54,55 @@ export function RelatoriosTab() {
     loadData()
   })
 
+  const filteredProposals = useMemo(() => {
+    return proposals.filter((p) => {
+      if (filters.format !== 'all' && p.format !== filters.format) return false
+      if (
+        filters.position !== 'all' &&
+        !(p.position || '').toLowerCase().includes(filters.position.toLowerCase())
+      )
+        return false
+      if (filters.period !== 'all') {
+        const created = new Date(p.created)
+        const now = new Date()
+        if (filters.period === '7d' && now.getTime() - created.getTime() > 7 * 86400000)
+          return false
+        if (filters.period === '30d' && now.getTime() - created.getTime() > 30 * 86400000)
+          return false
+        if (
+          filters.period === 'this_month' &&
+          (created.getMonth() !== now.getMonth() || created.getFullYear() !== now.getFullYear())
+        )
+          return false
+      }
+      return true
+    })
+  }, [proposals, filters])
+
+  const filteredAds = useMemo(() => {
+    if (filters.period === 'all') return ads
+    return ads.filter((a) => {
+      const created = new Date(a.created)
+      const now = new Date()
+      if (filters.period === '7d') return now.getTime() - created.getTime() <= 7 * 86400000
+      if (filters.period === '30d') return now.getTime() - created.getTime() <= 30 * 86400000
+      if (filters.period === 'this_month')
+        return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear()
+      return true
+    })
+  }, [ads, filters])
+
   const totalRevenue = useMemo(
     () =>
-      ads
+      filteredAds
         .filter((a) => ['entregue', 'concluido'].includes(a.status || ''))
         .reduce((s, a) => s + (a.price || 0), 0),
-    [ads],
+    [filteredAds],
   )
 
   const totalProposed = useMemo(
-    () => proposals.reduce((s, p) => s + (p.suggested_price || 0), 0),
-    [proposals],
+    () => filteredProposals.reduce((s, p) => s + (p.suggested_price || 0), 0),
+    [filteredProposals],
   )
 
   if (loading) {
@@ -71,6 +115,7 @@ export function RelatoriosTab() {
 
   return (
     <div className="space-y-6">
+      <ReportFilters value={filters} onChange={setFilters} />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4">
@@ -91,7 +136,7 @@ export function RelatoriosTab() {
         <Card>
           <CardContent className="p-4">
             <p className="text-sm text-gray-500">Total Campanhas</p>
-            <p className="text-2xl font-bold text-blue-600">{ads.length}</p>
+            <p className="text-2xl font-bold text-blue-600">{filteredAds.length}</p>
           </CardContent>
         </Card>
       </div>
@@ -113,7 +158,7 @@ export function RelatoriosTab() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {ads.map((ad) => (
+                {filteredAds.map((ad) => (
                   <TableRow key={ad.id}>
                     <TableCell className="font-medium">{ad.advertiser || ad.title}</TableCell>
                     <TableCell>{ad.campaign || '-'}</TableCell>
@@ -135,7 +180,7 @@ export function RelatoriosTab() {
                     </TableCell>
                   </TableRow>
                 ))}
-                {ads.length === 0 && (
+                {filteredAds.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center text-gray-400 py-8">
                       Nenhuma campanha encontrada
@@ -148,9 +193,9 @@ export function RelatoriosTab() {
         </CardContent>
       </Card>
 
-      <ReachEvolutionSection proposals={proposals} />
+      <ReachEvolutionSection proposals={filteredProposals} />
 
-      <CrossCampaignComparison proposals={proposals} />
+      <CrossCampaignComparison proposals={filteredProposals} />
     </div>
   )
 }

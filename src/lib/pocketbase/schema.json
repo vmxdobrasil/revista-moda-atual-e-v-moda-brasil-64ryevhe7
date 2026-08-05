@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-05T11:47:38.476Z",
+  "generatedAt": "2026-08-05T12:49:34.025Z",
   "collections": [
     {
       "name": "users",
@@ -2148,6 +2148,18 @@
           "type": "date",
           "required": false,
           "system": false
+        },
+        {
+          "name": "advertiser_email",
+          "type": "email",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "access_token",
+          "type": "text",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [
@@ -2155,7 +2167,8 @@
         "CREATE INDEX idx_ad_proposals_edition ON ad_proposals (edition)",
         "CREATE INDEX idx_ad_proposals_advertiser ON ad_proposals (advertiser)",
         "CREATE UNIQUE INDEX `idx_ad_proposals_contract_number` ON `ad_proposals` (contract_number) WHERE contract_number != ''",
-        "CREATE INDEX `idx_ad_proposals_delivery_date` ON `ad_proposals` (delivery_date)"
+        "CREATE INDEX `idx_ad_proposals_delivery_date` ON `ad_proposals` (delivery_date)",
+        "CREATE INDEX `idx_ad_proposals_access_token` ON `ad_proposals` (access_token)"
       ]
     },
     {

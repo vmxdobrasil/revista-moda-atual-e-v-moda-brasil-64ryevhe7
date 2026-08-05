@@ -1,13 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ChartContainer } from '@/components/ui/chart'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend } from 'recharts'
 import {
-  Search,
   TrendingUp,
   Eye,
   Heart,
@@ -15,12 +13,18 @@ import {
   Share2,
   Bookmark,
   ArrowLeft,
+  LogOut,
+  FileCheck,
+  Loader2,
 } from 'lucide-react'
 import {
   getPublicAdvertiserData,
   PROPOSAL_STATUS_LABELS,
   STATUS_BADGE_CLASSES,
 } from '@/services/ad-proposals'
+import { AdvertiserLoginForm } from '@/components/advertiser/AdvertiserLoginForm'
+import { approveContract } from '@/services/advertiser-portal'
+import { useToast } from '@/hooks/use-toast'
 
 interface CampaignData {
   id: string
@@ -48,25 +52,25 @@ interface CampaignData {
 interface AdvertiserData {
   advertiser: string
   campaigns: CampaignData[]
-  summary: {
-    total_campaigns: number
-    total_reach: number
-    total_engagement: number
-  }
+  summary: { total_campaigns: number; total_reach: number; total_engagement: number }
 }
 
 export default function PublicAdvertiser() {
-  const [search, setSearch] = useState('')
-  const [activeAdvertiser, setActiveAdvertiser] = useState('')
   const [data, setData] = useState<AdvertiserData | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [token, setToken] = useState(() => localStorage.getItem('advertiser_token') || '')
+  const [activeAdvertiser, setActiveAdvertiser] = useState(
+    () => localStorage.getItem('advertiser_name') || '',
+  )
+  const [approving, setApproving] = useState<string | null>(null)
+  const { toast } = useToast()
 
-  const fetchData = useCallback(async (advertiser: string) => {
+  const fetchData = useCallback(async (advertiser: string, tok: string) => {
     setLoading(true)
     setError('')
     try {
-      const result = await getPublicAdvertiserData(advertiser)
+      const result = await getPublicAdvertiserData(advertiser, tok)
       setData(result)
     } catch {
       setError('Não foi possível carregar os dados. Tente novamente.')
@@ -77,17 +81,38 @@ export default function PublicAdvertiser() {
   }, [])
 
   useEffect(() => {
-    if (activeAdvertiser) {
-      fetchData(activeAdvertiser)
-      const interval = setInterval(() => fetchData(activeAdvertiser), 30000)
+    if (activeAdvertiser && token) {
+      fetchData(activeAdvertiser, token)
+      const interval = setInterval(() => fetchData(activeAdvertiser, token), 30000)
       return () => clearInterval(interval)
     }
-  }, [activeAdvertiser, fetchData])
+  }, [activeAdvertiser, token, fetchData])
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (search.trim()) {
-      setActiveAdvertiser(search.trim())
+  const handleLogin = (newToken: string, advertiserName: string) => {
+    localStorage.setItem('advertiser_token', newToken)
+    localStorage.setItem('advertiser_name', advertiserName)
+    setToken(newToken)
+    setActiveAdvertiser(advertiserName)
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('advertiser_token')
+    localStorage.removeItem('advertiser_name')
+    setToken('')
+    setActiveAdvertiser('')
+    setData(null)
+  }
+
+  const handleApproveContract = async (proposalId: string) => {
+    setApproving(proposalId)
+    try {
+      await approveContract(token, proposalId)
+      toast({ title: 'Contrato aprovado com sucesso!' })
+      if (activeAdvertiser) await fetchData(activeAdvertiser, token)
+    } catch {
+      toast({ title: 'Erro ao aprovar contrato', variant: 'destructive' })
+    } finally {
+      setApproving(null)
     }
   }
 
@@ -109,16 +134,22 @@ export default function PublicAdvertiser() {
           c.metrics.total_saves,
       })) || []
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b py-4 px-6 md:px-12">
-        <div className="container mx-auto flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-600 text-white font-extrabold text-sm">
-              V
-            </div>
-            <span className="text-orange-600 font-bold text-lg tracking-tight">MODA BRASIL</span>
-          </Link>
+  const headerContent = (
+    <header className="bg-white border-b py-4 px-6 md:px-12">
+      <div className="container mx-auto flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2">
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-600 text-white font-extrabold text-sm">
+            V
+          </div>
+          <span className="text-orange-600 font-bold text-lg tracking-tight">MODA BRASIL</span>
+        </Link>
+        <div className="flex items-center gap-2">
+          {token && (
+            <Button variant="ghost" size="sm" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-1.5" />
+              Sair
+            </Button>
+          )}
           <Button asChild variant="ghost" size="sm">
             <Link to="/">
               <ArrowLeft className="w-4 h-4 mr-1.5" />
@@ -126,8 +157,24 @@ export default function PublicAdvertiser() {
             </Link>
           </Button>
         </div>
-      </header>
+      </div>
+    </header>
+  )
 
+  if (!token) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {headerContent}
+        <main className="container mx-auto px-6 md:px-12 py-8 max-w-5xl">
+          <AdvertiserLoginForm onLogin={handleLogin} />
+        </main>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {headerContent}
       <main className="container mx-auto px-6 md:px-12 py-8 max-w-5xl">
         <div className="text-center mb-8">
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
@@ -135,20 +182,6 @@ export default function PublicAdvertiser() {
           </h1>
           <p className="text-gray-500">Acompanhe o desempenho das suas campanhas em tempo real</p>
         </div>
-
-        <form onSubmit={handleSearch} className="flex gap-2 max-w-md mx-auto mb-8">
-          <Input
-            type="text"
-            placeholder="Digite o nome do anunciante..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1"
-          />
-          <Button type="submit" className="gap-2">
-            <Search className="w-4 h-4" />
-            Buscar
-          </Button>
-        </form>
 
         {loading && (
           <div className="flex justify-center py-12">
@@ -159,14 +192,6 @@ export default function PublicAdvertiser() {
         {error && (
           <Card className="max-w-md mx-auto">
             <CardContent className="p-6 text-center text-gray-500">{error}</CardContent>
-          </Card>
-        )}
-
-        {!loading && !data && !error && (
-          <Card className="max-w-md mx-auto">
-            <CardContent className="p-8 text-center text-gray-400">
-              Digite o nome do anunciante para visualizar o desempenho das campanhas.
-            </CardContent>
           </Card>
         )}
 
@@ -255,12 +280,29 @@ export default function PublicAdvertiser() {
                           {c.edition_title || 'Edição não vinculada'} · {c.format_label}
                         </p>
                       </div>
-                      <Badge
-                        className={STATUS_BADGE_CLASSES[c.status] || 'bg-gray-100 text-gray-700'}
-                        variant="secondary"
-                      >
-                        {PROPOSAL_STATUS_LABELS[c.status] || c.status}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          className={STATUS_BADGE_CLASSES[c.status] || 'bg-gray-100 text-gray-700'}
+                          variant="secondary"
+                        >
+                          {PROPOSAL_STATUS_LABELS[c.status] || c.status}
+                        </Badge>
+                        {c.status === 'contrato' && (
+                          <Button
+                            size="sm"
+                            className="bg-green-500 hover:bg-green-600 text-white h-7"
+                            onClick={() => handleApproveContract(c.id)}
+                            disabled={approving === c.id}
+                          >
+                            {approving === c.id ? (
+                              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                            ) : (
+                              <FileCheck className="w-3 h-3 mr-1" />
+                            )}
+                            {approving === c.id ? '...' : 'Aprovar'}
+                          </Button>
+                        )}
+                      </div>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
                       <div className="flex items-center gap-1.5">
