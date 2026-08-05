@@ -20,7 +20,12 @@ migrate(
         existing.set('contract_signed_at', '2026-04-15')
         existing.set('contract_terms', {
           parties: { advertiser: 'Atacado Modal', publisher: 'Revista MODA ATUAL' },
-          scope: { campaign: 'Campanha Atacado Outono', format: 'sponsored_content', position: 'Editorial destaque', audience_reach: 32000 },
+          scope: {
+            campaign: 'Campanha Atacado Outono',
+            format: 'sponsored_content',
+            position: 'Editorial destaque',
+            audience_reach: 32000,
+          },
           commercial: { agreed_price: 6800, currency: 'BRL' },
           delivery: { delivery_date: '2026-05-01' },
           validity: '30 dias a partir da assinatura',
@@ -53,7 +58,12 @@ migrate(
       rec.set('contract_signed_at', todayStr)
       rec.set('contract_terms', {
         parties: { advertiser: 'Fashion Express', publisher: 'Revista MODA ATUAL' },
-        scope: { campaign: 'Lançamento Primavera', format: 'capa', position: 'Capa principal', audience_reach: 52000 },
+        scope: {
+          campaign: 'Lançamento Primavera',
+          format: 'capa',
+          position: 'Capa principal',
+          audience_reach: 52000,
+        },
         commercial: { agreed_price: 15000, currency: 'BRL' },
         delivery: { delivery_date: deliverySoon },
         validity: '30 dias a partir da assinatura',
@@ -80,18 +90,14 @@ migrate(
     }
 
     try {
-      app.findFirstRecordByData('ad_proposals', 'advertiser', 'Loja Center')
-    } catch (_) {} else {
-      try {
-        var lc = app.findFirstRecordByData('ad_proposals', 'advertiser', 'Loja Center')
-        if (!lc.getString('delivery_date')) {
-          var inFiveDays = new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000)
-          lc.set('delivery_date', inFiveDays.toISOString().split('T')[0])
-          lc.set('status', 'aceito')
-          app.save(lc)
-        }
-      } catch (_) {}
-    }
+      var lc = app.findFirstRecordByData('ad_proposals', 'advertiser', 'Loja Center')
+      if (!lc.getString('delivery_date')) {
+        var inFiveDays = new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000)
+        lc.set('delivery_date', inFiveDays.toISOString().split('T')[0])
+        lc.set('status', 'aceito')
+        app.save(lc)
+      }
+    } catch (_) {}
   },
   (app) => {
     try {

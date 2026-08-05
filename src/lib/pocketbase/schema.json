@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-05T11:37:57.254Z",
+  "generatedAt": "2026-08-05T11:47:38.476Z",
   "collections": [
     {
       "name": "users",
@@ -2124,12 +2124,38 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "contract_number",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "contract_date_formal",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "contract_terms",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "contract_signed_at",
+          "type": "date",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [
         "CREATE INDEX idx_ad_proposals_status ON ad_proposals (status)",
         "CREATE INDEX idx_ad_proposals_edition ON ad_proposals (edition)",
-        "CREATE INDEX idx_ad_proposals_advertiser ON ad_proposals (advertiser)"
+        "CREATE INDEX idx_ad_proposals_advertiser ON ad_proposals (advertiser)",
+        "CREATE UNIQUE INDEX `idx_ad_proposals_contract_number` ON `ad_proposals` (contract_number) WHERE contract_number != ''",
+        "CREATE INDEX `idx_ad_proposals_delivery_date` ON `ad_proposals` (delivery_date)"
       ]
     },
     {
