@@ -1,4 +1,5 @@
 import pb from '@/lib/pocketbase/client'
+import { streamAgentChat } from '@/lib/skipAi'
 
 export interface CtaSuggestion {
   cta_variant: string
@@ -102,4 +103,45 @@ export async function getFunilReport(params?: FunilParams): Promise<FunilRespons
   if (params?.period) query.push(`period=${encodeURIComponent(params.period)}`)
   const qs = query.length > 0 ? `?${query.join('&')}` : ''
   return pb.send(`/backend/v1/funil${qs}`, { method: 'GET' })
+}
+
+export interface DisplayMessage {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  created: string
+}
+
+export interface StreamConversionResult {
+  conversationId: string
+  messageId: string
+  content: string
+}
+
+export async function streamConversionChat(
+  message: string,
+  conversationId: string | null,
+  onChunk: (delta: string, full: string) => void,
+): Promise<StreamConversionResult> {
+  const res = await fetch(
+    `${import.meta.env.VITE_POCKETBASE_URL}/backend/v1/conversion-agent-stream`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: pb.authStore.token,
+      },
+      body: JSON.stringify({ message, conversation_id: conversationId }),
+    },
+  )
+
+  const result = await streamAgentChat(res, {
+    onChunk: (delta: string, full: string) => onChunk(delta, full),
+  })
+
+  return {
+    conversationId: res.headers.get('X-Conversation-Id') ?? result.conversation_id,
+    messageId: result.message_id,
+    content: result.content,
+  }
 }
