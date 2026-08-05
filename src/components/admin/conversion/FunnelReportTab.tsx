@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { getFunnelReport, type FunnelReport, type FunnelFilters } from '@/services/conversion'
+import { getFunilReport, type FunilResponse, type FunilParams } from '@/services/conversion'
 import { FunnelCharts } from '@/components/admin/conversion/FunnelCharts'
 import { TopContentsTable } from '@/components/admin/conversion/TopContentsTable'
 
@@ -20,13 +20,13 @@ const ORIGINS = ['revista', 'hotspot', 'whatsapp']
 const VARIANTS = ['A', 'B', 'C']
 
 export function FunnelReportTab() {
-  const [report, setReport] = useState<FunnelReport | null>(null)
+  const [report, setReport] = useState<FunilResponse | null>(null)
   const [loading, setLoading] = useState(true)
-  const [filters, setFilters] = useState<FunnelFilters>({})
+  const [filters, setFilters] = useState<FunilParams>({})
 
   const loadData = useCallback(async () => {
     try {
-      const data = await getFunnelReport(filters)
+      const data = await getFunilReport(filters)
       setReport(data)
     } catch {
       toast.error('Erro ao carregar relatório do funil.')
@@ -48,15 +48,19 @@ export function FunnelReportTab() {
     )
   }
 
-  const k = report.kpis
+  const s = report.summary
 
   const kpiCards = [
-    { label: 'Impressões', value: k.impressions.toLocaleString('pt-BR'), color: 'text-blue-600' },
-    { label: 'Cliques', value: k.clicks.toLocaleString('pt-BR'), color: 'text-green-600' },
-    { label: 'Pedidos', value: k.orders.toLocaleString('pt-BR'), color: 'text-orange-600' },
+    {
+      label: 'Impressões',
+      value: s.total_impressions.toLocaleString('pt-BR'),
+      color: 'text-blue-600',
+    },
+    { label: 'Cliques', value: s.total_clicks.toLocaleString('pt-BR'), color: 'text-green-600' },
+    { label: 'Pedidos', value: s.total_orders.toLocaleString('pt-BR'), color: 'text-orange-600' },
     {
       label: 'Taxa de Conversão',
-      value: `${k.conversion_rate.toFixed(2)}%`,
+      value: `${s.avg_conversion_rate.toFixed(2)}%`,
       color: 'text-purple-600',
     },
   ]
@@ -86,7 +90,7 @@ export function FunnelReportTab() {
           }
         >
           <SelectTrigger>
-            <SelectValue placeholder="Tipo" SelectValue />
+            <SelectValue placeholder="Tipo" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos</SelectItem>
@@ -146,9 +150,12 @@ export function FunnelReportTab() {
         ))}
       </div>
 
-      <FunnelCharts byOrigin={report.by_link_origin} byVariant={report.by_cta_variant} />
+      <FunnelCharts
+        byOrigin={report.breakdowns.by_link_origin}
+        byVariant={report.breakdowns.by_cta_variant}
+      />
 
-      <TopContentsTable contents={report.top_contents} />
+      <TopContentsTable contents={report.top_10_content} />
     </div>
   )
 }
