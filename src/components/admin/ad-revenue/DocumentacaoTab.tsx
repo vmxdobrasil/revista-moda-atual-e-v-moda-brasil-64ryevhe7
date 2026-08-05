@@ -1,81 +1,53 @@
-import { Card, CardContent } from '@/components/ui/card'
-import { FileText, ArrowRight, DollarSign, LayoutGrid, Truck, BarChart3 } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { FileText, Handshake, Package, BarChart3 } from 'lucide-react'
 
 const STEPS = [
   {
     icon: FileText,
     title: '1. Proposta',
-    desc: 'Selecione um anunciante e campanha na aba Propostas. O sistema faz auto-match com a edição mais relevante, calcula alcance e preço sugerido, e gera o texto comercial via IA.',
+    desc: 'O anunciante solicita uma proposta comercial. O sistema gera automaticamente um match score, preço sugerido e edição recomendada com base no perfil do anunciante e na audiência da edição.',
   },
   {
-    icon: DollarSign,
+    icon: Handshake,
     title: '2. Contrato',
-    desc: 'Após aprovação do anunciante, altere o status da proposta para "contrato" e defina a data de contrato. O preço sugerido pela precificação é persistido na proposta.',
+    desc: 'Após a proposta ser enviada e aceita pelo anunciante, o status é atualizado para "contrato". As datas de contrato e entrega são definidas nesta etapa.',
   },
   {
-    icon: Truck,
+    icon: Package,
     title: '3. Entrega',
-    desc: 'Na aba Entregas, acompanhe o branded content em produção. Defina a data de entrega e atualize o status conforme o conteúdo é produzido e publicado.',
+    desc: 'O conteúdo patrocinado é produzido e entregue dentro do prazo estabelecido. O status da campanha é acompanhado na aba "Entregas" com controle de prazos e atrasos.',
   },
   {
     icon: BarChart3,
     title: '4. Relatório',
-    desc: 'Na aba Relatórios, gere o relatório de performance por campanha, agregando alcance (social_posts + editions.view_count), engajamento e CPM.',
-  },
-]
-
-const FLOWS = [
-  {
-    icon: ArrowRight,
-    title: 'Gerar Proposta',
-    desc: 'Aba Propostas → preencha anunciante/campanha → opcionalmente escolha edição e formato → clique "Gerar Proposta". O hook /backend/v1/proposta faz o match, calcula alcance e preço, e gera o texto via IA.',
-  },
-  {
-    icon: DollarSign,
-    title: 'Precificar Anúncio',
-    desc: 'O hook /backend/v1/precificar calcula o preço sugerido com base no formato (base price), alcance (multiplicador) e posição (ajuste premium/desconto). A justificativa é gerada via IA.',
-  },
-  {
-    icon: LayoutGrid,
-    title: 'Gerenciar Inventário',
-    desc: 'Aba Inventário lista os espaços publicitários por edição (formato, posição, preço base). Use "Propor" para iniciar uma nova proposta a partir de um espaço.',
+    desc: 'Após a entrega, o desempenho da campanha é registrado na aba "Relatórios", incluindo alcance, investimento e status final para análise de ROI.',
   },
 ]
 
 export function DocumentacaoTab() {
   return (
-    <div className="space-y-6">
-      <Card className="rounded-xl border-none bg-white shadow-sm">
-        <CardContent className="p-5">
-          <h3 className="text-lg font-bold text-gray-800 mb-4">Fluxo de Monetização</h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {STEPS.map((s, i) => (
-              <div key={i} className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
-                    <s.icon className="w-4 h-4 text-orange-500" />
-                  </div>
-                  <p className="font-semibold text-gray-700 text-sm">{s.title}</p>
-                </div>
-                <p className="text-xs text-gray-500 leading-relaxed">{s.desc}</p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="rounded-xl border-none bg-white shadow-sm">
-        <CardContent className="p-5">
-          <h3 className="text-lg font-bold text-gray-800 mb-4">Como Usar</h3>
+    <div className="space-y-6 max-w-3xl">
+      <Card>
+        <CardHeader>
+          <CardTitle>Fluxo de Monetização</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-gray-600 mb-6">
+            O módulo Ad Revenue gerencia o ciclo completo de monetização e conteúdo patrocinado da
+            Revista MODA ATUAL, desde a proposta inicial até o relatório de desempenho pós-entrega.
+          </p>
           <div className="space-y-4">
-            {FLOWS.map((f, i) => (
-              <div key={i} className="flex gap-3">
-                <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
-                  <f.icon className="w-4 h-4 text-gray-500" />
+            {STEPS.map((step, i) => (
+              <div key={i} className="flex gap-4">
+                <div className="flex flex-col items-center">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-100 shrink-0">
+                    <step.icon className="w-5 h-5 text-orange-500" />
+                  </div>
+                  {i < STEPS.length - 1 && <div className="w-px h-8 bg-gray-200 mt-1" />}
                 </div>
-                <div>
-                  <p className="font-semibold text-gray-700 text-sm">{f.title}</p>
-                  <p className="text-xs text-gray-500 mt-1 leading-relaxed">{f.desc}</p>
+                <div className="pb-4">
+                  <h3 className="font-semibold text-gray-900">{step.title}</h3>
+                  <p className="text-sm text-gray-600 mt-1">{step.desc}</p>
                 </div>
               </div>
             ))}
@@ -83,26 +55,54 @@ export function DocumentacaoTab() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-xl border-none bg-white shadow-sm">
-        <CardContent className="p-5">
-          <h3 className="text-lg font-bold text-gray-800 mb-2">Formatos e Preços Base</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
-            {[
-              { f: 'Banner', p: 'R$ 500' },
-              { f: 'Capa', p: 'R$ 5.000' },
-              { f: 'Página Inteira', p: 'R$ 3.000' },
-              { f: 'Sponsored Content', p: 'R$ 2.500' },
-              { f: 'Story', p: 'R$ 800' },
-              { f: 'Editorial Destaque', p: 'R$ 4.000' },
-            ].map((item) => (
-              <div key={item.f} className="flex justify-between py-1.5 border-b">
-                <span className="text-gray-600">{item.f}</span>
-                <span className="font-medium text-gray-700">{item.p}</span>
-              </div>
-            ))}
-          </div>
-          <p className="text-xs text-gray-400 mt-3">
-            Preços ajustados por alcance (até +200%) e posição (premium +30%, rodapé -20%).
+      <Card>
+        <CardHeader>
+          <CardTitle>Status das Propostas</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm text-gray-600">
+          <p>
+            <strong>Rascunho:</strong> Proposta criada, ainda em elaboração.
+          </p>
+          <p>
+            <strong>Enviado:</strong> Proposta enviada ao anunciante, aguardando resposta.
+          </p>
+          <p>
+            <strong>Aceito:</strong> Anunciante aceitou a proposta.
+          </p>
+          <p>
+            <strong>Recusado:</strong> Anunciante recusou a proposta.
+          </p>
+          <p>
+            <strong>Contrato:</strong> Contrato assinado, campanha confirmada.
+          </p>
+          <p>
+            <strong>Entregue:</strong> Conteúdo patrocinado entregue e publicado.
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Formatos Disponíveis</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm text-gray-600">
+          <p>
+            <strong>Banner:</strong> Banner publicitário em páginas da edição.
+          </p>
+          <p>
+            <strong>Capa:</strong> Patrocínio da capa da edição.
+          </p>
+          <p>
+            <strong>Página Inteira:</strong> Página publicitária inteira.
+          </p>
+          <p>
+            <strong>Conteúdo Patrocinado:</strong> Artigo ou matéria patrocinada.
+          </p>
+          <p>
+            <strong>Story:</strong> Story no Instagram ou plataforma similar.
+          </p>
+          <p>
+            <strong>Editorial Destaque:</strong> Destaque editorial com branding.
           </p>
         </CardContent>
       </Card>

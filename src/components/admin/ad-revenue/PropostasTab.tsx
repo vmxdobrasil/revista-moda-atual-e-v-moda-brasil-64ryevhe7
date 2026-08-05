@@ -1,9 +1,14 @@
-import { useState, useMemo } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from '@/components/ui/table'
 import {
   Select,
   SelectContent,
@@ -11,239 +16,177 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Loader2, Sparkles, Trash2, Eye } from 'lucide-react'
+import { Loader2, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
-  generateProposal,
-  updateProposal,
+  getProposals,
   deleteProposal,
-  formatCurrency,
-  AD_FORMATS,
+  updateProposal,
   PROPOSAL_STATUSES,
+  PROPOSAL_STATUS_LABELS,
+  FORMAT_LABELS,
   type AdProposal,
-} from '@/services/ad-revenue'
-import type { Edition } from '@/services/magazine'
-import type { Advertisement } from '@/services/advertisements'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+} from '@/services/ad-proposals'
+import { getErrorMessage } from '@/lib/pocketbase/errors'
+import { useRealtime } from '@/hooks/use-realtime'
+import { PropostaFormDialog } from './PropostaFormDialog'
 
-const STATUS_COLORS: Record<string, string> = {
-  rascunho: 'bg-gray-100 text-gray-700',
-  enviado: 'bg-blue-100 text-blue-700',
-  aceito: 'bg-green-100 text-green-700',
-  recusado: 'bg-red-100 text-red-700',
-  contrato: 'bg-yellow-100 text-yellow-700',
-  entregue: 'bg-purple-100 text-purple-700',
-}
+export function PropostasTab() {
+  const [proposals, setProposals] = useState<AdProposal[]>([])
+  const [loading, setLoading] = useState(true)
+  const [dialogOpen, setDialogOpen] = useState(false)
 
-interface Props {
-  proposals: AdProposal[]
-  editions: Edition[]
-  ads: Advertisement[]
-  onRefresh: () => void
-}
-
-export function PropostasTab({ proposals, editions, ads, onRefresh }: Props) {
-  const [advertiser, setAdvertiser] = useState('')
-  const [campaign, setCampaign] = useState('')
-  const [editionId, setEditionId] = useState('')
-  const [format, setFormat] = useState('banner')
-  const [generating, setGenerating] = useState(false)
-  const [preview, setPreview] = useState<AdProposal | null>(null)
-
-  const sorted = useMemo(
-    () =>
-      [...proposals].sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime()),
-    [proposals],
-  )
-
-  const handleGenerate = async () => {
-    if (!advertiser.trim()) {
-      toast.error('Informe o anunciante.')
-      return
-    }
-    setGenerating(true)
+  const loadData = async () => {
     try {
-      await generateProposal({
-        advertiser: advertiser.trim(),
-        campaign: campaign.trim(),
-        edition_id: editionId || undefined,
-        format,
-      })
-      toast.success('Proposta gerada!')
-      setAdvertiser('')
-      setCampaign('')
-      onRefresh()
+      setProposals(await getProposals())
     } catch {
-      toast.error('Erro ao gerar proposta.')
+      toast.error('Erro ao carregar propostas')
     } finally {
-      setGenerating(false)
+      setLoading(false)
     }
   }
 
-  const handleStatus = async (id: string, status: string) => {
+  useEffect(() => {
+    loadData()
+  }, [])
+  useRealtime('ad_proposals', () => {
+    loadData()
+  })
+
+  const handleStatusChange = async (id: string, status: string) => {
     try {
       await updateProposal(id, { status })
-      onRefresh()
-    } catch {
-      toast.error('Erro ao atualizar status.')
+      toast.success('Status atualizado')
+    } catch (err) {
+      toast.error(getErrorMessage(err))
+    }
+  }
+
+  const handleDateChange = async (
+    id: string,
+    field: 'contract_date' | 'delivery_date',
+    value: string,
+  ) => {
+    if (!value) return
+    try {
+      await updateProposal(id, { [field]: value })
+      toast.success('Data atualizada')
+    } catch (err) {
+      toast.error(getErrorMessage(err))
     }
   }
 
   const handleDelete = async (id: string) => {
+    if (!confirm('Excluir esta proposta?')) return
     try {
       await deleteProposal(id)
-      toast.success('Proposta removida.')
-      onRefresh()
-    } catch {
-      toast.error('Erro ao remover.')
+      toast.success('Proposta excluída')
+    } catch (err) {
+      toast.error(getErrorMessage(err))
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
+      </div>
+    )
   }
 
   return (
     <div className="space-y-4">
-      <Card className="rounded-xl border-none bg-white shadow-sm">
-        <CardContent className="p-4 space-y-3">
-          <p className="text-sm font-semibold text-gray-700">Gerar Nova Proposta</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <div>
-              <Label className="text-xs">Anunciante</Label>
-              <Input
-                value={advertiser}
-                onChange={(e) => setAdvertiser(e.target.value)}
-                placeholder="Nome do anunciante"
-              />
-            </div>
-            <div>
-              <Label className="text-xs">Campanha</Label>
-              <Input
-                value={campaign}
-                onChange={(e) => setCampaign(e.target.value)}
-                placeholder="Nome da campanha"
-              />
-            </div>
-            <div>
-              <Label className="text-xs">Edição (opcional)</Label>
-              <Select value={editionId} onValueChange={setEditionId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Auto-match" />
-                </SelectTrigger>
-                <SelectContent>
-                  {editions.map((ed) => (
-                    <SelectItem key={ed.id} value={ed.id}>
-                      {ed.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-xs">Formato</Label>
-              <Select value={format} onValueChange={setFormat}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {AD_FORMATS.map((f) => (
-                    <SelectItem key={f.value} value={f.value}>
-                      {f.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <Button
-            onClick={handleGenerate}
-            disabled={generating}
-            className="bg-orange-500 hover:bg-orange-600 text-white"
-          >
-            {generating ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <Sparkles className="w-4 h-4 mr-2" />
-            )}
-            Gerar Proposta
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="flex justify-end">
+        <Button onClick={() => setDialogOpen(true)} className="gap-2">
+          <Plus className="w-4 h-4" /> Gerar Proposta
+        </Button>
+      </div>
 
-      <div className="grid grid-cols-1 gap-3">
-        {sorted.map((p) => (
-          <Card key={p.id} className="rounded-xl border-none bg-white shadow-sm">
-            <CardContent className="p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="flex-1 min-w-[200px]">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="font-semibold text-gray-800">{p.advertiser}</p>
-                    <Badge variant="secondary" className={STATUS_COLORS[p.status] || ''}>
-                      {p.status}
-                    </Badge>
-                  </div>
-                  {p.campaign && <p className="text-sm text-gray-500">{p.campaign}</p>}
-                  <div className="flex flex-wrap gap-3 mt-2 text-xs text-gray-400">
-                    <span>Match: {p.match_score}/100</span>
-                    <span>Preço: {formatCurrency(p.suggested_price)}</span>
-                    <span>Reach: {p.audience_reach?.toLocaleString('pt-BR')}</span>
-                    <span>Formato: {p.format}</span>
-                    {p.expand?.edition && <span>Edição: {p.expand.edition.title}</span>}
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  <Select value={p.status} onValueChange={(v) => handleStatus(p.id, v)}>
-                    <SelectTrigger className="w-[130px] h-8 text-xs">
+      <div className="rounded-lg border overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Anunciante</TableHead>
+              <TableHead>Campanha</TableHead>
+              <TableHead>Edição</TableHead>
+              <TableHead>Formato</TableHead>
+              <TableHead>Alcance</TableHead>
+              <TableHead>Preço</TableHead>
+              <TableHead>Match</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Contrato</TableHead>
+              <TableHead>Entrega</TableHead>
+              <TableHead className="w-10"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {proposals.map((p) => (
+              <TableRow key={p.id}>
+                <TableCell className="font-medium">{p.advertiser}</TableCell>
+                <TableCell>{p.campaign || '-'}</TableCell>
+                <TableCell className="max-w-[120px] truncate">
+                  {p.expand?.edition?.title || '-'}
+                </TableCell>
+                <TableCell>{p.format ? FORMAT_LABELS[p.format] || p.format : '-'}</TableCell>
+                <TableCell>{p.audience_reach?.toLocaleString('pt-BR') || '-'}</TableCell>
+                <TableCell>
+                  {p.suggested_price ? `R$ ${p.suggested_price.toLocaleString('pt-BR')}` : '-'}
+                </TableCell>
+                <TableCell>
+                  {p.match_score ? `${(p.match_score * 100).toFixed(0)}%` : '-'}
+                </TableCell>
+                <TableCell>
+                  <Select
+                    value={p.status || 'rascunho'}
+                    onValueChange={(v) => handleStatusChange(p.id, v)}
+                  >
+                    <SelectTrigger className="w-32 h-8">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {PROPOSAL_STATUSES.map((s) => (
                         <SelectItem key={s} value={s}>
-                          {s}
+                          {PROPOSAL_STATUS_LABELS[s]}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <Button size="icon" variant="ghost" onClick={() => setPreview(p)}>
-                    <Eye className="w-4 h-4" />
-                  </Button>
-                  <Button size="icon" variant="ghost" onClick={() => handleDelete(p.id)}>
+                </TableCell>
+                <TableCell>
+                  <Input
+                    type="date"
+                    value={p.contract_date?.slice(0, 10) || ''}
+                    onChange={(e) => handleDateChange(p.id, 'contract_date', e.target.value)}
+                    className="w-36 h-8"
+                  />
+                </TableCell>
+                <TableCell>
+                  <Input
+                    type="date"
+                    value={p.delivery_date?.slice(0, 10) || ''}
+                    onChange={(e) => handleDateChange(p.id, 'delivery_date', e.target.value)}
+                    className="w-36 h-8"
+                  />
+                </TableCell>
+                <TableCell>
+                  <Button variant="ghost" size="icon" onClick={() => handleDelete(p.id)}>
                     <Trash2 className="w-4 h-4 text-red-500" />
                   </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-        {sorted.length === 0 && (
-          <p className="text-center text-gray-400 py-8">Nenhuma proposta encontrada.</p>
-        )}
+                </TableCell>
+              </TableRow>
+            ))}
+            {proposals.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={11} className="text-center text-gray-400 py-8">
+                  Nenhuma proposta encontrada
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
 
-      {preview && (
-        <Dialog open={!!preview} onOpenChange={(o) => !o && setPreview(null)}>
-          <DialogContent className="sm:max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Proposta — {preview.advertiser}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-2 text-sm max-h-[60vh] overflow-y-auto">
-              {preview.proposal_data &&
-                typeof preview.proposal_data === 'object' &&
-                Object.entries(preview.proposal_data).map(([k, v]) => (
-                  <div key={k}>
-                    <span className="font-semibold text-gray-700">{k.replace(/_/g, ' ')}:</span>{' '}
-                    <span className="text-gray-600">{String(v)}</span>
-                  </div>
-                ))}
-              <div className="pt-2 border-t">
-                <span className="font-semibold text-gray-700">Preço sugerido:</span>{' '}
-                {formatCurrency(preview.suggested_price)}
-              </div>
-              <div>
-                <span className="font-semibold text-gray-700">Match score:</span>{' '}
-                {preview.match_score}/100
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+      <PropostaFormDialog open={dialogOpen} onOpenChange={setDialogOpen} onCreated={loadData} />
     </div>
   )
 }

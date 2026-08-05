@@ -1,86 +1,147 @@
-import { useMemo } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import { useState, useEffect, useMemo } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Loader2, TrendingUp, FileText, Package, Send } from 'lucide-react'
 import { MetricCard } from '@/components/admin/MetricCard'
-import { formatCurrency, PROPOSAL_STATUSES, AD_STATUSES } from '@/services/ad-revenue'
-import type { AdProposal } from '@/services/ad-revenue'
-import type { Advertisement } from '@/services/advertisements'
-import type { Edition } from '@/services/magazine'
-import { DollarSign, FileText, Truck, LayoutGrid } from 'lucide-react'
+import {
+  getProposals,
+  PROPOSAL_STATUS_LABELS,
+  STATUS_BADGE_CLASSES,
+  FORMAT_LABELS,
+  AD_FORMATS,
+  type AdProposal,
+} from '@/services/ad-proposals'
+import { getAllAds, type Advertisement } from '@/services/advertisements'
+import { useRealtime } from '@/hooks/use-realtime'
 
-interface Props {
-  proposals: AdProposal[]
-  ads: Advertisement[]
-  editions: Edition[]
-}
+export function OverviewTab() {
+  const [proposals, setProposals] = useState<AdProposal[]>([])
+  const [ads, setAds] = useState<Advertisement[]>([])
+  const [loading, setLoading] = useState(true)
 
-export function OverviewTab({ proposals, ads, editions }: Props) {
-  const stats = useMemo(() => {
-    const totalRevenue = proposals.reduce((sum, p) => sum + (p.suggested_price || 0), 0)
-    const byStatus: Record<string, number> = {}
-    for (const p of proposals) {
-      byStatus[p.status] = (byStatus[p.status] || 0) + 1
+  const loadData = async () => {
+    try {
+      const [p, a] = await Promise.all([getProposals(), getAllAds()])
+      setProposals(p)
+      setAds(a)
+    } catch {
+      /* handled by empty state */
+    } finally {
+      setLoading(false)
     }
-    const inDelivery = proposals.filter((p) => ['contrato', 'entregue'].includes(p.status)).length
-    const adsInDelivery = ads.filter((a) =>
-      ['em_entrega', 'entregue'].includes(a.status || ''),
-    ).length
-    const inventoryCount = editions.length * 6
-    return { totalRevenue, byStatus, inDelivery: inDelivery + adsInDelivery, inventoryCount }
-  }, [proposals, ads, editions])
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
+  useRealtime('ad_proposals', () => {
+    loadData()
+  })
+  useRealtime('advertisements', () => {
+    loadData()
+  })
+
+  const potentialRevenue = useMemo(
+    () =>
+      proposals
+        .filter((p) => ['aceito', 'contrato', 'entregue'].includes(p.status || ''))
+        .reduce((sum, p) => sum + (p.suggested_price || 0), 0),
+    [proposals],
+  )
+
+  const campaignsInDelivery = useMemo(
+    () => ads.filter((a) => a.status === 'em_entrega').length,
+    [ads],
+  )
+
+  const proposalsByStatus = useMemo(() => {
+    const counts: Record<string, number> = {}
+    proposals.forEach((p) => {
+      const s = p.status || 'rascunho'
+      counts[s] = (counts[s] || 0) + 1
+    })
+    return counts
+  }, [proposals])
+
+  const inventoryByFormat = useMemo(
+    () =>
+      AD_FORMATS.map((fmt) => ({
+        format: fmt,
+        occupied: proposals.filter((p) => p.format === fmt).length,
+      })),
+    [proposals],
+  )
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <MetricCard
-          icon={DollarSign}
+          icon={TrendingUp}
           label="Receita Potencial"
-          value={formatCurrency(stats.totalRevenue)}
-          color="hsl(140,70%,45%)"
+          value={`R$ ${potentialRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+          color="#f97316"
         />
         <MetricCard
           icon={FileText}
-          label="Propostas"
+          label="Total Propostas"
           value={proposals.length}
-          color="hsl(24,95%,53%)"
+          color="#3b82f6"
         />
-        <MetricCard
-          icon={Truck}
-          label="Em Entrega"
-          value={stats.inDelivery}
-          color="hsl(280,65%,55%)"
-        />
-        <MetricCard
-          icon={LayoutGrid}
-          label="Espaços Inventário"
-          value={stats.inventoryCount}
-          color="hsl(200,80%,50%)"
-        />
+        <MetricCard icon={Send} label="Em Entrega" value={campaignsInDelivery} color="#eab308" />
+        <MetricCard icon={Package} label="Total Anúncios" value={ads.length} color="#22c55e" />
       </div>
-      <Card className="rounded-xl border-none bg-white shadow-sm">
-        <CardContent className="p-5">
-          <p className="text-sm font-semibold text-gray-700 mb-3">Propostas por Status</p>
-          <div className="flex flex-wrap gap-2">
-            {PROPOSAL_STATUSES.map((s) => (
-              <Badge key={s} variant="secondary" className="bg-gray-100 text-gray-700">
-                {s}: {stats.byStatus[s] || 0}
-              </Badge>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Propostas por Status</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {Object.entries(PROPOSAL_STATUS_LABELS).map(([status, label]) => (
+              <div key={status} className="flex items-center justify-between">
+                <Badge
+                  className={STATUS_BADGE_CLASSES[status] || 'bg-gray-100 text-gray-700'}
+                  variant="secondary"
+                >
+                  {label}
+                </Badge>
+                <span className="font-semibold text-gray-700">
+                  {proposalsByStatus[status] || 0}
+                </span>
+              </div>
             ))}
-          </div>
-        </CardContent>
-      </Card>
-      <Card className="rounded-xl border-none bg-white shadow-sm">
-        <CardContent className="p-5">
-          <p className="text-sm font-semibold text-gray-700 mb-3">Anúncios por Status</p>
-          <div className="flex flex-wrap gap-2">
-            {AD_STATUSES.map((s) => (
-              <Badge key={s} variant="secondary" className="bg-gray-100 text-gray-700">
-                {s}: {ads.filter((a) => a.status === s).length}
-              </Badge>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Inventário por Formato</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {inventoryByFormat.map(({ format, occupied }) => (
+              <div key={format} className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">{FORMAT_LABELS[format]}</span>
+                <Badge
+                  variant="secondary"
+                  className={
+                    occupied > 0 ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
+                  }
+                >
+                  {occupied > 0 ? `${occupied} ocupado(s)` : 'Disponível'}
+                </Badge>
+              </div>
             ))}
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
