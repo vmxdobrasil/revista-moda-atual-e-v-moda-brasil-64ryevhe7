@@ -1,29 +1,37 @@
 routerAdd(
   'POST',
-  '/backend/v1/hotspot-click',
+  '/backend/v1/hotspot/click',
   (e) => {
+    const body = e.requestInfo().body || {}
+
+    if (!body.hotspot_id || !body.page_id) {
+      return e.badRequestError('hotspot_id and page_id are required')
+    }
+
     try {
-      const body = e.requestInfo().body || {}
-      const hotspotId = body.hotspot_id
+      const col = $app.findCollectionByNameOrId('magazine_pages')
+      const record = $app.findRecordById('magazine_pages', body.page_id)
 
-      if (!hotspotId) {
-        return e.badRequestError('hotspot_id is required')
+      const clicks = record.getInt('hotspot_clicks') || 0
+      record.set('hotspot_clicks', clicks + 1)
+
+      if (body.hotspot_id) {
+        const hotspots = record.get('hotspots') || []
+        if (Array.isArray(hotspots)) {
+          const updated = hotspots.map(function (h) {
+            if (h && h.id === body.hotspot_id) {
+              h.clicks = (h.clicks || 0) + 1
+            }
+            return h
+          })
+          record.set('hotspots', updated)
+        }
       }
 
-      let record
-      try {
-        record = $app.findRecordById('page_hotspots', hotspotId)
-      } catch (err) {
-        return e.notFoundError('hotspot not found')
-      }
-
-      const current = record.getInt('click_count') || 0
-      record.set('click_count', current + 1)
       $app.saveNoValidate(record)
 
-      return e.json(200, { ok: true, click_count: current + 1 })
+      return e.json(200, { success: true, clicks: clicks + 1 })
     } catch (err) {
-      $app.logger().error('hotspot_click_track failed', 'error', String(err))
       return e.json(500, { error: 'failed to track click' })
     }
   },
