@@ -27,14 +27,20 @@ export interface NewsletterCampaign {
   title: string
   subject: string
   preheader: string
-  content: NewsletterContent
+  content?: NewsletterContent
   segments: string[]
   status: string
   edition?: string
   audience_size: number
   created: string
+  updated?: string
+  scheduled_at?: string
+  send_date?: string
   opened_count?: number
+  open_rate?: number
   click_count?: number
+  click_rate?: number
+  unsubscribe_count?: number
 }
 
 export interface Subscriber {
@@ -49,6 +55,9 @@ export interface Subscriber {
   source?: string
   opened_count?: number
   clicked_count?: number
+  last_opened_at?: string
+  last_clicked_at?: string
+  unsubscribed_at?: string
   created: string
   updated: string
 }
@@ -136,4 +145,23 @@ export const deleteSubscriber = async (id: string) => {
 
 export const deleteSequence = async (id: string) => {
   return pb.collection('newsletter_sequences').delete(id)
+}
+
+export const createCampaign = async (
+  data: Record<string, unknown>,
+): Promise<NewsletterCampaign> => {
+  return pb.collection('newsletter_campaigns').create(data)
+}
+
+export const createSequence = async (
+  data: Record<string, unknown>,
+): Promise<NewsletterSequence> => {
+  return pb.collection('newsletter_sequences').create(data)
+}
+
+export const updateSequence = async (
+  id: string,
+  data: Record<string, unknown>,
+): Promise<NewsletterSequence> => {
+  return pb.collection('newsletter_sequences').update(id, data)
 }
