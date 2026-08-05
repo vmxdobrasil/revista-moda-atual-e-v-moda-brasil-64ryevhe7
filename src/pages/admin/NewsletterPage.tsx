@@ -20,6 +20,7 @@ import { SegmentationTab } from '@/components/admin/newsletter/SegmentationTab'
 import { MetricsTab } from '@/components/admin/newsletter/MetricsTab'
 import { MonthlyReportTab } from '@/components/admin/newsletter/MonthlyReportTab'
 import { SubscribersTab } from '@/components/admin/newsletter/SubscribersTab'
+import { DocumentationTab } from '@/components/admin/newsletter/DocumentationTab'
 
 export default function NewsletterPage() {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([])
@@ -95,6 +96,7 @@ export default function NewsletterPage() {
           <TabsTrigger value="metrics">Métricas</TabsTrigger>
           <TabsTrigger value="subscribers">Assinantes</TabsTrigger>
           <TabsTrigger value="report">Relatório Mensal</TabsTrigger>
+          <TabsTrigger value="documentation">Documentação</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4">
@@ -129,6 +131,10 @@ export default function NewsletterPage() {
 
         <TabsContent value="report" className="mt-4">
           <MonthlyReportTab subscribers={subscribers} campaigns={campaigns} />
+        </TabsContent>
+
+        <TabsContent value="documentation" className="mt-4">
+          <DocumentationTab />
         </TabsContent>
       </Tabs>
     </div>
