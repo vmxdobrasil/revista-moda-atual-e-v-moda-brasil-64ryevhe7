@@ -32,6 +32,7 @@ import {
   type NewsletterCampaign,
   type EditionOption,
 } from '@/services/newsletter'
+import { CampaignPreview } from './CampaignPreview'
 
 const STATUS_COLORS: Record<string, string> = {
   rascunho: 'bg-gray-100 text-gray-700',
@@ -50,7 +51,6 @@ interface CampaignsTabProps {
   onGenerate: (editionId: string) => void
   generating: boolean
   onRefresh: () => void
-  onPreview: (campaign: NewsletterCampaign) => void
 }
 
 export function CampaignsTab({
@@ -59,10 +59,10 @@ export function CampaignsTab({
   onGenerate,
   generating,
   onRefresh,
-  onPreview,
 }: CampaignsTabProps) {
   const [selectedEdition, setSelectedEdition] = useState('')
   const [editingCampaign, setEditingCampaign] = useState<NewsletterCampaign | null>(null)
+  const [previewCampaign, setPreviewCampaign] = useState<NewsletterCampaign | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
   const [form, setForm] = useState({
     title: '',
@@ -109,8 +109,8 @@ export function CampaignsTab({
     }
   }
 
-  const handleExportHtml = (campaign: NewsletterCampaign) => {
-    const html = exportCampaignHtml(campaign)
+  const handleExportHtml = async (campaign: NewsletterCampaign) => {
+    const html = await exportCampaignHtml(campaign)
     const blob = new Blob([html], { type: 'text/html' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -312,7 +312,7 @@ export function CampaignsTab({
                       <SelectItem value="falhou">falhou</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button size="icon" variant="ghost" onClick={() => onPreview(camp)}>
+                  <Button size="icon" variant="ghost" onClick={() => setPreviewCampaign(camp)}>
                     <Eye className="w-4 h-4" />
                   </Button>
                   <Button size="icon" variant="ghost" onClick={() => setEditingCampaign(camp)}>
@@ -339,6 +339,10 @@ export function CampaignsTab({
           <p className="text-center text-gray-400 py-8">Nenhuma campanha encontrada.</p>
         )}
       </div>
+
+      {previewCampaign && (
+        <CampaignPreview campaign={previewCampaign} onClose={() => setPreviewCampaign(null)} />
+      )}
 
       {editingCampaign && (
         <Dialog open={!!editingCampaign} onOpenChange={(o) => !o && setEditingCampaign(null)}>

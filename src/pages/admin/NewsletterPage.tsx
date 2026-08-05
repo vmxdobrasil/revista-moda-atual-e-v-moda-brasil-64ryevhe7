@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
-import { Loader2, Eye } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRealtime } from '@/hooks/use-realtime'
 import {
@@ -12,7 +10,6 @@ import {
   getEditionsForSelect,
   generateNewsletter,
   type Subscriber,
-  type NewsletterCampaign,
   type NewsletterSequence,
   type EditionOption,
 } from '@/services/newsletter'
@@ -31,7 +28,6 @@ export default function NewsletterPage() {
   const [editions, setEditions] = useState<EditionOption[]>([])
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
-  const [previewCampaign, setPreviewCampaign] = useState<NewsletterCampaign | null>(null)
 
   const loadData = useCallback(async () => {
     try {
@@ -99,7 +95,6 @@ export default function NewsletterPage() {
           <TabsTrigger value="metrics">Métricas</TabsTrigger>
           <TabsTrigger value="subscribers">Assinantes</TabsTrigger>
           <TabsTrigger value="report">Relatório Mensal</TabsTrigger>
-          {previewCampaign && <TabsTrigger value="preview">Preview</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="overview" className="mt-4">
@@ -113,7 +108,6 @@ export default function NewsletterPage() {
             onGenerate={handleGenerate}
             generating={generating}
             onRefresh={loadData}
-            onPreview={setPreviewCampaign}
           />
         </TabsContent>
 
@@ -136,78 +130,6 @@ export default function NewsletterPage() {
         <TabsContent value="report" className="mt-4">
           <MonthlyReportTab subscribers={subscribers} campaigns={campaigns} />
         </TabsContent>
-
-        {previewCampaign && (
-          <TabsContent value="preview" className="mt-4">
-            <Card className="rounded-xl border-none bg-white shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Eye className="w-5 h-5 text-orange-500" />
-                  Preview: {previewCampaign.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <p className="text-xs text-gray-400 uppercase">Assunto</p>
-                  <p className="font-medium text-gray-800">{previewCampaign.subject}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400 uppercase">Preheader</p>
-                  <p className="text-gray-600">{previewCampaign.preheader}</p>
-                </div>
-                {previewCampaign.content?.header && (
-                  <div className="bg-orange-50 rounded-lg p-4">
-                    <p className="font-bold text-gray-800">
-                      {previewCampaign.content.header.title}
-                    </p>
-                    {previewCampaign.content.header.description && (
-                      <p className="text-sm text-gray-600 mt-1">
-                        {previewCampaign.content.header.description}
-                      </p>
-                    )}
-                  </div>
-                )}
-                {previewCampaign.content?.intro && (
-                  <div>
-                    <p className="text-xs text-gray-400 uppercase">Introdução</p>
-                    <p className="text-gray-700">{previewCampaign.content.intro}</p>
-                  </div>
-                )}
-                {previewCampaign.content?.sections &&
-                  previewCampaign.content.sections.length > 0 && (
-                    <div className="space-y-3">
-                      <p className="text-xs text-gray-400 uppercase">Seções</p>
-                      {previewCampaign.content.sections.map((section, idx) => (
-                        <div key={idx} className="border-l-2 border-orange-200 pl-4">
-                          <p className="font-medium text-gray-800">{section.title}</p>
-                          <p className="text-sm text-gray-600">{section.summary}</p>
-                          {section.products && section.products.length > 0 && (
-                            <div className="mt-2 flex flex-wrap gap-2">
-                              {section.products.map((prod, pidx) => (
-                                <Badge key={pidx} variant="outline" className="text-xs">
-                                  {prod.name} — {prod.price}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                {previewCampaign.content?.cta && (
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <p className="text-xs text-gray-400 uppercase">CTA</p>
-                    <p className="text-gray-700">{previewCampaign.content.cta}</p>
-                  </div>
-                )}
-                <div className="flex items-center gap-3 text-xs text-gray-400">
-                  <span>Audiência: {previewCampaign.audience_size || 0}</span>
-                  <span>Segmentos: {(previewCampaign.segments || []).join(', ')}</span>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        )}
       </Tabs>
     </div>
   )

@@ -1,4 +1,10 @@
 import pb from '@/lib/pocketbase/client'
+import { getEdition, getEditionPages, getHotspots, getFileUrl } from '@/services/magazine'
+import {
+  buildNewsletterHtml,
+  type EditionPreviewData,
+  type ProductCallout,
+} from '@/lib/newsletter-template'
 
 export interface NewsletterProductCallout {
   name: string
@@ -188,25 +194,38 @@ export const duplicateCampaign = async (id: string): Promise<NewsletterCampaign>
   return pb.collection('newsletter_campaigns').create(data)
 }
 
-export const exportCampaignHtml = (campaign: NewsletterCampaign): string => {
-  const c = campaign.content
-  const sections = (c?.sections || [])
-    .map(
-      (s) => `
-    <div style="margin-bottom:24px;padding:16px;border-left:3px solid #f97316;">
-      <h3 style="margin:0 0 8px;font-size:18px;color:#1f2937;">${s.title}</h3>
-      <p style="margin:0 0 8px;font-size:14px;color:#4b5563;">${s.summary}</p>
-      ${s.link ? `<a href="${s.link}" style="font-size:13px;color:#f97316;">Ver mais →</a>` : ''}
-    </div>`,
-    )
-    .join('')
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${campaign.subject}</title></head>
-<body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-  ${c?.header ? `<div style="background:#fff7ed;padding:20px;border-radius:8px;margin-bottom:16px;"><h1 style="margin:0;font-size:24px;color:#1f2937;">${c.header.title}</h1><p style="margin:4px 0 0;font-size:14px;color:#6b7280;">${c.header.description || ''}</p></div>` : ''}
-  ${c?.intro ? `<p style="font-size:15px;color:#374151;line-height:1.6;">${c.intro}</p>` : ''}
-  ${sections}
-  ${c?.cta ? `<div style="background:#f3f4f6;padding:16px;border-radius:8px;text-align:center;margin-top:24px;"><p style="margin:0;font-size:16px;color:#1f2937;">${c.cta}</p></div>` : ''}
-</body></html>`
+export async function getCampaignPreviewData(
+  campaign: NewsletterCampaign,
+): Promise<{ edition: EditionPreviewData | null; products: ProductCallout[] }> {
+  if (!campaign.edition) return { edition: null, products: [] }
+  try {
+    const edition = await getEdition(campaign.edition)
+    const pages = await getEditionPages(campaign.edition)
+    const hotspots = await getHotspots(campaign.edition, pages)
+    const cover =
+      edition.cover_url ||
+      (edition.cover_file ? getFileUrl(edition, edition.cover_file) : '') ||
+      (edition.cover_image ? getFileUrl(edition, edition.cover_image) : '')
+    const products: ProductCallout[] = hotspots
+      .filter((h) => h.expand?.product)
+      .map((h) => ({
+        name: h.expand!.product!.name,
+        price: h.expand!.product!.price,
+        link: h.link || h.expand!.product!.link || '',
+        vendor: h.expand!.product!.vendor,
+      }))
+    return {
+      edition: { title: edition.title, description: edition.description, cover_url: cover },
+      products,
+    }
+  } catch {
+    return { edition: null, products: [] }
+  }
+}
+
+export async function exportCampaignHtml(campaign: NewsletterCampaign): Promise<string> {
+  const { edition, products } = await getCampaignPreviewData(campaign)
+  return buildNewsletterHtml(campaign, edition, products)
 }
 
 export const exportCampaignCsv = (campaign: NewsletterCampaign): string => {
