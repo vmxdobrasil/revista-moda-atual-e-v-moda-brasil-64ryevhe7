@@ -1,9 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRealtime } from '@/hooks/use-realtime'
-import { getAlertas, type AlertasReport, type AlertaParams } from '@/services/market-watch'
+import {
+  getAlertas,
+  getCompetitorsList,
+  type AlertasReport,
+  type AlertaParams,
+} from '@/services/market-watch'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Input } from '@/components/ui/input'
 import { Loader2, AlertCircle, Info, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -36,6 +41,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 export function SignalsPanel() {
   const [report, setReport] = useState<AlertasReport | null>(null)
+  const [competitors, setCompetitors] = useState<Array<{ id: string; name: string }>>([])
   const [loading, setLoading] = useState(true)
   const [filters, setFilters] = useState<AlertaParams>({})
 
@@ -49,6 +55,12 @@ export function SignalsPanel() {
       setLoading(false)
     }
   }, [filters])
+
+  useEffect(() => {
+    getCompetitorsList()
+      .then(setCompetitors)
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     loadData()
@@ -65,60 +77,83 @@ export function SignalsPanel() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 col-span-2 md:col-span-4">
-          <Select
-            onValueChange={(v) =>
-              setFilters((f) => ({ ...f, signal_type: v === 'all' ? undefined : v }))
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Tipo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              {Object.entries(TYPE_LABELS).map(([v, l]) => (
-                <SelectItem key={v} value={v}>
-                  {l}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            onValueChange={(v) =>
-              setFilters((f) => ({ ...f, severity: v === 'all' ? undefined : v }))
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Severidade" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas</SelectItem>
-              {Object.entries(SEVERITY_CONFIG).map(([v, c]) => (
-                <SelectItem key={v} value={v}>
-                  {c.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            onValueChange={(v) =>
-              setFilters((f) => ({ ...f, status: v === 'all' ? undefined : v }))
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              {Object.entries(STATUS_LABELS).map(([v, l]) => (
-                <SelectItem key={v} value={v}>
-                  {l}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <Select
+          onValueChange={(v) =>
+            setFilters((f) => ({ ...f, signal_type: v === 'all' ? undefined : v }))
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Tipo" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            {Object.entries(TYPE_LABELS).map(([v, l]) => (
+              <SelectItem key={v} value={v}>
+                {l}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          onValueChange={(v) =>
+            setFilters((f) => ({ ...f, severity: v === 'all' ? undefined : v }))
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Severidade" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas</SelectItem>
+            {Object.entries(SEVERITY_CONFIG).map(([v, c]) => (
+              <SelectItem key={v} value={v}>
+                {c.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          onValueChange={(v) => setFilters((f) => ({ ...f, status: v === 'all' ? undefined : v }))}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            {Object.entries(STATUS_LABELS).map(([v, l]) => (
+              <SelectItem key={v} value={v}>
+                {l}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          onValueChange={(v) =>
+            setFilters((f) => ({ ...f, competitor: v === 'all' ? undefined : v }))
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Concorrente" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            {competitors.map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                {c.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Input
+          type="date"
+          placeholder="De"
+          onChange={(e) => setFilters((f) => ({ ...f, from: e.target.value || undefined }))}
+        />
+        <Input
+          type="date"
+          placeholder="Até"
+          onChange={(e) => setFilters((f) => ({ ...f, to: e.target.value || undefined }))}
+        />
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

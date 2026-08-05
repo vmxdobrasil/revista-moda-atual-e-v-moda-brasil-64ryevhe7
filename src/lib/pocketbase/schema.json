@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-05T19:27:56.790Z",
+  "generatedAt": "2026-08-05T20:26:28.066Z",
   "collections": [
     {
       "name": "users",
@@ -2586,7 +2586,8 @@
         "CREATE INDEX idx_market_signals_signal_type ON market_signals (signal_type)",
         "CREATE INDEX idx_market_signals_severity ON market_signals (severity)",
         "CREATE INDEX idx_market_signals_status ON market_signals (status)",
-        "CREATE INDEX idx_market_signals_detected_at ON market_signals (detected_at)"
+        "CREATE INDEX idx_market_signals_detected_at ON market_signals (detected_at)",
+        "CREATE INDEX `idx_market_signals_competitor` ON `market_signals` (competitor)"
       ]
     }
   ]

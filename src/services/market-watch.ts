@@ -3,6 +3,7 @@ import { streamAgentChat } from '@/lib/skipAi'
 
 export interface CompetitorItem {
   id: string
+  rank: number
   name: string
   description: string
   category_name: string
@@ -17,15 +18,28 @@ export interface CompetitorItem {
   notes: string
 }
 
+export interface ConcorrentesParams {
+  platform?: string
+  category?: string
+  sort?: string
+  limit?: number
+}
+
+export interface TopCompetitor {
+  name: string
+  value: number
+}
+
 export interface ConcorrentesReport {
   competitors: CompetitorItem[]
-  ranking: Array<{ name: string; engagement_rate: number; followers: number }>
   summary: {
     total: number
-    avg_followers: number
     avg_engagement_rate: number
-    avg_post_frequency: number
+    top_followers: TopCompetitor | null
+    top_engagement_rate: TopCompetitor | null
+    top_post_frequency: TopCompetitor | null
   }
+  content_themes_breakdown: Array<{ theme: string; count: number }>
 }
 
 export interface MarketSignalItem {
@@ -57,8 +71,8 @@ export interface AlertaParams {
   severity?: string
   status?: string
   competitor?: string
-  date_from?: string
-  date_to?: string
+  from?: string
+  to?: string
   limit?: number
 }
 
@@ -87,8 +101,16 @@ export interface StreamMarketWatchResult {
   content: string
 }
 
-export async function getConcorrentesReport(): Promise<ConcorrentesReport> {
-  return pb.send('/backend/v1/concorrentes', { method: 'GET' })
+export async function getConcorrentesReport(
+  params?: ConcorrentesParams,
+): Promise<ConcorrentesReport> {
+  const query: string[] = []
+  if (params?.platform) query.push(`platform=${encodeURIComponent(params.platform)}`)
+  if (params?.category) query.push(`category=${encodeURIComponent(params.category)}`)
+  if (params?.sort) query.push(`sort=${encodeURIComponent(params.sort)}`)
+  if (params?.limit) query.push(`limit=${params.limit}`)
+  const qs = query.length > 0 ? `?${query.join('&')}` : ''
+  return pb.send(`/backend/v1/concorrentes${qs}`, { method: 'GET' })
 }
 
 export async function getAlertas(params?: AlertaParams): Promise<AlertasReport> {
@@ -97,11 +119,16 @@ export async function getAlertas(params?: AlertaParams): Promise<AlertasReport> 
   if (params?.severity) query.push(`severity=${encodeURIComponent(params.severity)}`)
   if (params?.status) query.push(`status=${encodeURIComponent(params.status)}`)
   if (params?.competitor) query.push(`competitor=${encodeURIComponent(params.competitor)}`)
-  if (params?.date_from) query.push(`date_from=${encodeURIComponent(params.date_from)}`)
-  if (params?.date_to) query.push(`date_to=${encodeURIComponent(params.date_to)}`)
+  if (params?.from) query.push(`from=${encodeURIComponent(params.from)}`)
+  if (params?.to) query.push(`to=${encodeURIComponent(params.to)}`)
   if (params?.limit) query.push(`limit=${params.limit}`)
   const qs = query.length > 0 ? `?${query.join('&')}` : ''
   return pb.send(`/backend/v1/alertas${qs}`, { method: 'GET' })
+}
+
+export async function getCompetitorsList(): Promise<Array<{ id: string; name: string }>> {
+  const list = await pb.collection('competitors').getFullList()
+  return list.map((c) => ({ id: c.id, name: c.name }))
 }
 
 export async function getMarketBenchmarks(): Promise<MarketBenchmarksData> {

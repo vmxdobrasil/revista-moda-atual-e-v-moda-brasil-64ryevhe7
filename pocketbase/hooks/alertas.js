@@ -2,16 +2,39 @@ routerAdd(
   'GET',
   '/backend/v1/alertas',
   (e) => {
-    try {
-      var q = e.requestInfo().query || {}
-      var signal_type = q.signal_type || ''
-      var severity = q.severity || ''
-      var status = q.status || ''
-      var competitor = q.competitor || ''
-      var date_from = q.date_from || ''
-      var date_to = q.date_to || ''
-      var limit = parseInt(q.limit || '100', 10) || 100
+    var q = e.requestInfo().query || {}
+    var signal_type = q.signal_type || ''
+    var severity = q.severity || ''
+    var status = q.status || ''
+    var competitor = q.competitor || ''
+    var from = q.from || ''
+    var to = q.to || ''
+    var limit = parseInt(q.limit || '100', 10) || 100
 
+    var validSignalTypes = [
+      'tendencia',
+      'alerta_concorrente',
+      'mencao_marca',
+      'comportamento_consumidor',
+    ]
+    var validSeverities = ['info', 'atencao', 'critico']
+    var validStatuses = ['novo', 'em_analise', 'notificado', 'arquivado']
+    var errors = {}
+
+    if (signal_type && validSignalTypes.indexOf(signal_type) === -1) {
+      errors.signal_type = 'Invalid signal_type. Must be one of: ' + validSignalTypes.join(', ')
+    }
+    if (severity && validSeverities.indexOf(severity) === -1) {
+      errors.severity = 'Invalid severity. Must be one of: ' + validSeverities.join(', ')
+    }
+    if (status && validStatuses.indexOf(status) === -1) {
+      errors.status = 'Invalid status. Must be one of: ' + validStatuses.join(', ')
+    }
+    if (Object.keys(errors).length > 0) {
+      throw new BadRequestError('Invalid query parameters', errors)
+    }
+
+    try {
       var filters = []
       var params = {}
       if (signal_type) {
@@ -30,13 +53,13 @@ routerAdd(
         filters.push('competitor = {:comp}')
         params.comp = competitor
       }
-      if (date_from) {
+      if (from) {
         filters.push('detected_at >= {:df}')
-        params.df = date_from
+        params.df = from
       }
-      if (date_to) {
+      if (to) {
         filters.push('detected_at <= {:dt}')
-        params.dt = date_to
+        params.dt = to
       }
 
       var filterStr = filters.join(' && ')
@@ -115,5 +138,5 @@ routerAdd(
       return e.json(500, { error: 'Failed to fetch market signals' })
     }
   },
-  $apis.requireAuth(),
+  $apis.requireSuperuserAuth(),
 )
