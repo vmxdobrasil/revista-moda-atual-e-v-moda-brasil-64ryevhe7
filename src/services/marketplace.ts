@@ -26,6 +26,25 @@ export interface MarketplaceOrder {
   created: string
   updated: string
   expand?: { product: MarketplaceProduct }
+  origin?: 'revista' | 'hotspot' | 'whatsapp'
+  content_id?: string
+  cta_variant?: string
+}
+
+export interface CreateOrderInput {
+  product: string
+  customer_name: string
+  customer_email: string
+  quantity: number
+  total: number
+  status: string
+  origin?: 'revista' | 'hotspot' | 'whatsapp'
+  content_id?: string
+  cta_variant?: string
+}
+
+export async function createOrder(data: CreateOrderInput): Promise<MarketplaceOrder> {
+  return (await pb.collection('marketplace_orders').create(data)) as unknown as MarketplaceOrder
 }
 
 export async function getProducts(
