@@ -263,6 +263,13 @@ export function AdminLayout() {
           <Eye className="w-5 h-5" /> Market Watch
         </Link>
         <Link
+          to="/admin/social-engagement"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <Instagram className="w-5 h-5" /> Social Engagement
+        </Link>
+        <Link
           to="/admin/security"
           className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
           onClick={() => setSidebarOpen(false)}

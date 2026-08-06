@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-06T00:16:59.747Z",
+  "generatedAt": "2026-08-06T00:50:47.524Z",
   "collections": [
     {
       "name": "users",
@@ -2588,6 +2588,278 @@
         "CREATE INDEX idx_market_signals_status ON market_signals (status)",
         "CREATE INDEX idx_market_signals_detected_at ON market_signals (detected_at)",
         "CREATE INDEX `idx_market_signals_competitor` ON `market_signals` (competitor)"
+      ]
+    },
+    {
+      "name": "engagement_log",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "ig_user_id",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ig_username",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "type",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["comment", "dm"]
+        },
+        {
+          "name": "intent",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": [
+            "elogio",
+            "pergunta_conteudo",
+            "pergunta_produto",
+            "critica",
+            "spam",
+            "parceria",
+            "consultoria",
+            "reclamacao"
+          ]
+        },
+        {
+          "name": "message_text",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "response_text",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["respondido", "pendente", "encaminhado_humano", "ignorado"]
+        },
+        {
+          "name": "media_id",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "comment_id",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "conversation_id",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "forwarded_to",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_engagement_log_ig_user ON engagement_log (ig_user_id)",
+        "CREATE INDEX idx_engagement_log_type ON engagement_log (type)",
+        "CREATE INDEX idx_engagement_log_status ON engagement_log (status)",
+        "CREATE INDEX idx_engagement_log_intent ON engagement_log (intent)"
+      ]
+    },
+    {
+      "name": "dm_leads",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "ig_user_id",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ig_username",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "email",
+          "type": "email",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "whatsapp",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "city",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "intent",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["produto", "anuncio", "consultoria", "parceria"]
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["novo", "contatado", "convertido", "arquivado"]
+        },
+        {
+          "name": "notes",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "conversation_id",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_dm_leads_ig_user ON dm_leads (ig_user_id)",
+        "CREATE INDEX idx_dm_leads_status ON dm_leads (status)",
+        "CREATE INDEX idx_dm_leads_intent ON dm_leads (intent)"
+      ]
+    },
+    {
+      "name": "ig_conversations",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "ig_user_id",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ig_username",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "conversation_id",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "message_count",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "last_message_at",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "context",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_ig_conversations_ig_user ON ig_conversations (ig_user_id)",
+        "CREATE INDEX idx_ig_conversations_last_message ON ig_conversations (last_message_at)"
       ]
     }
   ]
