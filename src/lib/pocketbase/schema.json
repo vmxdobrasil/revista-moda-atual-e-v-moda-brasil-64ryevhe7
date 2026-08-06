@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-06T01:32:39.053Z",
+  "generatedAt": "2026-08-06T02:15:55.482Z",
   "collections": [
     {
       "name": "users",
@@ -2913,6 +2913,108 @@
         }
       ],
       "indexes": []
+    },
+    {
+      "name": "skills",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "title",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "slug",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "category",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": [
+            "producao_editorial",
+            "seo",
+            "distribuicao",
+            "nutricao",
+            "monetizacao",
+            "conversao",
+            "inteligencia_competitiva"
+          ]
+        },
+        {
+          "name": "summary",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "flow",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "rules",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "responsibilities",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "related_agents",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "body",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["rascunho", "publicado"]
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_skills_slug ON skills (slug)",
+        "CREATE INDEX idx_skills_category ON skills (category)",
+        "CREATE INDEX idx_skills_status ON skills (status)"
+      ]
     }
   ]
 }

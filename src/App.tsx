@@ -49,6 +49,7 @@ import AdRevenuePage from './pages/admin/AdRevenuePage'
 import ConversionPage from './pages/admin/ConversionPage'
 import MarketWatchPage from './pages/admin/MarketWatchPage'
 import SocialEngagementPage from './pages/admin/SocialEngagementPage'
+import SkillsPage from './pages/admin/SkillsPage'
 import PublicAdvertiser from './pages/PublicAdvertiser'
 
 import Partners from './pages/Partners'
@@ -126,6 +127,7 @@ const App = () => (
               <Route path="conversion" element={<ConversionPage />} />
               <Route path="market-watch" element={<MarketWatchPage />} />
               <Route path="social-engagement" element={<SocialEngagementPage />} />
+              <Route path="skills" element={<SkillsPage />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
