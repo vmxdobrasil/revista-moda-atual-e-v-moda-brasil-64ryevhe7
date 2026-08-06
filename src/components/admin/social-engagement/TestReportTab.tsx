@@ -18,6 +18,8 @@ import {
   Users,
   Clock,
   AlertCircle,
+  FileDown,
+  FileSpreadsheet,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRealtime } from '@/hooks/use-realtime'
@@ -28,6 +30,8 @@ import {
   type SimulationRow,
   type SimulationStats,
 } from '@/services/social-engagement-config'
+import { exportTestReportToCSV, exportTestReportToPDF } from '@/lib/test-report-export'
+import { generateFilename } from '@/lib/export-utils'
 
 const INTENT_COLORS: Record<string, string> = {
   elogio: 'bg-green-100 text-green-800',
@@ -146,10 +150,38 @@ export function TestReportTab() {
             20 interações simuladas (10 comentários + 10 DMs) cobrindo toda a taxonomia de intenções
           </p>
         </div>
-        <Button onClick={handleRun} disabled={running} size="lg">
-          <PlayCircle className="mr-2 h-4 w-4" />
-          {running ? 'Executando...' : 'Executar simulação'}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={handleRun} disabled={running} size="lg">
+            <PlayCircle className="mr-2 h-4 w-4" />
+            {running ? 'Executando...' : 'Executar simulação'}
+          </Button>
+          {rows.length > 0 && (
+            <>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => {
+                  exportTestReportToCSV(rows, generateFilename('relatorio_teste_social', 'csv'))
+                  toast.success('CSV exportado!')
+                }}
+              >
+                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                CSV
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => {
+                  exportTestReportToPDF(rows, generateFilename('relatorio_teste_social', 'pdf'))
+                  toast.success('PDF exportado!')
+                }}
+              >
+                <FileDown className="mr-2 h-4 w-4" />
+                PDF
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
       {stats && (
