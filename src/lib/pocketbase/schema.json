@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-06T00:50:47.524Z",
+  "generatedAt": "2026-08-06T01:32:39.053Z",
   "collections": [
     {
       "name": "users",
@@ -2861,6 +2861,58 @@
         "CREATE INDEX idx_ig_conversations_ig_user ON ig_conversations (ig_user_id)",
         "CREATE INDEX idx_ig_conversations_last_message ON ig_conversations (last_message_at)"
       ]
+    },
+    {
+      "name": "social_engagement_config",
+      "type": "base",
+      "apiRules": {
+        "list": null,
+        "view": null,
+        "create": null,
+        "update": null,
+        "delete": null
+      },
+      "fields": [
+        {
+          "name": "encrypted_credentials",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "is_validated",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "account_name",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "account_id",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": []
     }
   ]
 }

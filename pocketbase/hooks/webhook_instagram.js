@@ -1,23 +1,62 @@
-routerAdd('POST', '/backend/v1/webhook-instagram', (e) => {
-  var body = e.requestInfo().body || {}
-
+routerAdd('POST', '/backend/v1/webhook/instagram', (e) => {
+  let isValidated = false
+  let appSecret = ''
   try {
-    if (!body.entry || !Array.isArray(body.entry)) {
-      return e.json(200, { status: 'ok', message: 'no entries' })
+    const records = $app.findRecordsByFilter(
+      'social_engagement_config',
+      "id != ''",
+      '-created',
+      1,
+      0,
+    )
+    if (records.length > 0) {
+      isValidated = records[0].getBool('is_validated')
+      if (isValidated) {
+        const key = $secrets.get('PB_SUPERUSER_TOKEN') || 'skip-fallback-key'
+        const encrypted = records[0].getString('encrypted_credentials')
+        const decrypted = $security.decrypt(encrypted, key)
+        const creds = JSON.parse(decrypted)
+        appSecret = creds.app_secret || ''
+      }
     }
+  } catch (_) {}
 
-    var logCol = $app.findCollectionByNameOrId('engagement_log')
+  if (!isValidated) {
+    $app.logger().info('webhook_instagram: evento recebido em modo simulado')
+    return e.json(200, {
+      status: 'simulated',
+      message: 'Credenciais não validadas - modo simulado ativo',
+    })
+  }
 
-    for (var i = 0; i < body.entry.length; i++) {
-      var entry = body.entry[i]
-      var igUserId = entry.id || ''
+  if (appSecret) {
+    const sig = e.request.header.get('X-Hub-Signature-256') || ''
+    const bodyStr = JSON.stringify(e.requestInfo().body || {})
+    const expected = 'sha256=' + $security.hs256(bodyStr, appSecret)
+    if (sig !== expected) {
+      $app
+        .logger()
+        .warn(
+          'webhook_instagram: assinatura inválida',
+          'received',
+          sig,
+          'expected_prefix',
+          expected.substring(0, 20),
+        )
+      return e.json(401, { error: 'Assinatura inválida' })
+    }
+  }
 
-      if (entry.changes && Array.isArray(entry.changes)) {
-        for (var c = 0; c < entry.changes.length; c++) {
-          var change = entry.changes[c]
+  const body = e.requestInfo().body || {}
+  const engCol = $app.findCollectionByNameOrId('engagement_log')
+
+  if (body.entry) {
+    for (const entry of body.entry) {
+      if (entry.changes) {
+        for (const change of entry.changes) {
           if (change.field === 'comments' && change.value) {
-            var v = change.value
-            var rec = new Record(logCol)
+            const v = change.value
+            const rec = new Record(engCol)
             rec.set('ig_user_id', v.from ? v.from.id : '')
             rec.set('ig_username', v.from ? v.from.username : '')
             rec.set('type', 'comment')
@@ -29,30 +68,21 @@ routerAdd('POST', '/backend/v1/webhook-instagram', (e) => {
           }
         }
       }
-
-      if (entry.messaging && Array.isArray(entry.messaging)) {
-        for (var m = 0; m < entry.messaging.length; m++) {
-          var msg = entry.messaging[m]
-          var senderId = msg.sender ? msg.sender.id : ''
-          var msgText = ''
+      if (entry.messaging) {
+        for (const msg of entry.messaging) {
           if (msg.message && msg.message.text) {
-            msgText = msg.message.text
-          }
-          if (msgText) {
-            var drec = new Record(logCol)
-            drec.set('ig_user_id', senderId)
-            drec.set('type', 'dm')
-            drec.set('message_text', msgText)
-            drec.set('status', 'pendente')
-            $app.save(drec)
+            const rec = new Record(engCol)
+            rec.set('ig_user_id', msg.sender ? msg.sender.id : '')
+            rec.set('type', 'dm')
+            rec.set('message_text', msg.message.text || '')
+            rec.set('status', 'pendente')
+            rec.set('conversation_id', entry.id || '')
+            $app.save(rec)
           }
         }
       }
     }
-
-    return e.json(200, { status: 'ok', processed: body.entry.length })
-  } catch (err) {
-    $app.logger().error('webhook-instagram error', 'error', String(err))
-    return e.json(200, { status: 'error', message: 'processing failed' })
   }
+
+  return e.json(200, { status: 'processed' })
 })
