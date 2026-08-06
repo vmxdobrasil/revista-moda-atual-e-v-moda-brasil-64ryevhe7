@@ -1,28 +1,29 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
-  getCompetitors,
-  getAlerts,
-  getBenchmarks,
-  type CompetitorReport,
-  type SignalResponse,
-  type BenchmarkData,
+  getConcorrentesReport,
+  getAlertas,
+  getMarketBenchmarks,
+  type ConcorrentesReport,
+  type AlertasReport,
+  type MarketBenchmarksData,
 } from '@/services/market-watch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2, TrendingUp, Trophy, AlertTriangle, BarChart3 } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Loader2, TrendingUp, Trophy, AlertTriangle, BarChart3, Users } from 'lucide-react'
 import { toast } from 'sonner'
 
 export function MonthlyReportTab() {
-  const [report, setReport] = useState<CompetitorReport | null>(null)
-  const [signals, setSignals] = useState<SignalResponse | null>(null)
-  const [benchmarks, setBenchmarks] = useState<BenchmarkData | null>(null)
+  const [report, setReport] = useState<ConcorrentesReport | null>(null)
+  const [signals, setSignals] = useState<AlertasReport | null>(null)
+  const [benchmarks, setBenchmarks] = useState<MarketBenchmarksData | null>(null)
   const [loading, setLoading] = useState(true)
 
   const loadData = useCallback(async () => {
     try {
       const [comp, sig, bench] = await Promise.all([
-        getCompetitors(),
-        getAlerts({ status: 'novo' }),
-        getBenchmarks(),
+        getConcorrentesReport(),
+        getAlertas({ status: 'novo' }),
+        getMarketBenchmarks(),
       ])
       setReport(comp)
       setSignals(sig)
@@ -48,7 +49,8 @@ export function MonthlyReportTab() {
 
   const topComp = report.competitors[0]
   const criticalSignals = signals.signals.filter((s) => s.severity === 'critico')
-  const rma = benchmarks.revista_moda_atual
+  const mag = benchmarks.magazine
+  const avg = benchmarks.competitors_avg
 
   return (
     <div className="space-y-6">
@@ -66,7 +68,7 @@ export function MonthlyReportTab() {
               <Trophy className="w-4 h-4 text-yellow-500" /> Ranking de Performance
             </h4>
             <div className="space-y-2">
-              {report.ranking.map((r) => (
+              {report.competitors.map((r) => (
                 <div
                   key={r.id}
                   className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
@@ -94,17 +96,16 @@ export function MonthlyReportTab() {
               </h4>
               <div className="space-y-1 text-sm text-gray-600">
                 <p>
-                  Engajamento médio: <strong>{(rma.avg_engagement_rate * 100).toFixed(2)}%</strong>
+                  Engajamento médio: <strong>{mag.engagement_rate.toFixed(2)}%</strong>
                 </p>
                 <p>
-                  Total de posts: <strong>{rma.total_posts}</strong>
+                  Total de posts: <strong>{mag.total_posts}</strong>
                 </p>
                 <p>
-                  Total de views: <strong>{rma.total_views.toLocaleString('pt-BR')}</strong>
+                  Frequência de posts: <strong>{mag.post_frequency}/sem</strong>
                 </p>
                 <p>
-                  Melhor concorrente: <strong>{benchmarks.comparison.best_competitor}</strong> (
-                  {benchmarks.comparison.best_competitor_er.toFixed(2)}%)
+                  Média concorrentes: <strong>{avg.engagement_rate.toFixed(2)}%</strong> engajamento
                 </p>
               </div>
             </div>
@@ -131,11 +132,23 @@ export function MonthlyReportTab() {
             <h4 className="font-semibold text-gray-700 mb-2">Resumo Executivo</h4>
             <p className="text-sm text-gray-600">
               Monitoramento de {report.summary.total} concorrentes ativos. Engajamento médio do
-              mercado: {report.summary.avg_engagement.toFixed(2)}%. Frequência média de posts:{' '}
-              {report.summary.avg_post_frequency}/semana. {signals.total} sinais ativos,{' '}
-              {criticalSignals.length} críticos. Top performer: {topComp?.name} com{' '}
-              {topComp?.engagement_rate.toFixed(2)}% de engajamento.
+              mercado: {report.summary.avg_engagement_rate}%. Top performer: {topComp?.name} com{' '}
+              {topComp?.engagement_rate.toFixed(2)}% de engajamento. {signals.summary.total} sinais
+              ativos, {criticalSignals.length} críticos.
             </p>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+              <Users className="w-4 h-4 text-purple-500" /> Temas de Conteúdo
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {report.content_themes_breakdown.map((t) => (
+                <Badge key={t.theme} variant="secondary" className="bg-purple-50 text-purple-700">
+                  {t.theme} <span className="ml-1 text-xs text-purple-400">{t.count}</span>
+                </Badge>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>

@@ -138,5 +138,5 @@ routerAdd(
       return e.json(500, { error: 'Failed to fetch market signals' })
     }
   },
-  $apis.requireSuperuserAuth(),
+  $apis.requireAuth(),
 )

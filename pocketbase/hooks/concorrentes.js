@@ -137,5 +137,5 @@ routerAdd(
       return e.json(500, { error: 'Failed to generate competitors report' })
     }
   },
-  $apis.requireSuperuserAuth(),
+  $apis.requireAuth(),
 )

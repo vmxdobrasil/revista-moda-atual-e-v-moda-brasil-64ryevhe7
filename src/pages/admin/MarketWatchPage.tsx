@@ -5,6 +5,7 @@ import { SignalsPanel } from '@/components/admin/market-watch/SignalsPanel'
 import { IntelligenceReportTab } from '@/components/admin/market-watch/IntelligenceReportTab'
 import { MarketWatchChatTab } from '@/components/admin/market-watch/MarketWatchChatTab'
 import { DocumentationTab } from '@/components/admin/market-watch/DocumentationTab'
+import { CompetitiveBenchmarks } from '@/components/admin/market-watch/CompetitiveBenchmarks'
 
 export default function MarketWatchPage() {
   return (
@@ -21,6 +22,7 @@ export default function MarketWatchPage() {
         <TabsList className="bg-gray-100 rounded-lg flex-wrap h-auto">
           <TabsTrigger value="competitors">Concorrentes</TabsTrigger>
           <TabsTrigger value="signals">Sinais de Mercado</TabsTrigger>
+          <TabsTrigger value="benchmarks">Benchmarks</TabsTrigger>
           <TabsTrigger value="report">Relatório</TabsTrigger>
           <TabsTrigger value="chat">Chat com Agente</TabsTrigger>
           <TabsTrigger value="docs">Documentação</TabsTrigger>
@@ -32,6 +34,10 @@ export default function MarketWatchPage() {
 
         <TabsContent value="signals" className="mt-4">
           <SignalsPanel />
+        </TabsContent>
+
+        <TabsContent value="benchmarks" className="mt-4">
+          <CompetitiveBenchmarks />
         </TabsContent>
 
         <TabsContent value="report" className="mt-4">
