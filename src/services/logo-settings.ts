@@ -1,0 +1,39 @@
+import pb from '@/lib/pocketbase/client'
+
+export interface SiteSettings {
+  id: string
+  logo_file: string
+  created: string
+  updated: string
+}
+
+export async function getSiteSettings(): Promise<SiteSettings | null> {
+  try {
+    const records = await pb.collection('site_settings').getFullList({ sort: '-created' })
+    return (records[0] as SiteSettings) || null
+  } catch {
+    return null
+  }
+}
+
+export async function uploadLogo(file: File): Promise<SiteSettings> {
+  const existing = await getSiteSettings()
+  const formData = new FormData()
+  formData.append('logo_file', file)
+  if (existing) {
+    return (await pb.collection('site_settings').update(existing.id, formData)) as SiteSettings
+  }
+  return (await pb.collection('site_settings').create(formData)) as SiteSettings
+}
+
+export async function removeLogo(): Promise<void> {
+  const existing = await getSiteSettings()
+  if (existing) {
+    await pb.collection('site_settings').delete(existing.id)
+  }
+}
+
+export function getLogoUrl(settings: SiteSettings | null): string | null {
+  if (!settings || !settings.logo_file) return null
+  return `${import.meta.env.VITE_POCKETBASE_URL}/api/files/site_settings/${settings.id}/${settings.logo_file}`
+}

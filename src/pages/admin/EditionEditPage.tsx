@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { getEdition, deleteEdition, Edition } from '@/services/magazine'
+import { getEdition, deleteEdition, getFileUrl, Edition } from '@/services/magazine'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react'
+import { BrandLogo } from '@/components/BrandLogo'
 import { EditionForm } from './components/EditionForm'
 import { EditionPagesManager } from './components/EditionPagesManager'
 
@@ -94,6 +96,32 @@ export default function EditionEditPage() {
           <EditionPagesManager editionId={edition.id} />
         </div>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Logo sobre capa</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-gray-500">
+            Visualize como o logo REVISTA MODA ATUAL DIGITAL fica sobreposto na capa desta edição.
+          </p>
+          <div className="relative inline-block">
+            <img
+              src={
+                edition.cover_file
+                  ? getFileUrl(edition, edition.cover_file)
+                  : edition.cover_url ||
+                    'https://img.usecurling.com/p/400/560?q=fashion%20magazine%20cover&color=orange'
+              }
+              alt="Capa"
+              className="w-48 h-64 object-cover rounded-lg border"
+            />
+            <div className="absolute bottom-2 right-2 w-24 pointer-events-none">
+              <BrandLogo variant="white" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

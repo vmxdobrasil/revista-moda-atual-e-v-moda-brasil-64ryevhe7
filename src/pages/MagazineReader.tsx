@@ -31,8 +31,10 @@ import {
 } from '@/components/ui/sheet'
 import { Drawer, DrawerContent, DrawerTrigger, DrawerClose } from '@/components/ui/drawer'
 import { Button } from '@/components/ui/button'
-import { LayoutGrid, List, Loader2, Instagram } from 'lucide-react'
+import { LayoutGrid, List, Loader2, Instagram, Maximize2 } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
+import { BrandLogo } from '@/components/BrandLogo'
+import { FullscreenImageViewer } from '@/components/FullscreenImageViewer'
 
 function isNotFoundResponseError(err: unknown): boolean {
   if (err instanceof ClientResponseError) {
@@ -77,6 +79,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
   const [currentSpread, setCurrentSpread] = useState(0)
   const [currentPage, setCurrentPage] = useState(0)
   const [uiVisible, setUiVisible] = useState(true)
+  const [fullscreenImage, setFullscreenImage] = useState<{ src: string; alt: string } | null>(null)
 
   const inactivityTimerRef = useRef<ReturnType<typeof setTimeout>>()
 
@@ -206,13 +209,9 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
   if (loadingEdition) {
     return (
       <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-50 gap-6">
-        <img
-          src="https://img.usecurling.com/i?q=v%20moda%20brasil%20logo&color=orange&shape=outline"
-          alt="Revista Moda Atual"
-          className="h-16 md:h-24 animate-pulse opacity-80"
-          loading="lazy"
-          decoding="async"
-        />
+        <div className="h-16 md:h-24 animate-pulse opacity-80">
+          <BrandLogo variant="white" className="h-full w-auto" />
+        </div>
         <div className="flex items-center gap-3 text-orange-500 mt-4">
           <Loader2 className="w-6 h-6 animate-spin" />
           <span className="text-lg font-medium tracking-wide">Buscando edição...</span>
@@ -224,13 +223,9 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
   if (notFound || errorEmpty || loadError || !edition) {
     return (
       <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-50 gap-6 px-4">
-        <img
-          src="https://img.usecurling.com/i?q=v%20moda%20brasil%20logo&color=orange&shape=outline"
-          alt="Revista Moda Atual"
-          className="h-12 md:h-16 opacity-60"
-          loading="lazy"
-          decoding="async"
-        />
+        <div className="h-12 md:h-16 opacity-60">
+          <BrandLogo variant="white" className="h-full w-auto" />
+        </div>
         <div className="flex flex-col items-center gap-4 max-w-md text-center">
           {loadError ? (
             <>
@@ -371,13 +366,9 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
       >
         <div className="flex items-center gap-4">
           <Link to="/" className="shrink-0 hover:opacity-80 transition-opacity">
-            <img
-              src="https://img.usecurling.com/i?q=v%20moda%20brasil%20logo&color=orange&shape=outline"
-              alt="V MODA BRASIL"
-              className="h-6 md:h-8"
-              loading="lazy"
-              decoding="async"
-            />
+            <div className="h-6 md:h-8 w-auto">
+              <BrandLogo variant="white" className="h-full w-auto" />
+            </div>
           </Link>
           <div className="h-6 w-px bg-gray-300 hidden md:block" />
           <h1 className="font-semibold text-gray-800 text-sm md:text-lg hidden md:block truncate max-w-sm">
@@ -457,25 +448,33 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
               <div className="p-4 md:p-8 h-[60vh] overflow-y-auto">
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 max-w-6xl mx-auto">
                   {pages.map((p, index) => (
-                    <DrawerClose asChild key={p.id}>
+                    <div key={p.id} className="group flex flex-col gap-3">
                       <div
-                        className="cursor-pointer group flex flex-col gap-3 active:scale-95 transition-transform duration-100"
-                        onClick={() => jumpToPage(index)}
+                        className="relative aspect-[0.7118] overflow-hidden rounded-sm shadow-sm group-hover:shadow-lg group-hover:ring-2 ring-orange-500 transition-all flex items-center justify-center bg-gray-50 cursor-pointer active:scale-95 transition-transform duration-100"
+                        onClick={() =>
+                          setFullscreenImage({
+                            src: p.image_file ? getFileUrl(p, p.image_file) : p.image_url,
+                            alt: `Página ${p.page_number}`,
+                          })
+                        }
                       >
-                        <div className="relative aspect-[0.7118] overflow-hidden rounded-sm shadow-sm group-hover:shadow-lg group-hover:ring-2 ring-orange-500 transition-all flex items-center justify-center bg-gray-50">
-                          <img
-                            src={p.image_file ? getFileUrl(p, p.image_file) : p.image_url}
-                            alt={`Página ${p.page_number}`}
-                            className="w-full h-full object-contain"
-                            loading="lazy"
-                            decoding="async"
-                          />
+                        <img
+                          src={p.image_file ? getFileUrl(p, p.image_file) : p.image_url}
+                          alt={`Página ${p.page_number}`}
+                          className="w-full h-full object-contain"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors">
+                          <Maximize2 className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
-                        <p className="text-center text-sm font-medium text-gray-600 group-hover:text-orange-600 transition-colors">
-                          Página {p.page_number || 'Capa'}
-                        </p>
                       </div>
-                    </DrawerClose>
+                      <DrawerClose asChild>
+                        <button className="text-center text-sm font-medium text-gray-600 group-hover:text-orange-600 transition-colors cursor-pointer">
+                          Ir para Página {p.page_number || 'Capa'}
+                        </button>
+                      </DrawerClose>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -531,6 +530,13 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
           Página {displayPage} de {totalPages - 1}
         </div>
       </footer>
+
+      <FullscreenImageViewer
+        src={fullscreenImage?.src ?? null}
+        alt={fullscreenImage?.alt ?? ''}
+        open={!!fullscreenImage}
+        onClose={() => setFullscreenImage(null)}
+      />
     </div>
   )
 }

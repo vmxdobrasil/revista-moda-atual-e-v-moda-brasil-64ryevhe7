@@ -1,14 +1,14 @@
 import { Link } from 'react-router-dom'
+import { BrandLogo } from '@/components/BrandLogo'
 
 export function SiteFooter() {
   return (
     <footer className="bg-gray-900 text-gray-400 py-12 px-6 md:px-12">
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-600 text-white font-extrabold text-sm opacity-80">
-            V
+          <div className="h-8 w-auto opacity-80">
+            <BrandLogo variant="white" className="h-full w-auto" />
           </div>
-          <span className="text-sm">Revista Moda Atual Digital</span>
         </div>
         <div className="flex items-center gap-4 md:gap-6 text-sm flex-wrap justify-center">
           <Link to="/" className="hover:text-orange-500 transition-colors">

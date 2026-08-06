@@ -21,6 +21,8 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { ImagePlus, Loader2, Youtube, Video } from 'lucide-react'
 import { useEffect, useCallback } from 'react'
+import { Switch } from '@/components/ui/switch'
+import { BrandLogo } from '@/components/BrandLogo'
 
 export function CoverGeneratorPanel() {
   const { toast } = useToast()
@@ -29,6 +31,7 @@ export function CoverGeneratorPanel() {
   const [editions, setEditions] = useState<Edition[]>([])
   const [loading, setLoading] = useState<string | null>(null)
   const [result, setResult] = useState<CoverComposition | null>(null)
+  const [overlayLogo, setOverlayLogo] = useState(false)
 
   const loadEditions = useCallback(async () => {
     try {
@@ -201,13 +204,26 @@ export function CoverGeneratorPanel() {
               <p className="text-sm text-gray-700">{result.alt_text}</p>
             </div>
             {result.stock_image_query && (
-              <div className="flex items-center gap-2">
-                <Badge variant="outline">Stock: {result.stock_image_query}</Badge>
-                <img
-                  src={`https://img.usecurling.com/p/400/560?q=${encodeURIComponent(result.stock_image_query)}&color=orange`}
-                  alt="Stock suggestion"
-                  className="w-20 h-28 object-cover rounded-lg border"
-                />
+              <div className="space-y-2">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <Badge variant="outline">Stock: {result.stock_image_query}</Badge>
+                  <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                    <Switch checked={overlayLogo} onCheckedChange={setOverlayLogo} />
+                    Sobrepor logo
+                  </label>
+                </div>
+                <div className="relative inline-block">
+                  <img
+                    src={`https://img.usecurling.com/p/400/560?q=${encodeURIComponent(result.stock_image_query)}&color=orange`}
+                    alt="Stock suggestion"
+                    className="w-40 h-56 object-cover rounded-lg border"
+                  />
+                  {overlayLogo && (
+                    <div className="absolute bottom-2 right-2 w-20 pointer-events-none">
+                      <BrandLogo variant="white" />
+                    </div>
+                  )}
+                </div>
               </div>
             )}
             {result.variants?.length > 0 && (
