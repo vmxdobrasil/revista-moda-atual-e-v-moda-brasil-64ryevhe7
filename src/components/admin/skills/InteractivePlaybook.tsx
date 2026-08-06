@@ -1,65 +1,52 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
-import { CheckCircle2, Circle, Loader2, FileDown, Cpu } from 'lucide-react'
-import { useRealtime } from '@/hooks/use-realtime'
+import { Checkbox } from '@/components/ui/checkbox'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import {
+  FileDown,
+  GitBranch,
+  ListChecks,
+  Users,
+  FileText,
+  Bot,
+  CheckCircle2,
+  Circle,
+  Loader2,
+} from 'lucide-react'
+import {
+  SKILL_CATEGORIES,
+  CATEGORY_COLORS,
+  type Skill,
+  type SkillFlowStep,
+  type SkillRule,
+  type SkillResponsibility,
+  type RelatedAgent,
+} from '@/services/skills'
 import { getTasksBySkill, upsertTask, type SkillTask } from '@/services/skills-tasks'
-import type { Skill } from '@/services/skills'
-import { parseSkillFlow } from '@/lib/skills-utils'
-import { exportSkillToPDF } from '@/lib/skills-pdf-export'
-import { extractFieldErrors, type FieldErrors } from '@/lib/pocketbase/errors'
-import { toast } from 'sonner'
+import { exportSkillToPDF } from '@/lib/skills-export'
+import { useRealtime } from '@/hooks/use-realtime'
 import { cn } from '@/lib/utils'
-
-const AGENT_MAP: Record<string, { agent: string; hook: string; collections: string[] }> = {
-  producao_editorial: {
-    agent: 'content-chain, editorial-qa',
-    hook: 'content_workflow_orchestrator, editorial_qa_review',
-    collections: ['workflow_results', 'edition_pages'],
-  },
-  seo: {
-    agent: 'seo-specialist',
-    hook: 'seo_optimize',
-    collections: ['seo_metrics', 'edition_pages'],
-  },
-  distribuicao: {
-    agent: 'social-publisher',
-    hook: 'social_publish_publicar, social_publish_agendar',
-    collections: ['social_posts'],
-  },
-  nutricao: {
-    agent: 'audience-nurture',
-    hook: 'newsletter_generate',
-    collections: ['newsletter_campaigns', 'subscribers'],
-  },
-  monetizacao: {
-    agent: 'cover-editorial-art-director',
-    hook: 'generate_contract, email_proposal',
-    collections: ['ad_proposals', 'ad_pricing_rules'],
-  },
-  conversao: {
-    agent: 'conversion',
-    hook: 'funil, cta',
-    collections: ['marketplace_orders', 'conversion_metrics'],
-  },
-  inteligencia_competitiva: {
-    agent: 'market-watch',
-    hook: 'alertas, concorrentes',
-    collections: ['market_signals', 'competitors'],
-  },
-}
+import { toast } from 'sonner'
 
 export function InteractivePlaybook({ skill }: { skill: Skill }) {
   const [tasks, setTasks] = useState<SkillTask[]>([])
   const [loading, setLoading] = useState(true)
-  const [updating, setUpdating] = useState<string | null>(null)
-  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
+  const [activeStep, setActiveStep] = useState(0)
+
+  const cat = SKILL_CATEGORIES.find((c) => c.value === skill.category)
+  const steps = Array.isArray(skill.flow) ? (skill.flow as SkillFlowStep[]) : []
+  const rules = Array.isArray(skill.rules) ? (skill.rules as SkillRule[]) : []
+  const responsibilities = Array.isArray(skill.responsibilities)
+    ? (skill.responsibilities as SkillResponsibility[])
+    : []
+  const agents = Array.isArray(skill.related_agents) ? (skill.related_agents as RelatedAgent[]) : []
 
   const load = useCallback(async () => {
     try {
-      setTasks(await getTasksBySkill(skill.id))
+      const data = await getTasksBySkill(skill.id)
+      setTasks(data)
     } catch {
       /* ignore */
     } finally {
@@ -69,41 +56,34 @@ export function InteractivePlaybook({ skill }: { skill: Skill }) {
 
   useEffect(() => {
     setLoading(true)
+    setActiveStep(0)
     load()
   }, [load])
   useRealtime('skills_tasks', () => load())
 
-  const stages = parseSkillFlow(skill.flow)
-  const totalItems = stages.reduce((s, st) => s + st.items.length, 0)
-  const completedCount = tasks.filter((t) => t.status === 'completed').length
-  const pct = totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0
+  const taskMap = new Map(tasks.map((t) => [t.task_key, t]))
 
-  const getTaskStatus = (taskKey: string): string =>
-    tasks.find((t) => t.task_key === taskKey)?.status || 'pending'
-
-  const handleToggle = async (taskKey: string, title: string) => {
-    const current = getTaskStatus(taskKey)
-    const next = current === 'completed' ? 'pending' : 'completed'
-    setUpdating(taskKey)
-    setFieldErrors({})
+  const toggleTask = async (taskKey: string, title: string) => {
+    const existing = taskMap.get(taskKey)
+    const newStatus = existing?.status === 'completed' ? 'pending' : 'completed'
     try {
-      await upsertTask({
-        skill: skill.id,
-        task_key: taskKey,
-        title,
-        status: next as 'completed' | 'pending',
-      })
-      toast.success(next === 'completed' ? 'Tarefa concluída!' : 'Tarefa reaberta')
-    } catch (err) {
-      const fe = extractFieldErrors(err)
-      setFieldErrors(fe)
-      toast.success(next === 'completed' ? 'Tarefa concluída!' : 'Tarefa reaberta')
-    } finally {
-      setUpdating(null)
+      await upsertTask(skill.id, taskKey, title, newStatus)
+    } catch {
+      toast.error('Erro ao atualizar tarefa')
     }
   }
 
-  const agentInfo = AGENT_MAP[skill.category] || { agent: '—', hook: '—', collections: [] }
+  const completedSteps = steps.filter((_, i) => {
+    const task = taskMap.get(`step_${i}`)
+    return task?.status === 'completed'
+  }).length
+
+  const progress = steps.length > 0 ? Math.round((completedSteps / steps.length) * 100) : 0
+
+  const handleExport = () => {
+    exportSkillToPDF(skill)
+    toast.success('Exportando PDF...')
+  }
 
   if (loading) {
     return (
@@ -114,131 +94,210 @@ export function InteractivePlaybook({ skill }: { skill: Skill }) {
   }
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-lg">{skill.title}</CardTitle>
-              {skill.summary && <p className="text-sm text-gray-500 mt-1">{skill.summary}</p>}
+    <ScrollArea className="h-[calc(100vh-280px)]">
+      <div className="space-y-4 pr-2">
+        <Card className="border-none bg-white shadow-sm">
+          <CardContent className="p-5">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge
+                    variant="secondary"
+                    className={cn(CATEGORY_COLORS[skill.category] || 'bg-gray-100 text-gray-600')}
+                  >
+                    {cat?.label || skill.category}
+                  </Badge>
+                  <Badge variant={skill.status === 'publicado' ? 'default' : 'secondary'}>
+                    {skill.status === 'publicado' ? 'Publicado' : 'Rascunho'}
+                  </Badge>
+                </div>
+                <h2 className="text-xl font-bold text-gray-800">{skill.title}</h2>
+                <p className="text-sm text-gray-500 mt-1">{skill.summary}</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExport}
+                className="gap-2 flex-shrink-0"
+              >
+                <FileDown className="w-4 h-4" /> PDF
+              </Button>
             </div>
-            <Button variant="outline" size="sm" onClick={() => exportSkillToPDF(skill)}>
-              <FileDown className="w-4 h-4 mr-1" /> Exportar PDF
-            </Button>
-          </div>
-          <div className="mt-3">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-gray-500">
-                Progresso: {completedCount}/{totalItems}
-              </span>
-              <span className="text-xs font-semibold text-orange-600">{pct}%</span>
-            </div>
-            <Progress value={pct} className="h-2" />
-          </div>
-        </CardHeader>
-      </Card>
-
-      {stages.length === 0 && (
-        <Card>
-          <CardContent className="p-6 text-center text-sm text-gray-500">
-            Nenhum fluxo de execução definido para este Skill.
+            {steps.length > 0 && (
+              <div className="mt-3">
+                <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                  <span>Progresso do Playbook</span>
+                  <span>
+                    {completedSteps}/{steps.length} etapas ({progress}%)
+                  </span>
+                </div>
+                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-orange-500 transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
-      )}
 
-      {stages.map((stage, si) => {
-        const stageCompleted = stage.items.filter(
-          (item) => getTaskStatus(item.key) === 'completed',
-        ).length
-        return (
-          <Card key={stage.key}>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <span className="flex items-center justify-center w-7 h-7 rounded-full bg-orange-100 text-orange-600 text-sm font-bold">
-                  {si + 1}
-                </span>
-                <CardTitle className="text-base">{stage.title}</CardTitle>
-                <Badge variant="secondary" className="ml-auto">
-                  {stageCompleted}/{stage.items.length}
-                </Badge>
+        {steps.length > 0 && (
+          <Card className="border-none bg-white shadow-sm">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <GitBranch className="w-5 h-5 text-orange-500" />
+                <h3 className="text-base font-bold text-gray-800">Fluxo Interativo</h3>
               </div>
-              {stage.description && (
-                <p className="text-xs text-gray-500 mt-1">{stage.description}</p>
-              )}
-            </CardHeader>
-            <CardContent className="space-y-1">
-              {stage.items.map((item) => {
-                const status = getTaskStatus(item.key)
-                const isUpdating = updating === item.key
-                return (
-                  <button
-                    key={item.key}
-                    onClick={() => handleToggle(item.key, item.title)}
-                    disabled={isUpdating}
-                    className={cn(
-                      'flex items-center gap-2 w-full text-left p-2 rounded-lg transition-colors',
-                      status === 'completed' ? 'bg-green-50' : 'hover:bg-gray-50',
-                      isUpdating && 'opacity-50',
-                    )}
-                  >
-                    {isUpdating ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
-                    ) : status === 'completed' ? (
-                      <CheckCircle2 className="w-4 h-4 text-green-600" />
-                    ) : (
-                      <Circle className="w-4 h-4 text-gray-300" />
-                    )}
-                    <span
+              <div className="flex flex-wrap gap-2 mb-4">
+                {steps.map((step, i) => {
+                  const task = taskMap.get(`step_${i}`)
+                  const isDone = task?.status === 'completed'
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => setActiveStep(i)}
                       className={cn(
-                        'text-sm',
-                        status === 'completed' ? 'text-gray-400 line-through' : 'text-gray-700',
+                        'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
+                        activeStep === i
+                          ? 'bg-orange-500 text-white'
+                          : isDone
+                            ? 'bg-green-50 text-green-700'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
                       )}
                     >
-                      {item.title}
-                    </span>
-                  </button>
-                )
-              })}
+                      {isDone ? (
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      ) : (
+                        <Circle className="w-3.5 h-3.5" />
+                      )}
+                      {i + 1}. {step.step}
+                    </button>
+                  )
+                })}
+              </div>
+              {steps[activeStep] && (
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center text-sm font-bold">
+                      {activeStep + 1}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h4 className="font-semibold text-gray-800">{steps[activeStep].step}</h4>
+                        <Badge variant="outline" className="text-xs">
+                          {steps[activeStep].responsible}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-3">{steps[activeStep].description}</p>
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id={`step_${activeStep}`}
+                          checked={taskMap.get(`step_${activeStep}`)?.status === 'completed'}
+                          onCheckedChange={() =>
+                            toggleTask(`step_${activeStep}`, steps[activeStep].step)
+                          }
+                        />
+                        <label
+                          htmlFor={`step_${activeStep}`}
+                          className="text-sm text-gray-700 cursor-pointer select-none"
+                        >
+                          Marcar como concluído
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
-        )
-      })}
+        )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm flex items-center gap-2">
-            <Cpu className="w-4 h-4 text-orange-500" /> Integração com Agentes
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm">
-          <div className="flex items-center gap-2">
-            <span className="text-gray-500 w-24 shrink-0">Agentes:</span>
-            <span className="text-gray-800">{agentInfo.agent}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-gray-500 w-24 shrink-0">Hooks:</span>
-            <span className="text-gray-800">{agentInfo.hook}</span>
-          </div>
-          <div className="flex items-start gap-2">
-            <span className="text-gray-500 w-24 shrink-0 pt-0.5">Coleções:</span>
-            <div className="flex flex-wrap gap-1">
-              {agentInfo.collections.map((c) => (
-                <Badge key={c} variant="outline" className="text-xs">
-                  {c}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        {rules.length > 0 && (
+          <Card className="border-none bg-white shadow-sm">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <ListChecks className="w-5 h-5 text-blue-500" />
+                <h3 className="text-base font-bold text-gray-800">Regras Operacionais</h3>
+              </div>
+              <div className="space-y-2">
+                {rules.map((r, i) => (
+                  <div key={i} className="flex gap-2 items-start text-sm">
+                    <span className="text-blue-400 mt-0.5">•</span>
+                    <div>
+                      <span className="font-semibold text-gray-700">{r.rule}:</span>{' '}
+                      <span className="text-gray-500">{r.detail}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-      {Object.keys(fieldErrors).length > 0 && (
-        <div className="p-3 rounded-lg bg-red-50 text-red-700 text-sm">
-          {Object.values(fieldErrors).map((msg, i) => (
-            <p key={i}>{msg}</p>
-          ))}
-        </div>
-      )}
-    </div>
+        {responsibilities.length > 0 && (
+          <Card className="border-none bg-white shadow-sm">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Users className="w-5 h-5 text-purple-500" />
+                <h3 className="text-base font-bold text-gray-800">Responsabilidades</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {responsibilities.map((r, i) => (
+                  <div key={i} className="bg-gray-50 rounded-lg p-3">
+                    <p className="font-semibold text-gray-700 text-sm mb-1">{r.role}</p>
+                    <ul className="space-y-1">
+                      {r.responsibilities.map((item, j) => (
+                        <li key={j} className="text-xs text-gray-500 flex gap-1">
+                          <span className="text-purple-400">•</span> {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {skill.body && (
+          <Card className="border-none bg-white shadow-sm">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <FileText className="w-5 h-5 text-green-500" />
+                <h3 className="text-base font-bold text-gray-800">Documentação</h3>
+              </div>
+              <pre className="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed font-sans">
+                {skill.body}
+              </pre>
+            </CardContent>
+          </Card>
+        )}
+
+        {agents.length > 0 && (
+          <Card className="border-none bg-white shadow-sm">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Bot className="w-5 h-5 text-cyan-500" />
+                <h3 className="text-base font-bold text-gray-800">Agentes Integrados</h3>
+              </div>
+              <div className="space-y-2">
+                {agents.map((a, i) => (
+                  <div key={i} className="flex gap-2 items-start bg-cyan-50 rounded-lg p-3">
+                    <Bot className="w-4 h-4 text-cyan-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <code className="text-xs font-mono text-cyan-700 font-semibold">
+                        {a.agent}
+                      </code>
+                      <p className="text-sm text-gray-600 mt-0.5">{a.how}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </ScrollArea>
   )
 }
