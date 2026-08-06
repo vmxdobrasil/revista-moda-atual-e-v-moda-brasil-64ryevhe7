@@ -5,6 +5,16 @@ export interface PotencialAtacado {
   justificativa: string
 }
 
+export interface RelatedMarketSignal {
+  id: string
+  title: string
+  signal_type: string
+  severity: string
+  description: string
+  competitor_name: string
+  detected_at: string
+}
+
 export interface TrendReport {
   nome: string
   origem: string
@@ -16,6 +26,7 @@ export interface TrendReport {
   palavras_chave: string[]
   raw: string
   recordId: string
+  related_signals?: RelatedMarketSignal[]
 }
 
 export async function generateTrendReport(tendencia: string): Promise<TrendReport> {
