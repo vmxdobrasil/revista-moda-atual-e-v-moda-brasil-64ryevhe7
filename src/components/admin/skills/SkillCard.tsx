@@ -37,9 +37,11 @@ export function SkillCard({ skill, onClick }: { skill: Skill; onClick: () => voi
         <h3 className="font-bold text-gray-800 text-base mb-1">{skill.title}</h3>
         <p className="text-sm text-gray-500 line-clamp-2">{skill.summary || 'Sem descrição'}</p>
         <div className="flex items-center gap-2 mt-3 text-xs text-gray-400">
-          <span>{skill.flow?.length || 0} etapas</span>
+          <span>{Array.isArray(skill.flow) ? skill.flow.length : 0} etapas</span>
           <span>•</span>
-          <span>{skill.related_agents?.length || 0} agentes</span>
+          <span>
+            {Array.isArray(skill.related_agents) ? skill.related_agents.length : 0} agentes
+          </span>
           <ArrowRight className="w-3 h-3 ml-auto" />
         </div>
       </CardContent>

@@ -25,7 +25,7 @@ import {
   type RelatedAgent,
 } from '@/services/skills'
 import { getTasksBySkill, upsertTask, type SkillTask } from '@/services/skills-tasks'
-import { exportSkillToPDF } from '@/lib/skills-export'
+import { exportSkillToPDF } from '@/lib/skills-pdf-export'
 import { useRealtime } from '@/hooks/use-realtime'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'

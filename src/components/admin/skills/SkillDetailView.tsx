@@ -19,8 +19,11 @@ import {
   GitBranch,
   FileText,
   Trash2,
+  FileDown,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { exportSkillToPDF } from '@/lib/skills-pdf-export'
+import { toast } from 'sonner'
 
 export function SkillDetailView({
   skill,
@@ -41,6 +44,11 @@ export function SkillDetailView({
     : []
   const agents = Array.isArray(skill.related_agents) ? (skill.related_agents as RelatedAgent[]) : []
 
+  const handleExport = () => {
+    exportSkillToPDF(skill)
+    toast.success('Exportando PDF...')
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3">
@@ -54,6 +62,9 @@ export function SkillDetailView({
             className="gap-2 text-red-500 hover:text-red-600"
           >
             <Trash2 className="w-4 h-4" />
+          </Button>
+          <Button variant="outline" onClick={handleExport} className="gap-2">
+            <FileDown className="w-4 h-4" /> PDF
           </Button>
           <Button onClick={onEdit} className="gap-2">
             <Pencil className="w-4 h-4" /> Editar
