@@ -23,8 +23,8 @@ function setOrCreateMeta(attr: 'name' | 'property', key: string, content: string
   }
 }
 
-export function useMetaTags(config: MetaTagConfig = {}) {
-  const { title, description, image, url, type } = config
+export function useMetaTags(config: MetaTagConfig | null | undefined = {}) {
+  const { title, description, image, url, type } = config ?? {}
   useEffect(() => {
     try {
       if (title) document.title = title

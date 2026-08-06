@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -26,12 +27,9 @@ import { useRealtime } from '@/hooks/use-realtime'
 import { getAllStoryTexts, type StoryText } from '@/services/story-texts'
 import { StoryTextsPanel, type StoryTextFilters } from '@/components/StoryTextsPanel'
 import { ExportModal } from '@/components/ExportModal'
-
-const MOCK_EDITIONS = [
-  { id: '45', title: 'Edição 45 - Outono Inverno', status: 'Aprovado', date: '10/05/2026' },
-  { id: '46', title: 'Edição 46 - Alto Verão', status: 'Em Revisão', date: '10/06/2026' },
-  { id: '47', title: 'Edição Especial - V MODA', status: 'Rascunho', date: '20/06/2026' },
-]
+import { getEditions, type Edition } from '@/services/magazine'
+import { format } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 
 const MOCK_DATA = [
   { name: 'Jan', views: 4000, clicks: 2400 },
@@ -50,6 +48,7 @@ export default function Dashboard() {
   const [storyLoading, setStoryLoading] = useState(true)
   const [filters, setFilters] = useState<StoryTextFilters>({ dateFrom: '', dateTo: '', search: '' })
   const [exportOpen, setExportOpen] = useState(false)
+  const [editions, setEditions] = useState<Edition[]>([])
 
   const loadStoryTexts = useCallback(async () => {
     try {
@@ -61,11 +60,23 @@ export default function Dashboard() {
     }
   }, [toast])
 
+  const loadEditions = useCallback(async () => {
+    try {
+      setEditions(await getEditions())
+    } catch {
+      // silently fail — editions tab is not critical
+    }
+  }, [])
+
   useEffect(() => {
     loadStoryTexts()
-  }, [loadStoryTexts])
+    loadEditions()
+  }, [loadStoryTexts, loadEditions])
   useRealtime('story_texts', () => {
     loadStoryTexts()
+  })
+  useRealtime('editions', () => {
+    loadEditions()
   })
 
   const filteredTexts = useMemo(
@@ -144,26 +155,27 @@ export default function Dashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {MOCK_EDITIONS.map((ed) => (
+                  {editions.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                        Nenhuma edição encontrada.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {editions.map((ed) => (
                     <TableRow key={ed.id}>
                       <TableCell className="font-medium">{ed.title}</TableCell>
                       <TableCell>
-                        <Badge
-                          variant={
-                            ed.status === 'Aprovado'
-                              ? 'default'
-                              : ed.status === 'Em Revisão'
-                                ? 'secondary'
-                                : 'outline'
-                          }
-                        >
-                          {ed.status}
-                        </Badge>
+                        <Badge variant="outline">Publicado</Badge>
                       </TableCell>
-                      <TableCell>{ed.date}</TableCell>
+                      <TableCell>
+                        {ed.created
+                          ? format(new Date(ed.created), 'dd/MM/yyyy', { locale: ptBR })
+                          : '—'}
+                      </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm">
-                          Editar
+                        <Button variant="ghost" size="sm" asChild>
+                          <Link to={`/admin/editions/${ed.id}`}>Editar</Link>
                         </Button>
                       </TableCell>
                     </TableRow>

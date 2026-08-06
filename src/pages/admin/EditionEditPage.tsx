@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { getEdition, deleteEdition, Edition } from '@/services/magazine'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
-import { ArrowLeft, Loader2 } from 'lucide-react'
+import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react'
 import { EditionForm } from './components/EditionForm'
 import { EditionPagesManager } from './components/EditionPagesManager'
 
@@ -12,15 +12,21 @@ export default function EditionEditPage() {
   const navigate = useNavigate()
   const [edition, setEdition] = useState<Edition | null>(null)
   const [loading, setLoading] = useState(true)
+  const [notFound, setNotFound] = useState(false)
   const { toast } = useToast()
 
   const loadData = async () => {
-    if (!id) return
+    if (!id) {
+      setNotFound(true)
+      setLoading(false)
+      return
+    }
     setLoading(true)
     try {
       setEdition(await getEdition(id))
+      setNotFound(false)
     } catch {
-      toast({ title: 'Erro', description: 'Edição não encontrada.', variant: 'destructive' })
+      setNotFound(true)
     } finally {
       setLoading(false)
     }
@@ -38,7 +44,27 @@ export default function EditionEditPage() {
     )
   }
 
-  if (!edition) return <div>Edição não encontrada.</div>
+  if (notFound || !edition) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 space-y-4">
+        <AlertCircle className="w-12 h-12 text-orange-500" />
+        <h2 className="text-xl font-bold text-gray-800">Edição não encontrada</h2>
+        <p className="text-gray-500 text-center max-w-md">
+          A edição que você procura não existe, foi removida, ou o identificador é inválido.
+        </p>
+        <div className="flex gap-3">
+          <Button variant="outline" asChild>
+            <Link to="/dashboard">
+              <ArrowLeft className="w-4 h-4 mr-2" /> Voltar para o Dashboard
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link to="/admin/editions">Ver todas as edições</Link>
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   const handleDelete = async () => {
     try {

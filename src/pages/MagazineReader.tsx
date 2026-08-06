@@ -1,5 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react'
+import { ClientResponseError } from 'pocketbase'
 import { cn } from '@/lib/utils'
 import {
   getEdition,
@@ -33,6 +34,31 @@ import { Button } from '@/components/ui/button'
 import { LayoutGrid, List, Loader2, Instagram } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 
+function isNotFoundResponseError(err: unknown): boolean {
+  if (err instanceof ClientResponseError) {
+    return err.status === 404
+  }
+  if (err && typeof err === 'object') {
+    const e = err as Record<string, unknown>
+    const status = e.status as number | undefined
+    const origStatus = (e.originalError as Record<string, unknown> | undefined)?.status as
+      | number
+      | undefined
+    const respStatus = (e.response as Record<string, unknown> | undefined)?.status as
+      | number
+      | undefined
+    const msg = typeof e.message === 'string' ? e.message : ''
+    return (
+      status === 404 ||
+      origStatus === 404 ||
+      respStatus === 404 ||
+      msg.includes("wasn't found") ||
+      msg.includes('not found')
+    )
+  }
+  return false
+}
+
 export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
   const { id: paramId } = useParams<{ id: string }>()
   const isMobile = useIsMobile()
@@ -46,6 +72,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
   const [loadingPages, setLoadingPages] = useState(true)
   const [errorEmpty, setErrorEmpty] = useState(false)
   const [notFound, setNotFound] = useState(false)
+  const [loadError, setLoadError] = useState(false)
 
   const [currentSpread, setCurrentSpread] = useState(0)
   const [currentPage, setCurrentPage] = useState(0)
@@ -79,6 +106,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
         setLoadingEdition(true)
         setErrorEmpty(false)
         setNotFound(false)
+        setLoadError(false)
         const ed = isLatest ? await getLatestEdition() : paramId ? await getEdition(paramId) : null
 
         if (!ed) {
@@ -93,13 +121,13 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
         setEdition(ed)
         document.title = `Revista Moda Atual - ${ed.title}`
       } catch (err: any) {
-        console.error(err)
-        if (err?.status === 404 || err?.response?.status === 404) {
+        if (isNotFoundResponseError(err)) {
           setNotFound(true)
         } else if (isLatest) {
           navigate('/', { replace: true })
         } else {
-          setNotFound(true)
+          console.error('Failed to load edition:', err)
+          setLoadError(true)
         }
       } finally {
         setLoadingEdition(false)
@@ -120,11 +148,15 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
           const hts = await getHotspots(edition.id, pgs)
           setHotspots(hts)
         } catch (hotspotErr) {
-          console.error('Failed to load hotspots:', hotspotErr)
+          if (!isNotFoundResponseError(hotspotErr)) {
+            console.error('Failed to load hotspots:', hotspotErr)
+          }
           setHotspots([])
         }
       } catch (err) {
-        console.error(err)
+        if (!isNotFoundResponseError(err)) {
+          console.error(err)
+        }
       } finally {
         setLoadingPages(false)
       }
@@ -189,7 +221,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
     )
   }
 
-  if (notFound || errorEmpty || !edition) {
+  if (notFound || errorEmpty || loadError || !edition) {
     return (
       <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-50 gap-6 px-4">
         <img
@@ -200,26 +232,58 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
           decoding="async"
         />
         <div className="flex flex-col items-center gap-4 max-w-md text-center">
-          <h2 className="text-2xl font-bold text-gray-800">Edição não encontrada</h2>
-          <p className="text-gray-500">
-            A edição que você procura não existe ou foi removida. Que tal explorar outras edições
-            disponíveis?
-          </p>
-          <div className="flex items-center gap-2 mt-2">
-            <Button
-              asChild
-              className="bg-orange-500 hover:bg-orange-600 active:scale-95 transition-transform duration-100"
-            >
-              <Link to="/">Voltar para Home</Link>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              className="text-orange-600 border-orange-300 hover:bg-orange-50 active:scale-95 transition-transform duration-100"
-            >
-              <Link to="/editions">Ver Edições</Link>
-            </Button>
-          </div>
+          {loadError ? (
+            <>
+              <h2 className="text-2xl font-bold text-gray-800">Erro ao carregar edição</h2>
+              <p className="text-gray-500">
+                Não foi possível carregar esta edição. Verifique sua conexão e tente novamente.
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
+                <Button
+                  onClick={() => window.location.reload()}
+                  className="bg-orange-500 hover:bg-orange-600 active:scale-95 transition-transform duration-100"
+                >
+                  Tentar Novamente
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="text-orange-600 border-orange-300 hover:bg-orange-50 active:scale-95 transition-transform duration-100"
+                >
+                  <Link to="/">Voltar para Home</Link>
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <h2 className="text-2xl font-bold text-gray-800">Edição não encontrada</h2>
+              <p className="text-gray-500">
+                A edição que você procura não existe ou foi removida. Que tal explorar outras
+                edições disponíveis?
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
+                <Button
+                  asChild
+                  className="bg-orange-500 hover:bg-orange-600 active:scale-95 transition-transform duration-100"
+                >
+                  <Link to="/">Voltar para Home</Link>
+                </Button>
+                <Button
+                  asChild
+                  className="bg-orange-600 hover:bg-orange-700 text-white active:scale-95 transition-transform duration-100"
+                >
+                  <Link to="/reader/latest">Ler Última Edição</Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="text-orange-600 border-orange-300 hover:bg-orange-50 active:scale-95 transition-transform duration-100"
+                >
+                  <Link to="/editions">Ver Edições</Link>
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     )
