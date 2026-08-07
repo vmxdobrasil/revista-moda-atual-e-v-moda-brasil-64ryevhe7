@@ -20,6 +20,7 @@ import { PageEditForm } from './components/PageEditForm'
 import { HotspotEditorModal } from './components/HotspotEditorModal'
 import { ImageAdapterModal } from './components/ImageAdapterModal'
 import { PageTemplateModal } from './components/PageTemplateModal'
+import { SocialFormatPreview } from '@/components/flipbook/SocialFormatPreview'
 
 export default function PageEditPage() {
   const { editionId, pageId } = useParams<{ editionId: string; pageId: string }>()
@@ -93,6 +94,7 @@ export default function PageEditPage() {
           <Button variant="outline" onClick={() => setTemplateOpen(true)}>
             <LayoutTemplate className="w-4 h-4 mr-2" /> Configurar Template
           </Button>
+          <SocialFormatPreview page={page} />
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive">

@@ -28,11 +28,31 @@ export function getInitialTemplateData(template: string): TemplateData {
         option_b: { title: '', description: '', image: '' },
       }
     case 'coluna_marketing_moda':
-      return { author: 'CEO', images: [] }
+      return {
+        author: 'Valter Mendonca',
+        author_bio:
+          'CEO da Revista MODA ATUAL. Especialista em marketing, digital marketing, branding e gestao de private cards e sistemas de beneficios.',
+        subtitle: '',
+        insights: [],
+        practical_actions: [],
+        cta_label: 'Saiba Mais',
+        cta_link: '/',
+        edition_title: '',
+        images: [],
+      }
+    case 'coluna_holofote_evoluida':
+      return {
+        images: [],
+        highlights: [],
+        interaction_cta_label: 'Interagir',
+        interaction_cta_link: '/',
+        edition_title: '',
+        person_name: '',
+        person_role: '',
+      }
     case 'lookbook':
     case 'materia_cta':
     case 'fashion_editorial':
-    case 'coluna_holofote_evoluida':
       return { images: [] }
     default:
       return {}

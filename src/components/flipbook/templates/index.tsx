@@ -3,6 +3,7 @@ import { renderGroup2 } from './group2'
 import { renderGroup3 } from './group3'
 import { renderGroup4 } from './group4'
 import { renderGroup5 } from './group5'
+import { TemplateFooter } from './shared-components'
 
 export const NEW_TEMPLATE_VALUES = [
   'lookbook',
@@ -28,7 +29,20 @@ const RENDERERS = [renderGroup1, renderGroup2, renderGroup3, renderGroup4, rende
 export function NewTemplateRenderer({ template, data }: { template: string; data: any }) {
   for (const render of RENDERERS) {
     const result = render(template, data)
-    if (result) return result
+    if (result) {
+      if (data.edition_title || data.publication_date) {
+        return (
+          <div className="h-full flex flex-col">
+            <div className="flex-1 overflow-hidden">{result}</div>
+            <TemplateFooter
+              editionTitle={data.edition_title}
+              publicationDate={data.publication_date}
+            />
+          </div>
+        )
+      }
+      return result
+    }
   }
   return null
 }
