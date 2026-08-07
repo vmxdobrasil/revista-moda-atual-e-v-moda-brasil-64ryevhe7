@@ -53,15 +53,6 @@ export function PageTemplateModal({
       }
     }
 
-    if (template === 'marketing') {
-      if (!templateData.cta_text?.trim()) {
-        errors.cta_text = 'O texto do CTA é obrigatório.'
-      }
-      if (!templateData.link?.trim()) {
-        errors.link = 'O link é obrigatório.'
-      }
-    }
-
     setValidationErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -208,8 +199,8 @@ export function PageTemplateModal({
           {template === 'marketing' && (
             <div className="space-y-4 border-t pt-4">
               <div className="p-3 bg-orange-50 border border-orange-100 rounded text-sm text-orange-800 mb-4">
-                Este template exibe automaticamente a assinatura:{' '}
-                <strong>"Diretor de Marketing da Revista Moda Atual"</strong>.
+                Este template exibe um link para a plataforma <strong>V MODA BRASIL</strong> e a
+                assinatura: <strong>"Diretor de Marketing da Revista Moda Atual"</strong>.
               </div>
               <div className="space-y-2">
                 <Label>Título</Label>
@@ -227,44 +218,6 @@ export function PageTemplateModal({
                   rows={6}
                   placeholder="Descrição do produto ou serviço..."
                 />
-              </div>
-              <div className="space-y-2">
-                <Label>Detalhes da Oferta</Label>
-                <Input
-                  value={templateData.offer_details || ''}
-                  onChange={(e) =>
-                    setTemplateData({ ...templateData, offer_details: e.target.value })
-                  }
-                  placeholder="Ex: 30% OFF para pedidos acima de R$ 500"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>
-                    Texto do CTA <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    value={templateData.cta_text || ''}
-                    onChange={(e) => setTemplateData({ ...templateData, cta_text: e.target.value })}
-                    placeholder="Ex: Comprar Agora"
-                  />
-                  {validationErrors.cta_text && (
-                    <p className="text-sm text-red-500">{validationErrors.cta_text}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label>
-                    Link <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    value={templateData.link || ''}
-                    onChange={(e) => setTemplateData({ ...templateData, link: e.target.value })}
-                    placeholder="https://..."
-                  />
-                  {validationErrors.link && (
-                    <p className="text-sm text-red-500">{validationErrors.link}</p>
-                  )}
-                </div>
               </div>
             </div>
           )}

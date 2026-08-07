@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from '@/components/ui/toaster'
 import { Toaster as Sonner } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -55,9 +55,7 @@ import PublicAdvertiser from './pages/PublicAdvertiser'
 
 import Partners from './pages/Partners'
 import Advertisements from './pages/Advertisements'
-import Offers from './pages/Offers'
 import AdvertisementsAdminPage from './pages/admin/AdvertisementsPage'
-import MarketplaceProductsPage from './pages/admin/MarketplaceProductsPage'
 import DeliveryQueuePage from './pages/admin/DeliveryQueuePage'
 import DeliveryReviewPage from './pages/admin/DeliveryReviewPage'
 import { AuthProvider } from './hooks/use-auth'
@@ -79,7 +77,7 @@ const App = () => (
                 <Route path="/editions" element={<Editions />} />
                 <Route path="/partners" element={<Partners />} />
                 <Route path="/advertisements" element={<Advertisements />} />
-                <Route path="/offers" element={<Offers />} />
+                <Route path="/offers" element={<Navigate to="/" replace />} />
                 <Route path="/edition/:id" element={<MagazineReader />} />
                 <Route path="/reader/latest" element={<MagazineReader isLatest />} />
                 <Route path="/reader/:id" element={<MagazineReader />} />
@@ -110,7 +108,7 @@ const App = () => (
                 <Route path="ai-persona/chat" element={<AiPersonaChat />} />
                 <Route path="top60" element={<Top60Page />} />
                 <Route path="advertisements" element={<AdvertisementsAdminPage />} />
-                <Route path="marketplace-products" element={<MarketplaceProductsPage />} />
+                <Route path="marketplace-products" element={<Navigate to="/" replace />} />
                 <Route path="delivery-queue" element={<DeliveryQueuePage />} />
                 <Route path="delivery-queue/:id" element={<DeliveryReviewPage />} />
                 <Route path="arquiteto-workflow" element={<ArquitetoWorkflowPage />} />

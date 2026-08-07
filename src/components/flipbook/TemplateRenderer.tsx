@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { EditionPage } from '@/services/magazine'
 import { Quote, ArrowRight, User, Mic } from 'lucide-react'
 
@@ -58,9 +59,6 @@ export function TemplateRenderer({ page }: { page: EditionPage }) {
   if (t === 'marketing') {
     const title = d.title || 'Conteúdo em breve'
     const content = d.content || ''
-    const offerDetails = d.offer_details || ''
-    const ctaText = d.cta_text || ''
-    const link = d.link || ''
 
     return (
       <div className="h-full flex flex-col bg-gradient-to-br from-orange-50 via-white to-orange-50/50 p-8 md:p-12 shadow-2xl overflow-hidden">
@@ -80,26 +78,15 @@ export function TemplateRenderer({ page }: { page: EditionPage }) {
               ))}
             </div>
           )}
-          {offerDetails && (
-            <div className="mt-4 p-4 bg-white/80 rounded-lg border-l-4 border-orange-500 shadow-sm">
-              <p className="text-sm text-gray-600 uppercase tracking-wide font-semibold mb-1">
-                Oferta Especial
-              </p>
-              <p className="text-lg font-bold text-orange-700">{offerDetails}</p>
-            </div>
-          )}
         </div>
         <div className="mt-6 pt-6 border-t border-gray-200">
-          {ctaText && (
-            <div
-              className={`inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-white bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg ${
-                link ? 'cursor-pointer hover:scale-105 transition-transform' : ''
-              }`}
-            >
-              <span>{ctaText}</span>
-              <ArrowRight className="w-5 h-5" />
-            </div>
-          )}
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-white bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg cursor-pointer hover:scale-105 transition-transform"
+          >
+            <span>Confira em V MODA BRASIL</span>
+            <ArrowRight className="w-5 h-5" />
+          </Link>
           <p className="mt-4 text-sm font-medium text-gray-500 italic font-serif">
             Diretor de Marketing da Revista Moda Atual
           </p>

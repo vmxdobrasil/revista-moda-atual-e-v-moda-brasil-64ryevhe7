@@ -19,7 +19,6 @@ import {
   Wand2,
   Wrench,
   Megaphone,
-  Tag,
   FileSearch,
   ClipboardList,
   FileText,
@@ -144,13 +143,6 @@ export function AdminLayout() {
           onClick={() => setSidebarOpen(false)}
         >
           <Megaphone className="w-5 h-5" /> Anúncios
-        </Link>
-        <Link
-          to="/admin/marketplace-products"
-          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
-          onClick={() => setSidebarOpen(false)}
-        >
-          <Tag className="w-5 h-5" /> Ofertas
         </Link>
         <Link
           to="/admin/delivery-queue"

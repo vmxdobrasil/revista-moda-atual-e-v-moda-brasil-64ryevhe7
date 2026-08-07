@@ -10,16 +10,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import { createHotspot, updateHotspot, type Hotspot } from '@/services/magazine'
-import { getAllProducts, type MarketplaceProduct } from '@/services/marketplace'
 import { Loader2, Save } from 'lucide-react'
 
 interface HotspotEditorModalProps {
@@ -39,34 +31,23 @@ export function HotspotEditorModal({
   position,
   onSaved,
 }: HotspotEditorModalProps) {
-  const [products, setProducts] = useState<MarketplaceProduct[]>([])
   const [form, setForm] = useState({
     title: '',
     description: '',
-    price: '',
     link: '',
-    product: '',
   })
   const [saving, setSaving] = useState(false)
   const { toast } = useToast()
-
-  useEffect(() => {
-    getAllProducts()
-      .then(setProducts)
-      .catch(() => {})
-  }, [])
 
   useEffect(() => {
     if (hotspot) {
       setForm({
         title: hotspot.title || '',
         description: hotspot.description || '',
-        price: hotspot.price || '',
         link: hotspot.link || '',
-        product: hotspot.product || '',
       })
     } else {
-      setForm({ title: '', description: '', price: '', link: '', product: '' })
+      setForm({ title: '', description: '', link: '' })
     }
   }, [hotspot, open])
 
@@ -80,9 +61,7 @@ export function HotspotEditorModal({
       const data: Partial<Hotspot> = {
         title: form.title,
         description: form.description,
-        price: form.price,
         link: form.link,
-        product: form.product || undefined,
       }
       if (hotspot) {
         await updateHotspot(hotspot.id, data)
@@ -127,45 +106,16 @@ export function HotspotEditorModal({
               rows={2}
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Preço</Label>
-              <Input
-                value={form.price}
-                onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
-                placeholder="R$ 99,90"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Link</Label>
-              <Input
-                type="url"
-                value={form.link}
-                onChange={(e) => setForm((f) => ({ ...f, link: e.target.value }))}
-                placeholder="https://..."
-              />
-            </div>
-          </div>
           <div className="space-y-2">
-            <Label>Produto (Oferta)</Label>
-            <Select
-              value={form.product || 'none'}
-              onValueChange={(v) => setForm((f) => ({ ...f, product: v === 'none' ? '' : v }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione um produto..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Nenhum</SelectItem>
-                {products.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>Link</Label>
+            <Input
+              type="url"
+              value={form.link}
+              onChange={(e) => setForm((f) => ({ ...f, link: e.target.value }))}
+              placeholder="https://..."
+            />
             <p className="text-xs text-gray-400">
-              Vincule este hotspot a um produto do marketplace para exibir como oferta.
+              Os hotspots agora direcionam para a plataforma V MODA BRASIL.
             </p>
           </div>
         </div>
