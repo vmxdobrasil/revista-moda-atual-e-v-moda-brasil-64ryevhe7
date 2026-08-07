@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { EditionPage } from '@/services/magazine'
 import { Quote, ArrowRight, User, Mic } from 'lucide-react'
+import { NewTemplateRenderer, NEW_TEMPLATE_VALUES } from './templates'
 
 export function TemplateRenderer({ page }: { page: EditionPage }) {
   const t = page.template
@@ -230,6 +231,10 @@ export function TemplateRenderer({ page }: { page: EditionPage }) {
         )}
       </div>
     )
+  }
+
+  if ((NEW_TEMPLATE_VALUES as readonly string[]).includes(t as string)) {
+    return <NewTemplateRenderer template={t as string} data={d} />
   }
 
   return null

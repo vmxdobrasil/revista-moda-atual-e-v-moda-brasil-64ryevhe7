@@ -14,12 +14,16 @@ import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import { Plus, Trash2, Loader2 } from 'lucide-react'
+import { NewTemplateForms, NEW_TEMPLATE_VALUES, getInitialTemplateData } from './new-template-forms'
 
 export function PageTemplateModal({
   page,
@@ -106,6 +110,8 @@ export function PageTemplateModal({
     if (!templateData || Object.keys(templateData).length === 0) {
       if (value === 'entrevista') {
         setTemplateData({ qa: [{ q: '', a: '' }] })
+      } else if ((NEW_TEMPLATE_VALUES as readonly string[]).includes(value)) {
+        setTemplateData(getInitialTemplateData(value))
       } else {
         setTemplateData({})
       }
@@ -127,11 +133,52 @@ export function PageTemplateModal({
                 <SelectValue placeholder="Selecione um template..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="default">Padrão (Título + Texto)</SelectItem>
-                <SelectItem value="editorial">Editorial</SelectItem>
-                <SelectItem value="marketing">Marketing de Moda</SelectItem>
-                <SelectItem value="holofote">Coluna Social Holofote</SelectItem>
-                <SelectItem value="entrevista">Entrevista</SelectItem>
+                <SelectGroup>
+                  <SelectLabel>Templates Atuais</SelectLabel>
+                  <SelectItem value="default">Padrão (Título + Texto)</SelectItem>
+                  <SelectItem value="editorial">Editorial</SelectItem>
+                  <SelectItem value="marketing">Marketing de Moda</SelectItem>
+                  <SelectItem value="holofote">Coluna Social Holofote</SelectItem>
+                  <SelectItem value="entrevista">Entrevista</SelectItem>
+                </SelectGroup>
+                <SelectSeparator />
+                <SelectGroup>
+                  <SelectLabel>Núcleo Editorial</SelectLabel>
+                  <SelectItem value="lookbook">Lookbook / Tendência</SelectItem>
+                  <SelectItem value="indice">Índice / Sumário</SelectItem>
+                  <SelectItem value="trend_report">Coluna de Tendência (Trend Report)</SelectItem>
+                </SelectGroup>
+                <SelectGroup>
+                  <SelectLabel>Monetização e Parceiros</SelectLabel>
+                  <SelectItem value="anuncio_patrocinado">Anúncio / Patrocinado</SelectItem>
+                  <SelectItem value="top60_marcas">Top 60 Marcas</SelectItem>
+                  <SelectItem value="perfil_marca">Perfil de Marca</SelectItem>
+                  <SelectItem value="parceiro_anunciante">
+                    Página de Parceiro / Anunciante
+                  </SelectItem>
+                </SelectGroup>
+                <SelectGroup>
+                  <SelectLabel>Conversão</SelectLabel>
+                  <SelectItem value="galeria_produtos">Galeria de Produtos</SelectItem>
+                  <SelectItem value="materia_cta">Matéria com CTA</SelectItem>
+                  <SelectItem value="comparativo_ab">Comparativo A/B</SelectItem>
+                </SelectGroup>
+                <SelectGroup>
+                  <SelectLabel>Reuso Social</SelectLabel>
+                  <SelectItem value="story_social">Story / Conteúdo Social</SelectItem>
+                  <SelectItem value="newsletter_preview">Newsletter Preview</SelectItem>
+                  <SelectItem value="capa_edicao">Capa de Edição</SelectItem>
+                  <SelectItem value="fashion_editorial">Editorial de Moda</SelectItem>
+                </SelectGroup>
+                <SelectGroup>
+                  <SelectLabel>Colunas Autorais</SelectLabel>
+                  <SelectItem value="coluna_holofote_evoluida">
+                    Coluna Holofote (Evoluída)
+                  </SelectItem>
+                  <SelectItem value="coluna_marketing_moda">
+                    Coluna Marketing de Moda (CEO)
+                  </SelectItem>
+                </SelectGroup>
               </SelectContent>
             </Select>
           </div>
@@ -358,6 +405,10 @@ export function PageTemplateModal({
             </div>
           )}
         </div>
+
+        {(NEW_TEMPLATE_VALUES as readonly string[]).includes(template) && (
+          <NewTemplateForms template={template} data={templateData} setData={setTemplateData} />
+        )}
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
