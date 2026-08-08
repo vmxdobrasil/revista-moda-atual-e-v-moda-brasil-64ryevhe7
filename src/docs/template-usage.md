@@ -166,3 +166,37 @@ Use o botão "Formatos" na edição de página para pré-visualizar em cada form
 ## Diretiva de CTA
 
 Todos os CTAs de oferta/produto dos novos templates (galeria, matéria com CTA, comparativo, lookbook, etc.) apontam para `/` — a plataforma V MODA BRASIL.
+
+---
+
+## Páginas de Exemplo (Migration 0097)
+
+Exemplo de páginas foram criadas via migration `0097_seed_group1_to_4_example_pages.js` para cada um dos 14 templates dos Grupos 1–4. Cada página pode ser visualizada no admin em **Edições → abrir edição → visualizar páginas**.
+
+| Template            | Slug                          | Grupo                       |
+| ------------------- | ----------------------------- | --------------------------- |
+| Lookbook            | `exemplo-lookbook`            | 1 — Núcleo Editorial        |
+| Índice              | `exemplo-indice`              | 1 — Núcleo Editorial        |
+| Trend Report        | `exemplo-trend-report`        | 1 — Núcleo Editorial        |
+| Anúncio Patrocinado | `exemplo-anuncio-patrocinado` | 2 — Monetização e Parceiros |
+| Top 60 Marcas       | `exemplo-top60-marcas`        | 2 — Monetização e Parceiros |
+| Perfil de Marca     | `exemplo-perfil-marca`        | 2 — Monetização e Parceiros |
+| Parceiro Anunciante | `exemplo-parceiro-anunciante` | 2 — Monetização e Parceiros |
+| Galeria de Produtos | `exemplo-galeria-produtos`    | 3 — Conversão               |
+| Matéria com CTA     | `exemplo-materia-cta`         | 3 — Conversão               |
+| Comparativo A/B     | `exemplo-comparativo-ab`      | 3 — Conversão               |
+| Story Social        | `exemplo-story-social`        | 4 — Reuso Social            |
+| Newsletter Preview  | `exemplo-newsletter-preview`  | 4 — Reuso Social            |
+| Capa de Edição      | `exemplo-capa-edicao`         | 4 — Reuso Social            |
+| Fashion Editorial   | `exemplo-fashion-editorial`   | 4 — Reuso Social            |
+
+Todos os CTAs de oferta/produto apontam para `/` (V MODA BRASIL). As páginas de exemplo incluem:
+
+- Dados realistas (produtos, marcas, tendências, depoimentos)
+- Imagens placeholder via `img.usecurling.com`
+- Campos SEO completos (`seo_title`, `seo_description`, `keywords`)
+- Hotspots interativos na página de Fashion Editorial
+- Integração com coleções existentes (`marketplace_products`, `top60_brands`, `top60_categories`, `page_hotspots`)
+- Seed de `marketplace_products` caso a coleção esteja vazia
+- Atribuição automática de `page_number` sequencial após as páginas existentes
+- Verificação de idempotência por `slug` antes de cada inserção
