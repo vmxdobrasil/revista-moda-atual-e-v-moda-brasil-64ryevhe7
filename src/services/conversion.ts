@@ -87,6 +87,31 @@ export interface FunilParams {
   period?: string
 }
 
+export interface VariantMetrics {
+  impressions: number
+  clicks: number
+  orders: number
+  conversion_rate: number
+}
+
+export async function getMetricsByVariant(variant: string): Promise<VariantMetrics> {
+  const records = await pb.collection('conversion_metrics').getFullList({
+    filter: `cta_variant = "${variant}"`,
+  })
+  const totals = records.reduce(
+    (acc, r: any) => ({
+      impressions: acc.impressions + (r.impressions || 0),
+      clicks: acc.clicks + (r.clicks || 0),
+      orders: acc.orders + (r.orders || 0),
+      conversion_rate: 0,
+    }),
+    { impressions: 0, clicks: 0, orders: 0, conversion_rate: 0 },
+  )
+  totals.conversion_rate =
+    totals.impressions > 0 ? Math.round((totals.orders / totals.impressions) * 10000) / 100 : 0
+  return totals
+}
+
 export async function suggestCtas(params: CtaParams): Promise<CtaResponse> {
   return pb.send('/backend/v1/cta', {
     method: 'POST',

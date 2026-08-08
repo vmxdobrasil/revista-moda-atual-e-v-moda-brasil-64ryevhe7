@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { FormField, setField, addItem, updateItem, removeItem } from './shared'
+import { FormField, setField, setNested, updateItem, addItem, removeItem } from './shared'
 import { getCategories, type Top60Category } from '@/services/top60'
 
 export function Group2Form({
@@ -40,7 +40,7 @@ export function Group2Form({
           <Input
             value={data.advertiser || ''}
             onChange={(e) => setField(data, setData, 'advertiser', e.target.value)}
-            placeholder="Nome do anunciante"
+            placeholder="Ex: Lumina Festas"
           />
         </FormField>
         <FormField label="Imagem (URL)">
@@ -50,11 +50,11 @@ export function Group2Form({
             placeholder="URL da imagem"
           />
         </FormField>
-        <FormField label="Headline">
+        <FormField label="Manchete">
           <Input
             value={data.headline || ''}
             onChange={(e) => setField(data, setData, 'headline', e.target.value)}
-            placeholder="Título do anúncio"
+            placeholder="Ex: Coleção Verão 2026"
           />
         </FormField>
         <FormField label="Descrição">
@@ -65,7 +65,17 @@ export function Group2Form({
             placeholder="Texto do anúncio..."
           />
         </FormField>
-        <FormField label="Link (V MODA BRASIL)">
+        <FormField label="Link para o catálogo da marca no V MODA BRASIL">
+          <Input
+            value={data.catalog_link || ''}
+            onChange={(e) => setField(data, setData, 'catalog_link', e.target.value)}
+            placeholder="https://revistamodaatual.com.br/catalogo/sua-marca"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Se vazio, usa o link de fallback ({data.link || '/'}).
+          </p>
+        </FormField>
+        <FormField label="Link de fallback (opcional)">
           <Input
             value={data.link || ''}
             onChange={(e) => setField(data, setData, 'link', e.target.value)}
@@ -79,16 +89,13 @@ export function Group2Form({
   if (template === 'top60_marcas') {
     return (
       <div className="space-y-4 border-t pt-4">
-        <div className="p-3 bg-orange-50 border border-orange-100 rounded text-sm text-orange-800 mb-2">
-          Selecione uma categoria para exibir as marcas do Top 60 automaticamente na página.
-        </div>
         <FormField label="Categoria">
           <Select
             value={data.category || ''}
-            onValueChange={(v) => setField(data, setData, 'category', v)}
+            onValueChange={(val) => setField(data, setData, 'category', val)}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Todas as categorias" />
+              <SelectValue placeholder="Selecione uma categoria..." />
             </SelectTrigger>
             <SelectContent>
               {categories.map((cat) => (
@@ -98,13 +105,15 @@ export function Group2Form({
               ))}
             </SelectContent>
           </Select>
+          <p className="text-xs text-gray-500 mt-1">
+            As marcas são carregadas automaticamente da categoria selecionada.
+          </p>
         </FormField>
       </div>
     )
   }
 
   if (template === 'perfil_marca') {
-    const products = data.products || []
     return (
       <div className="space-y-4 border-t pt-4">
         <FormField label="Nome da Marca">
@@ -137,7 +146,7 @@ export function Group2Form({
               placeholder="https://..."
             />
           </FormField>
-          <FormField label="Social Handle">
+          <FormField label="Handle Social">
             <Input
               value={data.social_handle || ''}
               onChange={(e) => setField(data, setData, 'social_handle', e.target.value)}
@@ -145,8 +154,18 @@ export function Group2Form({
             />
           </FormField>
         </div>
+        <FormField label="Link para o catálogo da marca no V MODA BRASIL">
+          <Input
+            value={data.catalog_link || ''}
+            onChange={(e) => setField(data, setData, 'catalog_link', e.target.value)}
+            placeholder="https://revistamodaatual.com.br/catalogo/sua-marca"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Se vazio, usa o website ({data.website || 'não definido'}).
+          </p>
+        </FormField>
         <div className="flex items-center justify-between">
-          <Label>Produtos da Marca</Label>
+          <Label>Produtos em Destaque</Label>
           <Button
             variant="outline"
             size="sm"
@@ -155,10 +174,10 @@ export function Group2Form({
               addItem(data, setData, 'products', { name: '', image: '', price: '', link: '' })
             }
           >
-            <Plus className="w-4 h-4 mr-2" /> Adicionar Produto
+            <Plus className="w-4 h-4 mr-2" /> Adicionar
           </Button>
         </div>
-        {products.map((p: any, i: number) => (
+        {(data.products || []).map((p: any, i: number) => (
           <div key={i} className="p-4 border rounded-md bg-gray-50 space-y-2 relative">
             <Button
               variant="ghost"
@@ -182,7 +201,12 @@ export function Group2Form({
             <Input
               value={p.price}
               onChange={(e) => updateItem(data, setData, 'products', i, 'price', e.target.value)}
-              placeholder="Preço"
+              placeholder="Preço (ex: R$ 129,90)"
+            />
+            <Input
+              value={p.link}
+              onChange={(e) => updateItem(data, setData, 'products', i, 'link', e.target.value)}
+              placeholder="/ (link para V MODA BRASIL)"
             />
           </div>
         ))}
@@ -192,11 +216,11 @@ export function Group2Form({
 
   return (
     <div className="space-y-4 border-t pt-4">
-      <FormField label="Nome do Parceiro/Anunciante">
+      <FormField label="Nome do Parceiro">
         <Input
           value={data.partner_name || ''}
           onChange={(e) => setField(data, setData, 'partner_name', e.target.value)}
-          placeholder="Nome do parceiro"
+          placeholder="Ex: Atelier BH"
         />
       </FormField>
       <FormField label="Logo (URL)">
@@ -211,36 +235,46 @@ export function Group2Form({
           value={data.description || ''}
           onChange={(e) => setField(data, setData, 'description', e.target.value)}
           rows={4}
-          placeholder="Sobre o parceiro..."
-        />
-      </FormField>
-      <FormField label="Depoimento / Testimonial">
-        <Textarea
-          value={data.testimonial || ''}
-          onChange={(e) => setField(data, setData, 'testimonial', e.target.value)}
-          rows={3}
-          placeholder="Depoimento do parceiro ou cliente..."
-        />
-      </FormField>
-      <FormField label="Autor do Depoimento">
-        <Input
-          value={data.testimonial_author || ''}
-          onChange={(e) => setField(data, setData, 'testimonial_author', e.target.value)}
-          placeholder="Ex: João Silva, CEO da Empresa X"
+          placeholder="Descrição do parceiro..."
         />
       </FormField>
       <FormField label="Informações de Contato">
         <Input
           value={data.contact_info || ''}
           onChange={(e) => setField(data, setData, 'contact_info', e.target.value)}
-          placeholder="email@exemplo.com / (00) 0000-0000"
+          placeholder="email@marca.com - (00) 0000-0000"
         />
       </FormField>
-      <FormField label="Link">
+      <FormField label="Link para o catálogo da marca no V MODA BRASIL">
+        <Input
+          value={data.catalog_link || ''}
+          onChange={(e) => setField(data, setData, 'catalog_link', e.target.value)}
+          placeholder="https://revistamodaatual.com.br/catalogo/sua-marca"
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Se vazio, usa o link de fallback ({data.link || '/'}).
+        </p>
+      </FormField>
+      <FormField label="Link de fallback (opcional)">
         <Input
           value={data.link || ''}
           onChange={(e) => setField(data, setData, 'link', e.target.value)}
           placeholder="/"
+        />
+      </FormField>
+      <FormField label="Depoimento">
+        <Textarea
+          value={data.testimonial || ''}
+          onChange={(e) => setField(data, setData, 'testimonial', e.target.value)}
+          rows={3}
+          placeholder="Texto do depoimento..."
+        />
+      </FormField>
+      <FormField label="Autor do Depoimento">
+        <Input
+          value={data.testimonial_author || ''}
+          onChange={(e) => setField(data, setData, 'testimonial_author', e.target.value)}
+          placeholder="Ex: Mariana Costa, CEO"
         />
       </FormField>
     </div>

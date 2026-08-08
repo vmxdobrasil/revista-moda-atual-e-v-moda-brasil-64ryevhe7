@@ -45,8 +45,9 @@ Use o botão "Formatos" na edição de página para pré-visualizar em cada form
 
 ### Anúncio / Patrocinado (`anuncio_patrocinado`)
 
-- **Campos:** advertiser, image, headline, description, link
+- **Campos:** advertiser, image, headline, description, link, **catalog_link**
 - **Integração:** advertisements
+- **Catálogo V MODA BRASIL:** O campo `catalog_link` aponta para o catálogo específico da marca no V MODA BRASIL. Se vazio, o CTA usa o `link` como fallback.
 - **A4:** Página cheia com imagem superior + CTA
 - **Social:** Story/Reels usa tela cheia com overlay de texto
 
@@ -59,15 +60,17 @@ Use o botão "Formatos" na edição de página para pré-visualizar em cada form
 
 ### Perfil de Marca (`perfil_marca`)
 
-- **Campos:** brand_name, logo, description, website, social_handle, products[] { name, image, price, link }
+- **Campos:** brand_name, logo, description, website, social_handle, **catalog_link**, products[] { name, image, price, link }
 - **Integração:** top60_brands, marketplace_products
+- **Catálogo V MODA BRASIL:** O campo `catalog_link` aponta para o catálogo específico da marca. Se vazio, o CTA usa o `website` como fallback.
 - **A4:** Header com logo + título, descrição, grid de produtos, links
 - **Social:** Pinterest/Story destaca logo e descrição
 
 ### Parceiro / Anunciante (`parceiro_anunciante`)
 
-- **Campos:** partner_name, logo, description, testimonial, testimonial_author, contact_info, link
+- **Campos:** partner_name, logo, description, testimonial, testimonial_author, contact_info, link, **catalog_link**
 - **Integração:** advertisements, about_content
+- **Catálogo V MODA BRASIL:** O campo `catalog_link` aponta para o catálogo específico da marca no V MODA BRASIL. Se vazio, o CTA usa o `link` como fallback.
 - **A4:** Layout institucional com logo, texto, depoimento e CTA
 - **Social:** LinkedIn/Facebook otimiza para conteúdo corporativo
 
@@ -77,23 +80,26 @@ Use o botão "Formatos" na edição de página para pré-visualizar em cada form
 
 ### Galeria de Produtos (`galeria_produtos`)
 
+- **Status:** Sem melhorias futuras. Não há vitrine de produtos interna na revista.
 - **Campos:** products[] { name, image, description, link }
 - **Integração:** marketplace_products
 - **A4:** Grid 2 colunas com foto, nome, descrição e link
 - **Social:** Quadrado mostra 4 produtos; Story um por tela
+- **Nota:** A conversão acontece exclusivamente direcionando leitores para o catálogo da marca no V MODA BRASIL, não por uma vitrine interna.
 
 ### Matéria com CTA (`materia_cta`)
 
-- **Campos:** title, body, images[], cta_label, cta_link
+- **Campos:** title, **subtitle**, body, images[], cta_label, cta_link, **credits**
 - **Integração:** Conversão (link para marketplace, WhatsApp, signup)
-- **A4:** Artigo com CTA no rodapé
+- **A4:** Artigo com subtítulo abaixo do título, créditos no rodapé próximo ao CTA
 - **Social:** Facebook/LinkedIn prioriza headline + CTA
 
 ### Comparativo A/B (`comparativo_ab`)
 
-- **Campos:** option_a { title, description, image, link }, option_b { ... }
-- **Integração:** conversion_metrics
-- **A4:** Duas colunas lado a lado
+- **Campos:** option_a { title, description, image, link, **metrics** { impressions, clicks, orders, conversion_rate } }, option_b { ... }
+- **Integração:** conversion_metrics (métricas agregadas por variante A/B)
+- **Métricas:** O formulário busca automaticamente métricas da coleção `conversion_metrics` (filtradas por `cta_variant` = "A" ou "B") e permite carregá-las para cada opção. As métricas são exibidas no renderizador abaixo de cada variante.
+- **A4:** Duas colunas lado a lado com métricas de performance
 - **Social:** Story/Reels empilha opções verticalmente
 
 ---
@@ -165,7 +171,7 @@ Use o botão "Formatos" na edição de página para pré-visualizar em cada form
 
 ## Diretiva de CTA
 
-Todos os CTAs de oferta/produto dos novos templates (galeria, matéria com CTA, comparativo, lookbook, etc.) apontam para `/` — a plataforma V MODA BRASIL.
+Todos os CTAs de oferta/produto dos templates de advertiser (`anuncio_patrocinado`, `perfil_marca`, `parceiro_anunciante`) apontam para o `catalog_link` configurável — o catálogo específico da marca no V MODA BRASIL. Quando `catalog_link` está vazio, o CTA faz fallback para o campo de link existente (`link` ou `website`). Os CTAs dos demais templates (galeria, matéria com CTA, comparativo, lookbook, etc.) continuam apontando para `/` — a raiz da plataforma V MODA BRASIL.
 
 ---
 

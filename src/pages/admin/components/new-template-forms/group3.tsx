@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -12,6 +13,7 @@ import {
   addItem,
   removeItem,
 } from './shared'
+import { getMetricsByVariant } from '@/services/conversion'
 
 export function Group3Form({
   template,
@@ -22,6 +24,18 @@ export function Group3Form({
   data: any
   setData: (d: any) => void
 }) {
+  const [fetchedMetrics, setFetchedMetrics] = useState<Record<string, any>>({})
+  const [metricsLoading, setMetricsLoading] = useState(false)
+
+  useEffect(() => {
+    if (template !== 'comparativo_ab') return
+    setMetricsLoading(true)
+    Promise.all([getMetricsByVariant('A'), getMetricsByVariant('B')])
+      .then(([a, b]) => setFetchedMetrics({ A: a, B: b }))
+      .catch(() => {})
+      .finally(() => setMetricsLoading(false))
+  }, [template])
+
   if (template === 'galeria_produtos') {
     return (
       <div className="space-y-4 border-t pt-4">
@@ -88,6 +102,13 @@ export function Group3Form({
             placeholder="Ex: O Futuro do Varejo"
           />
         </FormField>
+        <FormField label="Subtítulo">
+          <Input
+            value={data.subtitle || ''}
+            onChange={(e) => setField(data, setData, 'subtitle', e.target.value)}
+            placeholder="Ex: Como a digitalização está transformando o varejo"
+          />
+        </FormField>
         <FormField label="Corpo da Matéria">
           <Textarea
             value={data.body || ''}
@@ -117,8 +138,20 @@ export function Group3Form({
             />
           </FormField>
         </div>
+        <FormField label="Créditos (Autor)">
+          <Input
+            value={data.credits || ''}
+            onChange={(e) => setField(data, setData, 'credits', e.target.value)}
+            placeholder="Ex: Equipe Revista MODA ATUAL"
+          />
+        </FormField>
       </div>
     )
+  }
+
+  const setMetric = (key: string, metric: string, val: string) => {
+    const current = data[key]?.metrics || {}
+    setNested(data, setData, key, 'metrics', { ...current, [metric]: Number(val) || 0 })
   }
 
   return (
@@ -126,34 +159,87 @@ export function Group3Form({
       <div className="p-3 bg-orange-50 border border-orange-100 rounded text-sm text-orange-800 mb-2">
         Configure as duas opções para o comparativo A/B.
       </div>
-      {(['option_a', 'option_b'] as const).map((key) => (
-        <div key={key} className="p-4 border rounded-md bg-gray-50 space-y-2">
-          <Label className="text-sm font-semibold">
-            {key === 'option_a' ? 'Opção A' : 'Opção B'}
-          </Label>
-          <Input
-            value={data[key]?.title || ''}
-            onChange={(e) => setNested(data, setData, key, 'title', e.target.value)}
-            placeholder="Título"
-          />
-          <Textarea
-            value={data[key]?.description || ''}
-            onChange={(e) => setNested(data, setData, key, 'description', e.target.value)}
-            rows={2}
-            placeholder="Descrição"
-          />
-          <Input
-            value={data[key]?.image || ''}
-            onChange={(e) => setNested(data, setData, key, 'image', e.target.value)}
-            placeholder="URL da imagem"
-          />
-          <Input
-            value={data[key]?.link || ''}
-            onChange={(e) => setNested(data, setData, key, 'link', e.target.value)}
-            placeholder="Link (opcional)"
-          />
-        </div>
-      ))}
+      {(['option_a', 'option_b'] as const).map((key) => {
+        const variantLabel = key === 'option_a' ? 'A' : 'B'
+        const fm = fetchedMetrics[variantLabel]
+        return (
+          <div key={key} className="p-4 border rounded-md bg-gray-50 space-y-2">
+            <Label className="text-sm font-semibold">
+              {key === 'option_a' ? 'Opção A' : 'Opção B'}
+            </Label>
+            <Input
+              value={data[key]?.title || ''}
+              onChange={(e) => setNested(data, setData, key, 'title', e.target.value)}
+              placeholder="Título"
+            />
+            <Textarea
+              value={data[key]?.description || ''}
+              onChange={(e) => setNested(data, setData, key, 'description', e.target.value)}
+              rows={2}
+              placeholder="Descrição"
+            />
+            <Input
+              value={data[key]?.image || ''}
+              onChange={(e) => setNested(data, setData, key, 'image', e.target.value)}
+              placeholder="URL da imagem"
+            />
+            <Input
+              value={data[key]?.link || ''}
+              onChange={(e) => setNested(data, setData, key, 'link', e.target.value)}
+              placeholder="Link (opcional)"
+            />
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <div className="flex items-center justify-between mb-1">
+                <Label className="text-xs text-gray-500">
+                  Métricas de Conversão (Variante {variantLabel})
+                </Label>
+                {fm && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    type="button"
+                    className="h-6 text-xs"
+                    onClick={() => setNested(data, setData, key, 'metrics', fm)}
+                  >
+                    Carregar do Sistema
+                  </Button>
+                )}
+              </div>
+              {metricsLoading && <p className="text-xs text-gray-400">Carregando métricas...</p>}
+              <div className="grid grid-cols-2 gap-2 mt-1">
+                <Input
+                  type="number"
+                  value={data[key]?.metrics?.impressions ?? ''}
+                  onChange={(e) => setMetric(key, 'impressions', e.target.value)}
+                  placeholder="Impressões"
+                  className="text-sm"
+                />
+                <Input
+                  type="number"
+                  value={data[key]?.metrics?.clicks ?? ''}
+                  onChange={(e) => setMetric(key, 'clicks', e.target.value)}
+                  placeholder="Cliques"
+                  className="text-sm"
+                />
+                <Input
+                  type="number"
+                  value={data[key]?.metrics?.orders ?? ''}
+                  onChange={(e) => setMetric(key, 'orders', e.target.value)}
+                  placeholder="Pedidos"
+                  className="text-sm"
+                />
+                <Input
+                  type="number"
+                  value={data[key]?.metrics?.conversion_rate ?? ''}
+                  onChange={(e) => setMetric(key, 'conversion_rate', e.target.value)}
+                  placeholder="Taxa (%)"
+                  className="text-sm"
+                />
+              </div>
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }

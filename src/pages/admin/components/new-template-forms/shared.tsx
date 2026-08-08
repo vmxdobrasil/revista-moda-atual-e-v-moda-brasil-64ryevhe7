@@ -17,6 +17,7 @@ export function getParceiroInitialData(): TemplateData {
     description: '',
     contact_info: '',
     link: '/',
+    catalog_link: '',
     testimonial: '',
     testimonial_author: '',
   }
@@ -29,6 +30,7 @@ export function getPerfilMarcaInitialData(): TemplateData {
     description: '',
     website: '',
     social_handle: '',
+    catalog_link: '',
     products: [],
   }
 }
@@ -47,8 +49,20 @@ export function getInitialTemplateData(template: string): TemplateData {
       return { products: [{ name: '', image: '', description: '', link: '' }] }
     case 'comparativo_ab':
       return {
-        option_a: { title: '', description: '', image: '' },
-        option_b: { title: '', description: '', image: '' },
+        option_a: {
+          title: '',
+          description: '',
+          image: '',
+          link: '',
+          metrics: { impressions: 0, clicks: 0, orders: 0, conversion_rate: 0 },
+        },
+        option_b: {
+          title: '',
+          description: '',
+          image: '',
+          link: '',
+          metrics: { impressions: 0, clicks: 0, orders: 0, conversion_rate: 0 },
+        },
       }
     case 'coluna_marketing_moda':
       return {
@@ -63,6 +77,17 @@ export function getInitialTemplateData(template: string): TemplateData {
         edition_title: '',
         images: [],
       }
+    case 'anuncio_patrocinado':
+      return {
+        advertiser: '',
+        image: '',
+        headline: '',
+        description: '',
+        link: '/',
+        catalog_link: '',
+      }
+    case 'top60_marcas':
+      return { category: '' }
     case 'parceiro_anunciante':
       return {
         partner_name: '',
@@ -70,6 +95,7 @@ export function getInitialTemplateData(template: string): TemplateData {
         description: '',
         contact_info: '',
         link: '/',
+        catalog_link: '',
         testimonial: '',
         testimonial_author: '',
       }
@@ -80,6 +106,7 @@ export function getInitialTemplateData(template: string): TemplateData {
         description: '',
         website: '',
         social_handle: '',
+        catalog_link: '',
         products: [],
       }
     case 'coluna_holofote_evoluida':
@@ -101,6 +128,7 @@ export function getInitialTemplateData(template: string): TemplateData {
         edition_title: '',
       }
     case 'materia_cta':
+      return { images: [], subtitle: '', credits: '' }
     case 'fashion_editorial':
       return { images: [] }
     default:
