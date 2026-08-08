@@ -4,22 +4,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Smartphone } from 'lucide-react'
 import { TemplateRenderer } from './TemplateRenderer'
 import type { EditionPage } from '@/services/magazine'
-
-const FORMATS = [
-  { id: 'a4', label: 'A4 Revista', aspect: '210 / 295', maxW: '420px' },
-  { id: 'ig-post', label: 'IG Post', aspect: '1 / 1', maxW: '360px' },
-  { id: 'ig-story', label: 'Story/Reels', aspect: '9 / 16', maxW: '252px' },
-  { id: 'fb-post', label: 'Facebook', aspect: '1200 / 630', maxW: '480px' },
-  { id: 'yt-thumb', label: 'YouTube', aspect: '16 / 9', maxW: '480px' },
-  { id: 'wa-status', label: 'WhatsApp', aspect: '9 / 16', maxW: '252px' },
-  { id: 'pin', label: 'Pinterest', aspect: '2 / 3', maxW: '320px' },
-  { id: 'li-post', label: 'LinkedIn', aspect: '1200 / 627', maxW: '480px' },
-] as const
+import { FORMAT_CONFIG, ALL_FORMATS, type TemplateFormat } from './templates/format-context'
 
 export function SocialFormatPreview({ page }: { page: EditionPage }) {
   const [open, setOpen] = useState(false)
-  const [formatId, setFormatId] = useState<string>('a4')
-  const current = FORMATS.find((f) => f.id === formatId) ?? FORMATS[0]
+  const [format, setFormat] = useState<TemplateFormat>('a4')
+  const current = FORMAT_CONFIG[format]
 
   return (
     <>
@@ -32,14 +22,14 @@ export function SocialFormatPreview({ page }: { page: EditionPage }) {
             <DialogTitle>Pre-visualizacao por Formato</DialogTitle>
           </DialogHeader>
           <div className="flex gap-2 flex-wrap mb-3 flex-shrink-0">
-            {FORMATS.map((f) => (
+            {ALL_FORMATS.map((f) => (
               <Button
-                key={f.id}
-                variant={formatId === f.id ? 'default' : 'outline'}
+                key={f}
+                variant={format === f ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setFormatId(f.id)}
+                onClick={() => setFormat(f)}
               >
-                {f.label}
+                {FORMAT_CONFIG[f].label}
               </Button>
             ))}
           </div>
@@ -49,7 +39,7 @@ export function SocialFormatPreview({ page }: { page: EditionPage }) {
               style={{ aspectRatio: current.aspect, width: '100%', maxWidth: current.maxW }}
             >
               <div className="w-full h-full">
-                <TemplateRenderer page={page} />
+                <TemplateRenderer page={page} format={format} />
               </div>
             </div>
           </div>
