@@ -69,6 +69,21 @@ function StrList({
   )
 }
 
+export function Group3Form({
+  template,
+  data,
+  setData,
+}: {
+  template: string
+  data: any
+  setData: (d: any) => void
+}) {
+  if (template === 'galeria_produtos') return <GaleriaProdutosForm data={data} onChange={setData} />
+  if (template === 'materia_cta') return <MateriaCtaForm data={data} onChange={setData} />
+  if (template === 'comparativo_ab') return <ComparativoAbForm data={data} onChange={setData} />
+  return null
+}
+
 export function GaleriaProdutosForm({ data, onChange, errors }: FormProps) {
   const products: any[] = data.products || []
   const setP = (i: number, k: string, v: string) =>
