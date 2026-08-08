@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Plus, Trash2 } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -9,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { FormField, setField } from './shared'
+import { FormField, setField, addItem, updateItem, removeItem } from './shared'
 import { getCategories, type Top60Category } from '@/services/top60'
 
 export function Group2Form({
@@ -102,6 +104,7 @@ export function Group2Form({
   }
 
   if (template === 'perfil_marca') {
+    const products = data.products || []
     return (
       <div className="space-y-4 border-t pt-4">
         <FormField label="Nome da Marca">
@@ -142,6 +145,47 @@ export function Group2Form({
             />
           </FormField>
         </div>
+        <div className="flex items-center justify-between">
+          <Label>Produtos da Marca</Label>
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            onClick={() =>
+              addItem(data, setData, 'products', { name: '', image: '', price: '', link: '' })
+            }
+          >
+            <Plus className="w-4 h-4 mr-2" /> Adicionar Produto
+          </Button>
+        </div>
+        {products.map((p: any, i: number) => (
+          <div key={i} className="p-4 border rounded-md bg-gray-50 space-y-2 relative">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-2 right-2 h-6 w-6"
+              type="button"
+              onClick={() => removeItem(data, setData, 'products', i)}
+            >
+              <Trash2 className="w-4 h-4 text-red-500" />
+            </Button>
+            <Input
+              value={p.name}
+              onChange={(e) => updateItem(data, setData, 'products', i, 'name', e.target.value)}
+              placeholder="Nome do produto"
+            />
+            <Input
+              value={p.image}
+              onChange={(e) => updateItem(data, setData, 'products', i, 'image', e.target.value)}
+              placeholder="URL da imagem"
+            />
+            <Input
+              value={p.price}
+              onChange={(e) => updateItem(data, setData, 'products', i, 'price', e.target.value)}
+              placeholder="Preço"
+            />
+          </div>
+        ))}
       </div>
     )
   }
@@ -168,6 +212,21 @@ export function Group2Form({
           onChange={(e) => setField(data, setData, 'description', e.target.value)}
           rows={4}
           placeholder="Sobre o parceiro..."
+        />
+      </FormField>
+      <FormField label="Depoimento / Testimonial">
+        <Textarea
+          value={data.testimonial || ''}
+          onChange={(e) => setField(data, setData, 'testimonial', e.target.value)}
+          rows={3}
+          placeholder="Depoimento do parceiro ou cliente..."
+        />
+      </FormField>
+      <FormField label="Autor do Depoimento">
+        <Input
+          value={data.testimonial_author || ''}
+          onChange={(e) => setField(data, setData, 'testimonial_author', e.target.value)}
+          placeholder="Ex: João Silva, CEO da Empresa X"
         />
       </FormField>
       <FormField label="Informações de Contato">

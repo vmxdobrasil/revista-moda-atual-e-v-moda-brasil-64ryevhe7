@@ -9,6 +9,29 @@ export type SetTemplateData = (data: TemplateData) => void
 
 export const GROUP1 = ['lookbook', 'indice', 'trend_report']
 export const GROUP2 = ['anuncio_patrocinado', 'top60_marcas', 'perfil_marca', 'parceiro_anunciante']
+
+export function getParceiroInitialData(): TemplateData {
+  return {
+    partner_name: '',
+    logo: '',
+    description: '',
+    contact_info: '',
+    link: '/',
+    testimonial: '',
+    testimonial_author: '',
+  }
+}
+
+export function getPerfilMarcaInitialData(): TemplateData {
+  return {
+    brand_name: '',
+    logo: '',
+    description: '',
+    website: '',
+    social_handle: '',
+    products: [],
+  }
+}
 export const GROUP3 = ['galeria_produtos', 'materia_cta', 'comparativo_ab']
 export const GROUP4 = ['story_social', 'newsletter_preview', 'capa_edicao', 'fashion_editorial']
 export const GROUP5 = ['coluna_holofote_evoluida', 'coluna_marketing_moda']
@@ -40,6 +63,25 @@ export function getInitialTemplateData(template: string): TemplateData {
         edition_title: '',
         images: [],
       }
+    case 'parceiro_anunciante':
+      return {
+        partner_name: '',
+        logo: '',
+        description: '',
+        contact_info: '',
+        link: '/',
+        testimonial: '',
+        testimonial_author: '',
+      }
+    case 'perfil_marca':
+      return {
+        brand_name: '',
+        logo: '',
+        description: '',
+        website: '',
+        social_handle: '',
+        products: [],
+      }
     case 'coluna_holofote_evoluida':
       return {
         images: [],
@@ -51,6 +93,13 @@ export function getInitialTemplateData(template: string): TemplateData {
         person_role: '',
       }
     case 'lookbook':
+      return {
+        season: '',
+        looks: [],
+        images: [],
+        link: '/',
+        edition_title: '',
+      }
     case 'materia_cta':
     case 'fashion_editorial':
       return { images: [] }

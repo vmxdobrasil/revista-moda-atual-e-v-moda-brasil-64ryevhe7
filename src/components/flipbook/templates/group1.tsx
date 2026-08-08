@@ -1,31 +1,60 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight, TrendingUp } from 'lucide-react'
+import { EditionSeal } from './shared-components'
 
 export function renderGroup1(template: string, d: any) {
   if (template === 'lookbook') {
     const title = d.title || 'Lookbook'
+    const season = d.season || ''
     const description = d.description || ''
+    const looks: Array<{ image: string; description: string; price: string }> = d.looks || []
     const images: string[] = d.images || []
-    const link = d.link || ''
+    const link = d.link || '/'
+    const editionTitle = d.edition_title || ''
+
+    const displayLooks =
+      looks.length > 0 ? looks : images.map((img) => ({ image: img, description: '', price: '' }))
 
     return (
       <div className="h-full flex flex-col bg-white p-6 md:p-10 overflow-hidden">
         <div className="border-b-2 border-orange-500 pb-3 mb-4">
-          <span className="text-xs font-bold tracking-[0.3em] text-orange-600 uppercase">
-            Lookbook
-          </span>
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs font-bold tracking-[0.3em] text-orange-600 uppercase">
+              Lookbook
+            </span>
+            <EditionSeal text={editionTitle || 'Revista Moda Atual'} />
+          </div>
           <h2 className="text-2xl md:text-3xl font-serif text-gray-900 mt-2">{title}</h2>
+          {season && (
+            <p className="text-sm text-orange-600 font-semibold mt-1 uppercase tracking-wide">
+              {season}
+            </p>
+          )}
           {description && <p className="text-sm text-gray-500 mt-1">{description}</p>}
         </div>
-        <div className="flex-1 overflow-hidden grid grid-cols-2 gap-3">
-          {images.length > 0 ? (
-            images.map((img, i) => (
-              <img
+        <div className="flex-1 overflow-auto grid grid-cols-2 gap-3">
+          {displayLooks.length > 0 ? (
+            displayLooks.map((look, i) => (
+              <div
                 key={i}
-                src={img}
-                alt={`Look ${i + 1}`}
-                className="w-full h-full object-cover rounded-lg shadow-md"
-              />
+                className="flex flex-col rounded-lg overflow-hidden shadow-md bg-gray-50"
+              >
+                {look.image && (
+                  <img
+                    src={look.image}
+                    alt={`Look ${i + 1}`}
+                    className="w-full h-32 md:h-40 object-cover"
+                  />
+                )}
+                <div className="p-2 flex-1 flex flex-col justify-between">
+                  {look.description && (
+                    <p className="text-xs text-gray-600 leading-snug">{look.description}</p>
+                  )}
+                  {look.price && (
+                    <p className="text-sm font-bold text-orange-600 mt-1">{look.price}</p>
+                  )}
+                </div>
+              </div>
             ))
           ) : (
             <p className="text-gray-400 italic col-span-2 text-center self-center">
@@ -33,14 +62,12 @@ export function renderGroup1(template: string, d: any) {
             </p>
           )}
         </div>
-        {link && (
-          <Link
-            to={link}
-            className="mt-4 inline-flex items-center gap-2 text-orange-600 font-semibold text-sm hover:gap-3 transition-all"
-          >
-            Ver em V MODA BRASIL <ArrowRight className="w-4 h-4" />
-          </Link>
-        )}
+        <Link
+          to={link}
+          className="mt-4 inline-flex items-center gap-2 text-orange-600 font-semibold text-sm hover:gap-3 transition-all"
+        >
+          Ver em V MODA BRASIL <ArrowRight className="w-4 h-4" />
+        </Link>
       </div>
     )
   }

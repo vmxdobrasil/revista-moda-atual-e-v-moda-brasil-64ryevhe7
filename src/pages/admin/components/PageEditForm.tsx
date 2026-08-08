@@ -102,11 +102,29 @@ export function PageEditForm({ page, onSaved }: PageEditFormProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="default">Padrão</SelectItem>
+                <SelectItem value="default">Padrão (Título + Texto)</SelectItem>
                 <SelectItem value="editorial">Editorial</SelectItem>
                 <SelectItem value="marketing">Marketing de Moda</SelectItem>
                 <SelectItem value="holofote">Coluna Social Holofote</SelectItem>
                 <SelectItem value="entrevista">Entrevista</SelectItem>
+                <SelectItem value="lookbook">Lookbook / Tendência</SelectItem>
+                <SelectItem value="indice">Índice / Sumário</SelectItem>
+                <SelectItem value="trend_report">Trend Report</SelectItem>
+                <SelectItem value="anuncio_patrocinado">Anúncio / Patrocinado</SelectItem>
+                <SelectItem value="top60_marcas">Top 60 Marcas</SelectItem>
+                <SelectItem value="perfil_marca">Perfil de Marca</SelectItem>
+                <SelectItem value="parceiro_anunciante">Parceiro / Anunciante</SelectItem>
+                <SelectItem value="galeria_produtos">Galeria de Produtos</SelectItem>
+                <SelectItem value="materia_cta">Matéria com CTA</SelectItem>
+                <SelectItem value="comparativo_ab">Comparativo A/B</SelectItem>
+                <SelectItem value="story_social">Story / Conteúdo Social</SelectItem>
+                <SelectItem value="newsletter_preview">Newsletter Preview</SelectItem>
+                <SelectItem value="capa_edicao">Capa de Edição</SelectItem>
+                <SelectItem value="fashion_editorial">Fashion Editorial</SelectItem>
+                <SelectItem value="coluna_holofote_evoluida">Coluna Holofote (Evoluída)</SelectItem>
+                <SelectItem value="coluna_marketing_moda">
+                  Coluna Marketing de Moda (CEO)
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>

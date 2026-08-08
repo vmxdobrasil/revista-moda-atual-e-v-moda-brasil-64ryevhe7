@@ -97,6 +97,8 @@ export function renderGroup2(template: string, d: any) {
     const description = d.description || ''
     const website = d.website || ''
     const socialHandle = d.social_handle || ''
+    const products: Array<{ name: string; image: string; price: string; link: string }> =
+      d.products || []
 
     return (
       <div className="h-full flex flex-col bg-white p-6 md:p-10 overflow-hidden">
@@ -114,9 +116,26 @@ export function renderGroup2(template: string, d: any) {
           </div>
         </div>
         {description && (
-          <p className="text-gray-700 flex-1 text-base leading-relaxed">{description}</p>
+          <p className="text-gray-700 flex-1 text-base leading-relaxed mb-4">{description}</p>
         )}
-        <div className="mt-4 flex flex-wrap gap-4 text-sm">
+        {products.length > 0 && (
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            {products.map((p, i) => (
+              <div key={i} className="bg-orange-50/40 rounded-lg p-2 flex flex-col">
+                {p.image && (
+                  <img
+                    src={p.image}
+                    alt={p.name}
+                    className="w-full h-20 object-cover rounded-md mb-1"
+                  />
+                )}
+                <p className="font-semibold text-gray-900 text-xs">{p.name}</p>
+                {p.price && <p className="text-xs text-orange-600 font-bold">{p.price}</p>}
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="mt-auto pt-4 border-t border-gray-200 flex flex-wrap gap-4 text-sm">
           {website && (
             <a
               href={website}
@@ -139,6 +158,8 @@ export function renderGroup2(template: string, d: any) {
     const description = d.description || ''
     const contactInfo = d.contact_info || ''
     const link = d.link || '/'
+    const testimonial = d.testimonial || ''
+    const testimonialAuthor = d.testimonial_author || ''
 
     return (
       <div className="h-full flex flex-col bg-gradient-to-b from-orange-50/50 to-white p-6 md:p-10 overflow-hidden">
@@ -160,6 +181,16 @@ export function renderGroup2(template: string, d: any) {
         </div>
         {description && (
           <p className="text-gray-700 flex-1 text-base leading-relaxed">{description}</p>
+        )}
+        {testimonial && (
+          <div className="mt-3 p-4 bg-white border-l-4 border-orange-500 rounded-r-lg shadow-sm">
+            <p className="text-gray-800 text-sm md:text-base italic leading-relaxed">
+              "{testimonial}"
+            </p>
+            {testimonialAuthor && (
+              <p className="text-xs text-orange-600 font-semibold mt-2">— {testimonialAuthor}</p>
+            )}
+          </div>
         )}
         {contactInfo && <p className="text-sm text-gray-500 mt-3">{contactInfo}</p>}
         <Link
