@@ -4,16 +4,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Plus, Trash2 } from 'lucide-react'
-import {
-  FormField,
-  ImageListEditor,
-  setField,
-  setNested,
-  updateItem,
-  addItem,
-  removeItem,
-} from './shared'
-import { getMetricsByVariant } from '@/services/conversion'
+import { FormField, setField, updateItem, addItem, removeItem, setNested } from './shared'
+import { getAllProducts, type MarketplaceProduct, getImageUrl } from '@/services/marketplace'
+import { formatPrice } from '@/services/marketplace'
 
 export function Group3Form({
   template,
@@ -24,21 +17,52 @@ export function Group3Form({
   data: any
   setData: (d: any) => void
 }) {
-  const [fetchedMetrics, setFetchedMetrics] = useState<Record<string, any>>({})
-  const [metricsLoading, setMetricsLoading] = useState(false)
+  const [products, setProducts] = useState<MarketplaceProduct[]>([])
 
   useEffect(() => {
-    if (template !== 'comparativo_ab') return
-    setMetricsLoading(true)
-    Promise.all([getMetricsByVariant('A'), getMetricsByVariant('B')])
-      .then(([a, b]) => setFetchedMetrics({ A: a, B: b }))
-      .catch(() => {})
-      .finally(() => setMetricsLoading(false))
+    if (
+      template === 'galeria_produtos' ||
+      template === 'materia_cta' ||
+      template === 'comparativo_ab'
+    ) {
+      getAllProducts()
+        .then(setProducts)
+        .catch(() => {})
+    }
   }, [template])
 
   if (template === 'galeria_produtos') {
     return (
       <div className="space-y-4 border-t pt-4">
+        <FormField label="Título da Galeria">
+          <Input
+            value={data.title || ''}
+            onChange={(e) => setField(data, setData, 'title', e.target.value)}
+            placeholder="Ex: Produtos em Destaque"
+          />
+        </FormField>
+        {products.length > 0 && (
+          <FormField label="Importar do Marketplace">
+            <Button
+              variant="outline"
+              size="sm"
+              type="button"
+              onClick={() => {
+                const existing = data.products || []
+                const imported = products.slice(0, 6).map((p) => ({
+                  name: p.name,
+                  image: p.image_file ? getImageUrl(p, p.image_file) : '',
+                  description: p.description || '',
+                  price: formatPrice(p.price, p.currency),
+                  link: p.link || '/',
+                }))
+                setField(data, setData, 'products', [...existing, ...imported])
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2" /> Importar 6 Produtos
+            </Button>
+          </FormField>
+        )}
         <div className="flex items-center justify-between">
           <Label>Produtos</Label>
           <Button
@@ -46,10 +70,16 @@ export function Group3Form({
             size="sm"
             type="button"
             onClick={() =>
-              addItem(data, setData, 'products', { name: '', image: '', description: '', link: '' })
+              addItem(data, setData, 'products', {
+                name: '',
+                image: '',
+                description: '',
+                price: '',
+                link: '',
+              })
             }
           >
-            <Plus className="w-4 h-4 mr-2" /> Adicionar Produto
+            <Plus className="w-4 h-4 mr-2" /> Adicionar
           </Button>
         </div>
         {(data.products || []).map((p: any, i: number) => (
@@ -73,18 +103,22 @@ export function Group3Form({
               onChange={(e) => updateItem(data, setData, 'products', i, 'image', e.target.value)}
               placeholder="URL da imagem"
             />
-            <Textarea
+            <Input
               value={p.description}
               onChange={(e) =>
                 updateItem(data, setData, 'products', i, 'description', e.target.value)
               }
-              rows={2}
-              placeholder="Descrição"
+              placeholder="Descrição curta"
+            />
+            <Input
+              value={p.price}
+              onChange={(e) => updateItem(data, setData, 'products', i, 'price', e.target.value)}
+              placeholder="Preço (ex: R$ 129,90)"
             />
             <Input
               value={p.link}
               onChange={(e) => updateItem(data, setData, 'products', i, 'link', e.target.value)}
-              placeholder="/ (link para V MODA BRASIL)"
+              placeholder="/ (link)"
             />
           </div>
         ))}
@@ -95,18 +129,18 @@ export function Group3Form({
   if (template === 'materia_cta') {
     return (
       <div className="space-y-4 border-t pt-4">
-        <FormField label="Título da Matéria">
+        <FormField label="Manchete">
           <Input
             value={data.title || ''}
             onChange={(e) => setField(data, setData, 'title', e.target.value)}
-            placeholder="Ex: O Futuro do Varejo"
+            placeholder="Ex: O Futuro do Varejo de Moda"
           />
         </FormField>
         <FormField label="Subtítulo">
           <Input
             value={data.subtitle || ''}
             onChange={(e) => setField(data, setData, 'subtitle', e.target.value)}
-            placeholder="Ex: Como a digitalização está transformando o varejo"
+            placeholder="Ex: Como a digitalização transforma o setor"
           />
         </FormField>
         <FormField label="Corpo da Matéria">
@@ -114,59 +148,81 @@ export function Group3Form({
             value={data.body || ''}
             onChange={(e) => setField(data, setData, 'body', e.target.value)}
             rows={8}
-            placeholder="Texto da matéria... (use Enter para parágrafos)"
+            placeholder="Texto completo da matéria..."
           />
         </FormField>
-        <ImageListEditor
-          label="Imagens"
-          images={data.images || []}
-          onChange={(imgs) => setField(data, setData, 'images', imgs)}
-        />
-        <div className="grid grid-cols-2 gap-4">
-          <FormField label="Texto do CTA">
-            <Input
-              value={data.cta_label || ''}
-              onChange={(e) => setField(data, setData, 'cta_label', e.target.value)}
-              placeholder="Ex: Confira"
-            />
-          </FormField>
-          <FormField label="Link do CTA">
-            <Input
-              value={data.cta_link || ''}
-              onChange={(e) => setField(data, setData, 'cta_link', e.target.value)}
-              placeholder="/"
-            />
-          </FormField>
-        </div>
-        <FormField label="Créditos (Autor)">
+        <FormField label="Imagens (URLs, uma por linha)">
+          <Textarea
+            value={(data.images || []).join('\n')}
+            onChange={(e) =>
+              setField(
+                data,
+                setData,
+                'images',
+                e.target.value.split('\n').filter((s: string) => s.trim()),
+              )
+            }
+            rows={3}
+            placeholder="https://..."
+          />
+        </FormField>
+        <FormField label="Créditos">
           <Input
             value={data.credits || ''}
             onChange={(e) => setField(data, setData, 'credits', e.target.value)}
             placeholder="Ex: Equipe Revista MODA ATUAL"
           />
         </FormField>
+        <FormField label="Rótulo do CTA">
+          <Input
+            value={data.cta_label || ''}
+            onChange={(e) => setField(data, setData, 'cta_label', e.target.value)}
+            placeholder="Ex: Conheça V MODA BRASIL"
+          />
+        </FormField>
+        <FormField label="Link do CTA">
+          <Input
+            value={data.cta_link || ''}
+            onChange={(e) => setField(data, setData, 'cta_link', e.target.value)}
+            placeholder="/"
+          />
+        </FormField>
+        {products.length > 0 && (
+          <FormField label="Produto de Destaque (opcional)">
+            <Select
+              value={data.target_product || ''}
+              onValueChange={(val) => setField(data, setData, 'target_product', val)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione um produto..." />
+              </SelectTrigger>
+              <SelectContent>
+                {products.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.name} — {formatPrice(p.price, p.currency)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormField>
+        )}
       </div>
     )
   }
 
-  const setMetric = (key: string, metric: string, val: string) => {
-    const current = data[key]?.metrics || {}
-    setNested(data, setData, key, 'metrics', { ...current, [metric]: Number(val) || 0 })
-  }
-
-  return (
-    <div className="space-y-4 border-t pt-4">
-      <div className="p-3 bg-orange-50 border border-orange-100 rounded text-sm text-orange-800 mb-2">
-        Configure as duas opções para o comparativo A/B.
-      </div>
-      {(['option_a', 'option_b'] as const).map((key) => {
-        const variantLabel = key === 'option_a' ? 'A' : 'B'
-        const fm = fetchedMetrics[variantLabel]
-        return (
+  if (template === 'comparativo_ab') {
+    return (
+      <div className="space-y-4 border-t pt-4">
+        <FormField label="Título do Comparativo">
+          <Input
+            value={data.title || ''}
+            onChange={(e) => setField(data, setData, 'title', e.target.value)}
+            placeholder="Ex: Minimalista vs Maximalista"
+          />
+        </FormField>
+        {['option_a', 'option_b'].map((key) => (
           <div key={key} className="p-4 border rounded-md bg-gray-50 space-y-2">
-            <Label className="text-sm font-semibold">
-              {key === 'option_a' ? 'Opção A' : 'Opção B'}
-            </Label>
+            <Label className="font-semibold">Opção {key === 'option_a' ? 'A' : 'B'}</Label>
             <Input
               value={data[key]?.title || ''}
               onChange={(e) => setNested(data, setData, key, 'title', e.target.value)}
@@ -184,62 +240,49 @@ export function Group3Form({
               placeholder="URL da imagem"
             />
             <Input
+              value={data[key]?.price || ''}
+              onChange={(e) => setNested(data, setData, key, 'price', e.target.value)}
+              placeholder="Preço (ex: R$ 129,90)"
+            />
+            <Input
               value={data[key]?.link || ''}
               onChange={(e) => setNested(data, setData, key, 'link', e.target.value)}
-              placeholder="Link (opcional)"
+              placeholder="/ (link)"
             />
-            <div className="mt-3 pt-3 border-t border-gray-200">
-              <div className="flex items-center justify-between mb-1">
-                <Label className="text-xs text-gray-500">
-                  Métricas de Conversão (Variante {variantLabel})
-                </Label>
-                {fm && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    type="button"
-                    className="h-6 text-xs"
-                    onClick={() => setNested(data, setData, key, 'metrics', fm)}
-                  >
-                    Carregar do Sistema
-                  </Button>
-                )}
-              </div>
-              {metricsLoading && <p className="text-xs text-gray-400">Carregando métricas...</p>}
-              <div className="grid grid-cols-2 gap-2 mt-1">
-                <Input
-                  type="number"
-                  value={data[key]?.metrics?.impressions ?? ''}
-                  onChange={(e) => setMetric(key, 'impressions', e.target.value)}
-                  placeholder="Impressões"
-                  className="text-sm"
-                />
-                <Input
-                  type="number"
-                  value={data[key]?.metrics?.clicks ?? ''}
-                  onChange={(e) => setMetric(key, 'clicks', e.target.value)}
-                  placeholder="Cliques"
-                  className="text-sm"
-                />
-                <Input
-                  type="number"
-                  value={data[key]?.metrics?.orders ?? ''}
-                  onChange={(e) => setMetric(key, 'orders', e.target.value)}
-                  placeholder="Pedidos"
-                  className="text-sm"
-                />
-                <Input
-                  type="number"
-                  value={data[key]?.metrics?.conversion_rate ?? ''}
-                  onChange={(e) => setMetric(key, 'conversion_rate', e.target.value)}
-                  placeholder="Taxa (%)"
-                  className="text-sm"
-                />
-              </div>
-            </div>
           </div>
-        )
-      })}
-    </div>
-  )
+        ))}
+        <FormField label="Fatores Decisivos (um por linha)">
+          <Textarea
+            value={(data.deciding_factors || []).join('\n')}
+            onChange={(e) =>
+              setField(
+                data,
+                setData,
+                'deciding_factors',
+                e.target.value.split('\n').filter((s: string) => s.trim()),
+              )
+            }
+            rows={3}
+            placeholder="Custo-benefício&#10;Qualidade do tecido&#10;Versatilidade"
+          />
+        </FormField>
+        <FormField label="Rótulo do CTA">
+          <Input
+            value={data.cta_label || ''}
+            onChange={(e) => setField(data, setData, 'cta_label', e.target.value)}
+            placeholder="Ex: Ver Opções"
+          />
+        </FormField>
+        <FormField label="Link do CTA">
+          <Input
+            value={data.cta_link || ''}
+            onChange={(e) => setField(data, setData, 'cta_link', e.target.value)}
+            placeholder="/"
+          />
+        </FormField>
+      </div>
+    )
+  }
+
+  return null
 }

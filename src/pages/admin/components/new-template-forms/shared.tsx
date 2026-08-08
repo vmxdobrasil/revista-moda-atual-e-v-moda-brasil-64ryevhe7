@@ -54,13 +54,18 @@ export function getInitialTemplateData(template: string): TemplateData {
         recommendations: [],
       }
     case 'galeria_produtos':
-      return { products: [{ name: '', image: '', description: '', link: '' }] }
+      return {
+        title: '',
+        products: [{ name: '', image: '', description: '', price: '', link: '' }],
+      }
     case 'comparativo_ab':
       return {
+        title: '',
         option_a: {
           title: '',
           description: '',
           image: '',
+          price: '',
           link: '',
           metrics: { impressions: 0, clicks: 0, orders: 0, conversion_rate: 0 },
         },
@@ -68,9 +73,13 @@ export function getInitialTemplateData(template: string): TemplateData {
           title: '',
           description: '',
           image: '',
+          price: '',
           link: '',
           metrics: { impressions: 0, clicks: 0, orders: 0, conversion_rate: 0 },
         },
+        deciding_factors: [],
+        cta_label: '',
+        cta_link: '/',
       }
     case 'coluna_marketing_moda':
       return {
@@ -88,9 +97,12 @@ export function getInitialTemplateData(template: string): TemplateData {
     case 'anuncio_patrocinado':
       return {
         advertiser: '',
+        campaign: '',
         image: '',
         headline: '',
+        body: '',
         description: '',
+        cta_label: '',
         link: '/',
         catalog_link: '',
       }
@@ -99,6 +111,13 @@ export function getInitialTemplateData(template: string): TemplateData {
     case 'parceiro_anunciante':
       return {
         partner_name: '',
+        advertiser: '',
+        campaign: '',
+        format: '',
+        position: '',
+        audience_reach: 0,
+        suggested_price: 0,
+        status: '',
         logo: '',
         description: '',
         contact_info: '',
@@ -136,9 +155,45 @@ export function getInitialTemplateData(template: string): TemplateData {
         edition_title: '',
       }
     case 'materia_cta':
-      return { images: [], subtitle: '', credits: '' }
+      return {
+        title: '',
+        subtitle: '',
+        body: '',
+        images: [],
+        credits: '',
+        cta_label: '',
+        cta_link: '/',
+        target_product: '',
+      }
+    case 'story_social':
+      return {
+        subject: '',
+        hook: '',
+        image: '',
+        caption: '',
+        cta_label: '',
+        link: '/',
+      }
+    case 'newsletter_preview':
+      return {
+        title: '',
+        subject: '',
+        preheader: '',
+        content: '',
+        sections: [],
+        cta_label: '',
+        cta_link: '/',
+      }
+    case 'capa_edicao':
+      return {
+        cover_image: '',
+        title: '',
+        subtitle: '',
+        cta_label: '',
+        link: '/',
+      }
     case 'fashion_editorial':
-      return { images: [] }
+      return { title: '', intro: '', images: [], body: '' }
     default:
       return {}
   }

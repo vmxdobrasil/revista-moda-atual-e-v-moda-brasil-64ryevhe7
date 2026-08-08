@@ -1,162 +1,213 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, ShoppingBag, FileText } from 'lucide-react'
-import { EditorialHeader } from './shared-components'
+import { ArrowRight, ShoppingBag, FileText, Columns2, TrendingUp, Check } from 'lucide-react'
 import type { TemplateFormat } from './format-context'
-import { isVertical, isSquare, isWide } from './format-context'
+import { isVertical, isSquare, isWide, formatTitleSize } from './format-context'
 
-function itemCols(format: TemplateFormat): string {
-  if (isVertical(format)) return 'grid-cols-1'
-  if (isSquare(format)) return 'grid-cols-2'
-  return 'grid-cols-2 md:grid-cols-3'
+function renderCTA(label: string, href: string, format: TemplateFormat = 'a4') {
+  if (!label) return null
+  const story = isVertical(format)
+  const cls = story
+    ? 'mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-white bg-orange-600 shadow-lg self-start text-xs'
+    : 'mt-3 inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-white bg-orange-600 shadow-lg hover:scale-105 transition-transform self-start text-sm'
+  if (href.startsWith('http')) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>
+        {label} <ArrowRight className={story ? 'w-3 h-3' : 'w-4 h-4'} />
+      </a>
+    )
+  }
+  return (
+    <Link to={href || '/'} className={cls}>
+      {label} <ArrowRight className={story ? 'w-3 h-3' : 'w-4 h-4'} />
+    </Link>
+  )
 }
 
 export function renderGroup3(template: string, d: any, format: TemplateFormat = 'a4') {
   if (template === 'galeria_produtos') {
-    const products: Array<{ name: string; image: string; description: string; link: string }> =
-      d.products || []
     const story = isVertical(format)
+    const wide = isWide(format)
+    const products: any[] = d.products || []
+    const gridCls = story
+      ? 'grid-cols-1'
+      : isSquare(format)
+        ? 'grid-cols-2'
+        : wide
+          ? 'grid-cols-3'
+          : 'grid-cols-2'
+    const maxItems = story ? 3 : isSquare(format) ? 4 : 6
     return (
       <div className="h-full flex flex-col bg-white safe-area overflow-hidden">
         <div className="flex items-center gap-2 mb-3">
           <ShoppingBag className="w-4 h-4 text-orange-500" />
           <span className="type-eyebrow text-[0.625rem] text-orange-600">Galeria de Produtos</span>
         </div>
-        <div className={`grid ${itemCols(format)} gap-3 flex-1 overflow-auto`}>
-          {products.length > 0 ? (
-            products.slice(0, story ? 4 : 6).map((p, i) => (
-              <div key={i} className="bg-orange-50/40 rounded-lg p-3 flex flex-col">
-                {p.image && (
-                  <img
-                    src={p.image}
-                    alt={p.name}
-                    className="w-full h-24 object-cover rounded-md mb-2"
-                  />
-                )}
-                <h3 className="type-headline font-semibold text-gray-900 text-sm">
-                  {p.name || `Produto ${i + 1}`}
-                </h3>
-                {p.description && (
-                  <p className="type-caption text-gray-500 text-xs mt-1 flex-1">{p.description}</p>
-                )}
-                {p.link && (
-                  <Link
-                    to={p.link}
-                    className="text-xs text-orange-600 font-medium mt-1 hover:underline"
-                  >
-                    Ver produto →
-                  </Link>
-                )}
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-400 italic col-span-full text-center self-center type-caption">
-              Produtos em breve
-            </p>
-          )}
+        {d.title && (
+          <h2 className={`type-display ${formatTitleSize(format)} text-gray-900 mb-3`}>
+            {d.title}
+          </h2>
+        )}
+        <div className={`grid ${gridCls} gap-3 flex-1 overflow-auto`}>
+          {products.slice(0, maxItems).map((p, i) => (
+            <div key={i} className="bg-orange-50/30 rounded-lg p-2 flex flex-col">
+              {p.image && (
+                <img
+                  src={p.image}
+                  alt={p.name}
+                  className={`w-full ${story ? 'h-24' : 'h-20'} object-cover rounded-md mb-2`}
+                />
+              )}
+              <p className="text-xs font-semibold text-gray-900 type-caption line-clamp-2">
+                {p.name}
+              </p>
+              {p.description && (
+                <p className="text-[0.625rem] text-gray-500 type-caption line-clamp-2 mt-0.5">
+                  {p.description}
+                </p>
+              )}
+              {p.price && <p className="text-sm text-orange-600 font-bold mt-1">{p.price}</p>}
+              {p.link && renderCTA('Ver', p.link, format)}
+            </div>
+          ))}
         </div>
       </div>
     )
   }
-
   if (template === 'materia_cta') {
-    const images: string[] = d.images || []
     const story = isVertical(format)
+    const wide = isWide(format)
+    const images: string[] = d.images || []
     return (
       <div className="h-full flex flex-col bg-white safe-area overflow-hidden">
         <div className="flex items-center gap-2 mb-2">
           <FileText className="w-4 h-4 text-orange-500" />
           <span className="type-eyebrow text-[0.625rem] text-orange-600">Matéria</span>
         </div>
-        <EditorialHeader
-          title={d.title || 'Matéria'}
-          subtitle={d.subtitle}
-          format={format}
-          align={d.text_align}
-        />
+        {d.title && (
+          <h2 className={`type-display ${formatTitleSize(format)} text-gray-900 mb-1`}>
+            {d.title}
+          </h2>
+        )}
+        {d.subtitle && <p className="type-subheadline text-sm text-gray-500 mb-3">{d.subtitle}</p>}
+        {images.length > 0 && (
+          <div
+            className={`grid ${story ? 'grid-cols-1' : wide ? 'grid-cols-2' : 'grid-cols-2'} gap-2 mb-3`}
+          >
+            {images.slice(0, 2).map((img, i) => (
+              <img
+                key={i}
+                src={img}
+                alt=""
+                className={`w-full ${story ? 'h-32' : 'h-28'} object-cover rounded-lg`}
+              />
+            ))}
+          </div>
+        )}
         <div className="flex-1 overflow-auto">
-          {d.body &&
+          {d.body ? (
             d.body.split('\n').map((p: string, i: number) => (
-              <p key={i} className="mb-3 type-body text-gray-700 text-sm md:text-base text-justify">
+              <p
+                key={i}
+                className="mb-3 type-body text-sm text-gray-700 leading-relaxed text-justify"
+              >
                 {i === 0 && (
-                  <span className="float-left type-display text-4xl font-bold text-orange-600 leading-none mr-2 mt-1">
+                  <span className="float-left text-4xl font-serif font-bold text-orange-600 leading-none mr-2 mt-1">
                     {p.charAt(0)}
                   </span>
                 )}
                 {i === 0 ? p.slice(1) : p}
               </p>
-            ))}
-          {images.length > 0 && (
-            <div className={`grid ${story ? 'grid-cols-1' : 'grid-cols-2'} gap-2 mt-3`}>
-              {images.map((img, i) => (
-                <img key={i} src={img} alt="" className="w-full h-24 object-cover rounded-md" />
-              ))}
-            </div>
+            ))
+          ) : (
+            <p className="text-gray-400 italic type-caption">Conteúdo em breve</p>
           )}
         </div>
-        {d.credits && <p className="mt-3 type-credits text-gray-500 text-xs">Por {d.credits}</p>}
-        <Link
-          to={d.cta_link || '/'}
-          className="mt-4 inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-white bg-orange-600 shadow-lg hover:scale-105 transition-transform self-start text-sm"
-        >
-          {d.cta_label || 'Confira'} <ArrowRight className="w-4 h-4" />
-        </Link>
+        {d.credits && <p className="type-credits text-xs text-gray-400 mb-2">Por {d.credits}</p>}
+        {renderCTA(d.cta_label || 'Saiba Mais', d.cta_link || '/', format)}
       </div>
     )
   }
-
   if (template === 'comparativo_ab') {
+    const story = isVertical(format)
+    const wide = isWide(format)
+    const factors: string[] = d.deciding_factors || []
     const optA = d.option_a || {}
     const optB = d.option_b || {}
-    const story = isVertical(format)
-    const renderMetrics = (m: any) => {
-      if (!m || (!m.impressions && !m.clicks && !m.orders)) return null
-      return (
-        <div className="grid grid-cols-2 gap-1 mt-2 pt-2 border-t border-gray-200">
-          <div className="type-caption text-xs text-gray-500">
-            <span className="font-bold text-gray-700">{m.impressions || 0}</span> impressões
-          </div>
-          <div className="type-caption text-xs text-gray-500">
-            <span className="font-bold text-gray-700">{m.clicks || 0}</span> cliques
-          </div>
-          <div className="type-caption text-xs text-gray-500">
-            <span className="font-bold text-gray-700">{m.orders || 0}</span> pedidos
-          </div>
-          <div className="type-caption text-xs text-gray-500">
-            <span className="font-bold text-orange-600">{m.conversion_rate || 0}%</span> conversão
-          </div>
-        </div>
-      )
-    }
-    const renderOption = (opt: any, label: string) => (
-      <div className="flex-1 bg-orange-50/40 rounded-lg p-4 flex flex-col">
-        <span className="type-eyebrow text-[0.625rem] text-orange-600 mb-2">{label}</span>
-        {opt.image && (
-          <img src={opt.image} alt="" className="w-full h-24 object-cover rounded-md mb-3" />
-        )}
-        <h3 className="type-headline font-bold text-gray-900 text-sm">{opt.title || label}</h3>
-        {opt.description && (
-          <p className="type-body text-sm text-gray-600 mt-1 flex-1">{opt.description}</p>
-        )}
-        {renderMetrics(opt.metrics)}
-        {opt.link && (
-          <Link to={opt.link} className="text-xs text-orange-600 font-medium mt-2 hover:underline">
-            Ver mais →
-          </Link>
-        )}
-      </div>
-    )
+    const stackCls = story ? 'flex-col' : 'flex-row'
     return (
       <div className="h-full flex flex-col bg-white safe-area overflow-hidden">
-        <EditorialHeader eyebrow="Comparativo A/B" title="Qual você prefere?" format={format} />
-        <div
-          className={`flex-1 flex ${story ? 'flex-col' : 'flex-col md:flex-row'} gap-4 overflow-hidden`}
-        >
-          {renderOption(optA, 'Opção A')}
-          {renderOption(optB, 'Opção B')}
+        <div className="flex items-center gap-2 mb-3">
+          <Columns2 className="w-4 h-4 text-orange-500" />
+          <span className="type-eyebrow text-[0.625rem] text-orange-600">Comparativo A/B</span>
         </div>
+        {d.title && (
+          <h2 className={`type-display ${formatTitleSize(format)} text-gray-900 mb-3`}>
+            {d.title}
+          </h2>
+        )}
+        <div className={`flex ${stackCls} gap-3 flex-1 overflow-auto`}>
+          {[
+            { label: 'A', opt: optA },
+            { label: 'B', opt: optB },
+          ].map(({ label, opt }) => (
+            <div
+              key={label}
+              className="flex-1 bg-orange-50/30 rounded-lg p-3 border border-orange-100"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <span className="w-6 h-6 rounded-full bg-orange-600 text-white text-xs font-bold flex items-center justify-center">
+                  {label}
+                </span>
+                <h3 className="type-headline text-sm font-bold text-gray-900">
+                  {opt.title || `Opção ${label}`}
+                </h3>
+              </div>
+              {opt.image && (
+                <img
+                  src={opt.image}
+                  alt={opt.title}
+                  className={`w-full ${story ? 'h-28' : 'h-24'} object-cover rounded-md mb-2`}
+                />
+              )}
+              {opt.description && (
+                <p className="type-caption text-xs text-gray-600 mb-2">{opt.description}</p>
+              )}
+              {opt.price && <p className="text-sm text-orange-600 font-bold mb-1">{opt.price}</p>}
+              {opt.metrics && (
+                <div className="text-[0.625rem] text-gray-500 type-caption space-y-0.5">
+                  {opt.metrics.impressions != null && (
+                    <p>Impressões: {opt.metrics.impressions.toLocaleString('pt-BR')}</p>
+                  )}
+                  {opt.metrics.clicks != null && (
+                    <p>Cliques: {opt.metrics.clicks.toLocaleString('pt-BR')}</p>
+                  )}
+                  {opt.metrics.conversion_rate != null && (
+                    <p>Conversão: {opt.metrics.conversion_rate}%</p>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        {factors.length > 0 && (
+          <div className="mt-3 p-3 bg-orange-50/80 border-l-4 border-orange-600 rounded-r-lg">
+            <div className="flex items-center gap-2 mb-1">
+              <TrendingUp className="w-4 h-4 text-orange-600" />
+              <h4 className="type-eyebrow text-orange-900 text-[0.625rem]">Fatores Decisivos</h4>
+            </div>
+            <ul className="space-y-0.5">
+              {factors.map((f, i) => (
+                <li key={i} className="type-caption text-xs text-gray-700 flex items-start gap-1.5">
+                  <Check className="w-3 h-3 text-orange-600 mt-0.5 flex-shrink-0" />
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {renderCTA(d.cta_label || 'Ver Opções', d.cta_link || '/', format)}
       </div>
     )
   }
-
   return null
 }
