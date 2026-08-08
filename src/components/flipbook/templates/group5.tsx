@@ -1,41 +1,32 @@
 import { Quote, Briefcase, Lightbulb, Wrench, ArrowRight, Star } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { EditionSeal } from './shared-components'
+import type { TemplateFormat } from './format-context'
+import { isVertical } from './format-context'
 
-export function renderGroup5(template: string, d: any) {
+export function renderGroup5(template: string, d: any, format: TemplateFormat = 'a4') {
   if (template === 'coluna_holofote_evolvida') {
-    const title = d.title || 'Coluna Holofote'
-    const personName = d.person_name || d.author || ''
-    const personRole = d.person_role || d.person_title || ''
-    const personPhoto = d.person_photo || ''
-    const date = d.date || ''
-    const body = d.body || d.content || ''
+    const story = isVertical(format)
     const highlights: string[] = d.highlights || []
-    const ctaLabel = d.interaction_cta_label || 'Interagir'
-    const ctaLink = d.interaction_cta_link || '/'
-    const editionTitle = d.edition_title || ''
-
     return (
-      <div className="h-full flex flex-col bg-gradient-to-b from-[#FFF9F5] to-[#FFF3E8] p-6 md:p-10 overflow-hidden relative">
+      <div className="h-full flex flex-col bg-gradient-to-b from-[#FFF9F5] to-[#FFF3E8] safe-area overflow-hidden relative">
         <div className="absolute top-0 right-0 w-40 h-40 bg-orange-200/30 rounded-bl-full pointer-events-none" />
         <div className="relative z-10 flex flex-col h-full">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <Quote className="w-5 h-5 text-orange-500" />
-              <span className="text-xs font-bold tracking-[0.3em] text-orange-700 uppercase">
-                Holofote
-              </span>
+              <Quote className="w-4 h-4 text-orange-500" />
+              <span className="type-eyebrow text-[0.625rem] text-orange-700">Holofote</span>
             </div>
-            <EditionSeal text={editionTitle || 'Revista Moda Atual'} />
+            {!story && <EditionSeal text={d.edition_title || 'Revista Moda Atual'} />}
           </div>
-          <h2 className="text-2xl md:text-3xl font-serif text-orange-900 mb-3 border-b-2 border-orange-300 pb-2">
-            {title}
+          <h2 className="type-display text-2xl text-orange-900 mb-2 border-b-2 border-orange-300 pb-2">
+            {d.title || 'Coluna Holofote'}
           </h2>
           <div className="flex items-center gap-3 mb-3">
-            {personPhoto ? (
+            {d.person_photo ? (
               <img
-                src={personPhoto}
-                alt={personName}
+                src={d.person_photo}
+                alt={d.person_name}
                 className="w-14 h-14 rounded-full object-cover ring-2 ring-orange-300"
               />
             ) : (
@@ -44,36 +35,41 @@ export function renderGroup5(template: string, d: any) {
               </div>
             )}
             <div>
-              <h3 className="text-lg font-bold text-orange-900">{personName}</h3>
-              {personRole && <p className="text-sm text-orange-600 font-medium">{personRole}</p>}
+              <h3 className="type-headline text-lg font-bold text-orange-900">
+                {d.person_name || d.author || ''}
+              </h3>
+              {d.person_role && (
+                <p className="type-caption text-sm text-orange-600 font-medium">{d.person_role}</p>
+              )}
             </div>
           </div>
           <div className="flex-1 overflow-auto">
-            {body ? (
-              body.split('\n').map((p, i) => (
+            {d.body ? (
+              d.body.split('\n').map((p: string, i: number) => (
                 <p
                   key={i}
-                  className="mb-2 text-orange-950/80 text-sm md:text-base leading-relaxed text-justify italic"
+                  className="mb-2 type-subheadline text-orange-950/80 text-sm md:text-base text-justify italic"
                 >
                   "{p}"
                 </p>
               ))
             ) : (
-              <p className="text-gray-400 italic">Conteudo em breve</p>
+              <p className="text-gray-400 italic type-caption">Conteúdo em breve</p>
             )}
           </div>
           {highlights.length > 0 && (
-            <div className="mt-2 p-3 bg-orange-50/80 border-l-4 border-orange-500 rounded-r-lg">
+            <div className="mt-2 p-3 bg-orange-50/80 border-l-4 border-orange-600 rounded-r-lg">
               <div className="flex items-center gap-2 mb-1">
                 <Star className="w-4 h-4 text-orange-600" />
-                <h4 className="font-bold text-orange-900 text-xs uppercase tracking-wide">
-                  Destaques
-                </h4>
+                <h4 className="type-eyebrow text-orange-900 text-[0.625rem]">Destaques</h4>
               </div>
               <ul className="space-y-0.5">
                 {highlights.map((h, i) => (
-                  <li key={i} className="text-xs text-gray-700 flex items-start gap-1.5">
-                    <span className="text-orange-500 mt-0.5">•</span>
+                  <li
+                    key={i}
+                    className="type-caption text-xs text-gray-700 flex items-start gap-1.5"
+                  >
+                    <span className="text-orange-600 mt-0.5">•</span>
                     <span>{h}</span>
                   </li>
                 ))}
@@ -81,15 +77,17 @@ export function renderGroup5(template: string, d: any) {
             </div>
           )}
           <Link
-            to={ctaLink}
+            to={d.interaction_cta_link || '/'}
             className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 transition-colors self-start"
           >
-            {ctaLabel} <ArrowRight className="w-3.5 h-3.5" />
+            {d.interaction_cta_label || 'Interagir'} <ArrowRight className="w-3.5 h-3.5" />
           </Link>
           <div className="mt-2 pt-2 border-t border-orange-200 text-right">
-            <p className="text-sm font-bold text-orange-800 font-serif">Por Fabia Mendonca</p>
-            <p className="text-xs text-orange-500/70">
-              Editora de Moda e Tendencias{date ? ` • ${date}` : ''}
+            <p className="type-credits text-sm font-bold text-orange-800 font-serif normal-case">
+              Por Fabia Mendonca
+            </p>
+            <p className="type-caption text-xs text-orange-500/70">
+              Editora de Moda e Tendencias{d.date ? ` • ${d.date}` : ''}
             </p>
           </div>
         </div>
@@ -98,37 +96,23 @@ export function renderGroup5(template: string, d: any) {
   }
 
   if (template === 'coluna_marketing_moda') {
-    const title = d.title || 'Marketing de Moda'
-    const subtitle = d.subtitle || ''
-    const author = d.author || 'Valter Mendonca'
-    const authorPhoto = d.author_photo || ''
-    const authorBio =
-      d.author_bio ||
-      'CEO da Revista MODA ATUAL. Especialista em marketing, digital marketing, branding e gestao de private cards e sistemas de beneficios.'
-    const date = d.date || ''
-    const body = d.body || ''
+    const story = isVertical(format)
     const insights: string[] = d.insights || []
-    const practicalActions: string[] = d.practical_actions || []
-    const ctaLabel = d.cta_label || 'Saiba Mais'
-    const ctaLink = d.cta_link || '/'
-    const editionTitle = d.edition_title || ''
-
+    const actions: string[] = d.practical_actions || []
     return (
-      <div className="h-full flex flex-col bg-gradient-to-br from-gray-900 to-orange-950 p-6 md:p-10 overflow-hidden text-white">
-        <div className="flex items-center justify-between mb-3">
+      <div className="h-full flex flex-col bg-gradient-to-br from-gray-900 to-orange-950 safe-area overflow-hidden text-white">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <Briefcase className="w-5 h-5 text-orange-400" />
-            <span className="text-xs font-bold tracking-[0.3em] text-orange-400 uppercase">
-              Marketing de Moda
-            </span>
+            <Briefcase className="w-4 h-4 text-orange-400" />
+            <span className="type-eyebrow text-[0.625rem] text-orange-400">Marketing de Moda</span>
           </div>
-          <EditionSeal text={editionTitle || 'Revista Moda Atual'} />
+          {!story && <EditionSeal text={d.edition_title || 'Revista Moda Atual'} />}
         </div>
         <div className="flex items-center gap-3 mb-3">
-          {authorPhoto ? (
+          {d.author_photo ? (
             <img
-              src={authorPhoto}
-              alt={author}
+              src={d.author_photo}
+              alt={d.author}
               className="w-14 h-14 rounded-full object-cover ring-2 ring-orange-400/50"
             />
           ) : (
@@ -137,38 +121,37 @@ export function renderGroup5(template: string, d: any) {
             </div>
           )}
           <div>
-            <p className="text-lg font-bold text-orange-400 font-serif">{author}</p>
-            <p className="text-xs text-white/50">CEO — Revista MODA ATUAL</p>
+            <p className="type-headline text-lg font-bold text-orange-400 font-serif">
+              {d.author || 'Valter Mendonca'}
+            </p>
+            <p className="type-caption text-xs text-white/50">CEO — Revista MODA ATUAL</p>
           </div>
         </div>
-        <h2 className="text-2xl md:text-3xl font-serif font-bold mb-1">{title}</h2>
-        {subtitle && <p className="text-sm text-orange-300/80 mb-2 italic">{subtitle}</p>}
-        {date && <p className="text-xs text-orange-300/60 mb-2">{date}</p>}
+        <h2 className="type-display text-2xl font-bold mb-1">{d.title || 'Marketing de Moda'}</h2>
+        {d.subtitle && (
+          <p className="type-subheadline text-sm text-orange-300/80 mb-2">{d.subtitle}</p>
+        )}
+        {d.date && <p className="type-caption text-xs text-orange-300/60 mb-2">{d.date}</p>}
         <div className="flex-1 overflow-auto">
-          {body ? (
-            body.split('\n').map((p, i) => (
-              <p
-                key={i}
-                className="mb-2 text-white/80 text-sm md:text-base leading-relaxed text-justify"
-              >
+          {d.body ? (
+            d.body.split('\n').map((p: string, i: number) => (
+              <p key={i} className="mb-2 type-body text-white/80 text-sm md:text-base text-justify">
                 {p}
               </p>
             ))
           ) : (
-            <p className="text-white/40 italic">Conteudo em breve</p>
+            <p className="text-white/40 italic type-caption">Conteúdo em breve</p>
           )}
         </div>
         {insights.length > 0 && (
           <div className="mt-2 p-3 bg-white/5 border-l-4 border-orange-400 rounded-r-lg">
             <div className="flex items-center gap-2 mb-1">
               <Lightbulb className="w-4 h-4 text-orange-400" />
-              <h4 className="font-bold text-orange-400 text-xs uppercase tracking-wide">
-                Insights
-              </h4>
+              <h4 className="type-eyebrow text-orange-400 text-[0.625rem]">Insights</h4>
             </div>
             <ul className="space-y-0.5">
               {insights.map((item, i) => (
-                <li key={i} className="text-xs text-white/70 flex items-start gap-1.5">
+                <li key={i} className="type-caption text-xs text-white/70 flex items-start gap-1.5">
                   <span className="text-orange-400 mt-0.5">•</span>
                   <span>{item}</span>
                 </li>
@@ -176,17 +159,15 @@ export function renderGroup5(template: string, d: any) {
             </ul>
           </div>
         )}
-        {practicalActions.length > 0 && (
+        {actions.length > 0 && (
           <div className="mt-2 p-3 bg-orange-500/10 border border-orange-400/30 rounded-lg">
             <div className="flex items-center gap-2 mb-1">
               <Wrench className="w-4 h-4 text-orange-400" />
-              <h4 className="font-bold text-orange-400 text-xs uppercase tracking-wide">
-                Para Aplicar
-              </h4>
+              <h4 className="type-eyebrow text-orange-400 text-[0.625rem]">Para Aplicar</h4>
             </div>
             <ul className="space-y-0.5">
-              {practicalActions.map((item, i) => (
-                <li key={i} className="text-xs text-white/70 flex items-start gap-1.5">
+              {actions.map((item, i) => (
+                <li key={i} className="type-caption text-xs text-white/70 flex items-start gap-1.5">
                   <span className="text-orange-400 mt-0.5">→</span>
                   <span>{item}</span>
                 </li>
@@ -195,16 +176,18 @@ export function renderGroup5(template: string, d: any) {
           </div>
         )}
         <Link
-          to={ctaLink}
+          to={d.cta_link || '/'}
           className="mt-2 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold bg-orange-500 hover:bg-orange-600 transition-colors self-start"
         >
-          {ctaLabel} <ArrowRight className="w-4 h-4" />
+          {d.cta_label || 'Saiba Mais'} <ArrowRight className="w-4 h-4" />
         </Link>
         <div className="mt-2 pt-2 border-t border-orange-900/50">
-          <p className="text-[10px] text-white/50 leading-relaxed">{authorBio}</p>
-          <p className="text-[10px] text-orange-400/60 mt-0.5">
-            {author}
-            {date ? ` • ${date}` : ''}
+          <p className="type-caption text-[0.625rem] text-white/50 leading-relaxed">
+            {d.author_bio || ''}
+          </p>
+          <p className="type-caption text-[0.625rem] text-orange-400/60 mt-0.5">
+            {d.author || 'Valter Mendonca'}
+            {d.date ? ` • ${d.date}` : ''}
           </p>
         </div>
       </div>

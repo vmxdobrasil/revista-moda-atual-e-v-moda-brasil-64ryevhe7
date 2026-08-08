@@ -1,7 +1,7 @@
 /* Global styles - Theme, font, utilities, animations and global components */
 
 /* CHANGE THE FONT BELOW TO WHATEVER YOU WANT */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -118,6 +118,45 @@
   section[aria-label='Notifications alt+T'] {
     padding: 0 !important;
     margin: 0 !important;
+  }
+}
+
+@layer components {
+  .type-display {
+    @apply font-serif font-bold leading-[1.05] tracking-tight;
+  }
+  .type-headline {
+    @apply font-serif font-bold leading-tight tracking-tight;
+  }
+  .type-subheadline {
+    @apply font-serif italic leading-snug font-normal;
+  }
+  .type-body {
+    @apply font-sans leading-relaxed font-normal;
+  }
+  .type-caption {
+    @apply font-sans leading-normal font-normal;
+  }
+  .type-credits {
+    @apply font-sans font-medium uppercase tracking-wider;
+  }
+  .type-eyebrow {
+    @apply font-sans font-bold uppercase tracking-[0.3em];
+  }
+  .editorial-grid {
+    @apply grid grid-cols-12 gap-3;
+  }
+  .safe-area {
+    @apply p-5 md:p-8;
+  }
+  .bleed-full {
+    @apply -m-5 md:-m-8;
+  }
+  .editorial-divider {
+    @apply border-t-2 border-orange-600;
+  }
+  .editorial-divider-thin {
+    @apply border-t border-orange-600/30;
   }
 }
 

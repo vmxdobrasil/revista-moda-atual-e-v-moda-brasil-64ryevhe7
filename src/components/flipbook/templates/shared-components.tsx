@@ -1,5 +1,46 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight, Sparkles } from 'lucide-react'
+import type { TemplateFormat } from './format-context'
+import { isVertical, formatTitleSize } from './format-context'
+
+export function EditorialDivider({ className = '' }: { className?: string }) {
+  return <div className={`editorial-divider w-12 ${className}`} />
+}
+
+export function EditorialHeader({
+  eyebrow,
+  title,
+  subtitle,
+  format = 'a4',
+  align = 'left',
+}: {
+  eyebrow?: string
+  title: string
+  subtitle?: string
+  format?: TemplateFormat
+  align?: string
+}) {
+  const story = isVertical(format)
+  const alignCls = align === 'center' ? 'text-center items-center' : 'text-left'
+  return (
+    <div className={`mb-4 flex flex-col ${alignCls}`}>
+      {eyebrow && (
+        <span className="type-eyebrow text-[0.625rem] md:text-[0.6875rem] text-orange-600 mb-2">
+          {eyebrow}
+        </span>
+      )}
+      <h2 className={`type-display ${formatTitleSize(format)} text-gray-900`}>{title}</h2>
+      {subtitle && (
+        <p
+          className={`type-subheadline ${story ? 'text-sm' : 'text-base md:text-lg'} text-gray-500 mt-2`}
+        >
+          {subtitle}
+        </p>
+      )}
+      <EditorialDivider className={`mt-3 ${align === 'center' ? 'mx-auto' : ''}`} />
+    </div>
+  )
+}
 
 export function TemplateFooter({
   editionTitle,
@@ -10,21 +51,34 @@ export function TemplateFooter({
 }) {
   if (!editionTitle && !publicationDate) return null
   return (
-    <div className="flex items-center justify-between px-4 py-1.5 bg-gray-50/80 border-t border-gray-200 text-[10px] text-gray-400 flex-shrink-0">
-      {editionTitle && <span className="font-serif italic truncate">{editionTitle}</span>}
-      {publicationDate && <span className="whitespace-nowrap">{publicationDate}</span>}
+    <div className="flex items-center justify-between px-4 py-1.5 bg-gray-50/80 border-t border-gray-200 flex-shrink-0">
+      {editionTitle && (
+        <span className="text-[0.625rem] text-gray-400 font-serif italic">{editionTitle}</span>
+      )}
+      {publicationDate && (
+        <span className="text-[0.625rem] text-gray-400 whitespace-nowrap">{publicationDate}</span>
+      )}
     </div>
   )
 }
 
-export function CTABlock({ label, link }: { label: string; link: string }) {
+export function CTABlock({
+  label,
+  link,
+  format = 'a4',
+}: {
+  label: string
+  link: string
+  format?: TemplateFormat
+}) {
   if (!label) return null
+  const story = isVertical(format)
+  const cls = story
+    ? 'mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-white bg-orange-600 shadow-lg self-start text-xs'
+    : 'mt-3 inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-white bg-orange-600 shadow-lg hover:scale-105 transition-transform self-start text-sm'
   return (
-    <Link
-      to={link || '/'}
-      className="mt-3 inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-white bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg hover:scale-105 transition-transform self-start text-sm"
-    >
-      {label} <ArrowRight className="w-4 h-4" />
+    <Link to={link || '/'} className={cls}>
+      {label} <ArrowRight className={story ? 'w-3 h-3' : 'w-4 h-4'} />
     </Link>
   )
 }
@@ -33,26 +87,28 @@ export function HighlightBox({
   title,
   items,
   variant = 'light',
+  format = 'a4',
 }: {
   title: string
   items: string[]
   variant?: 'light' | 'dark'
+  format?: TemplateFormat
 }) {
   if (!items || items.length === 0) return null
   const bg =
-    variant === 'dark' ? 'bg-white/5 border-orange-400' : 'bg-orange-50/80 border-orange-500'
+    variant === 'dark' ? 'bg-white/5 border-orange-400' : 'bg-orange-50/80 border-orange-600'
   const text = variant === 'dark' ? 'text-white/70' : 'text-gray-700'
   const titleColor = variant === 'dark' ? 'text-orange-400' : 'text-orange-900'
-  const bullet = variant === 'dark' ? 'text-orange-400' : 'text-orange-500'
+  const bullet = variant === 'dark' ? 'text-orange-400' : 'text-orange-600'
   return (
     <div className={`mt-3 p-3 ${bg} border-l-4 rounded-r-lg`}>
       <div className="flex items-center gap-2 mb-1">
         <Sparkles className={`w-4 h-4 ${titleColor}`} />
-        <h4 className={`font-bold ${titleColor} text-xs uppercase tracking-wide`}>{title}</h4>
+        <h4 className={`type-eyebrow ${titleColor} text-[0.625rem]`}>{title}</h4>
       </div>
       <ul className="space-y-0.5">
         {items.map((item, i) => (
-          <li key={i} className={`text-xs ${text} flex items-start gap-1.5`}>
+          <li key={i} className={`type-caption ${text} text-xs flex items-start gap-1.5`}>
             <span className={`${bullet} mt-0.5`}>•</span>
             <span>{item}</span>
           </li>
@@ -64,8 +120,8 @@ export function HighlightBox({
 
 export function EditionSeal({ text }: { text?: string }) {
   return (
-    <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-100 border border-orange-300 rounded-full text-[10px] font-bold text-orange-800 whitespace-nowrap">
-      <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
+    <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-100 border border-orange-300 rounded-full text-[0.625rem] font-bold text-orange-800 whitespace-nowrap type-eyebrow">
+      <span className="w-1.5 h-1.5 bg-orange-600 rounded-full" />
       {text || 'Revista Moda Atual'}
     </div>
   )
