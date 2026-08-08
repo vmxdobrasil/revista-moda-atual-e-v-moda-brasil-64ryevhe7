@@ -2,8 +2,15 @@ import { Link } from 'react-router-dom'
 import { EditionPage } from '@/services/magazine'
 import { Quote, ArrowRight, User, Mic } from 'lucide-react'
 import { NewTemplateRenderer, NEW_TEMPLATE_VALUES } from './templates'
+import type { TemplateFormat } from './templates/format-context'
 
-export function TemplateRenderer({ page }: { page: EditionPage }) {
+export function TemplateRenderer({
+  page,
+  format = 'a4',
+}: {
+  page: EditionPage
+  format?: TemplateFormat
+}) {
   const t = page.template
   const d = page.template_data || {}
 
@@ -234,7 +241,14 @@ export function TemplateRenderer({ page }: { page: EditionPage }) {
   }
 
   if ((NEW_TEMPLATE_VALUES as readonly string[]).includes(t as string)) {
-    return <NewTemplateRenderer template={t as string} data={d} />
+    return (
+      <NewTemplateRenderer
+        template={t as string}
+        data={d}
+        format={format}
+        editionId={page.edition}
+      />
+    )
   }
 
   return null

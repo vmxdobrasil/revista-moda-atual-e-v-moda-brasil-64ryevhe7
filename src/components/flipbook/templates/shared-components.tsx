@@ -126,3 +126,39 @@ export function EditionSeal({ text }: { text?: string }) {
     </div>
   )
 }
+
+export function MarketDataBar({
+  label,
+  value,
+  unit,
+  max,
+  trend,
+}: {
+  label: string
+  value: number
+  unit?: string
+  max: number
+  trend?: 'up' | 'down' | 'neutral'
+}) {
+  const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0
+  const trendIcon = trend === 'up' ? '↑' : trend === 'down' ? '↓' : ''
+  const trendColor =
+    trend === 'up' ? 'text-green-600' : trend === 'down' ? 'text-red-500' : 'text-gray-400'
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-xs">
+        <span className="type-caption text-gray-600">{label}</span>
+        <span className={`font-bold ${trendColor}`}>
+          {value}
+          {unit} {trendIcon}
+        </span>
+      </div>
+      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-orange-500 rounded-full transition-all duration-500"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  )
+}

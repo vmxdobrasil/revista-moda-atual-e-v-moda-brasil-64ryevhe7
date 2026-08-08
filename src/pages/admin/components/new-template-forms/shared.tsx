@@ -44,7 +44,15 @@ export function getInitialTemplateData(template: string): TemplateData {
     case 'indice':
       return { sections: [{ title: '', link: '' }] }
     case 'trend_report':
-      return { trends: [{ headline: '', description: '', image: '' }] }
+      return {
+        title: '',
+        author: '',
+        date: '',
+        executive_summary: '',
+        market_data: [],
+        trends: [{ headline: '', description: '', image: '' }],
+        recommendations: [],
+      }
     case 'galeria_produtos':
       return { products: [{ name: '', image: '', description: '', link: '' }] }
     case 'comparativo_ab':

@@ -4,6 +4,7 @@ import { renderGroup3 } from './group3'
 import { renderGroup4 } from './group4'
 import { renderGroup5 } from './group5'
 import { TemplateFooter } from './shared-components'
+import type { TemplateFormat } from './format-context'
 
 export const NEW_TEMPLATE_VALUES = [
   'lookbook',
@@ -26,9 +27,20 @@ export const NEW_TEMPLATE_VALUES = [
 
 const RENDERERS = [renderGroup1, renderGroup2, renderGroup3, renderGroup4, renderGroup5]
 
-export function NewTemplateRenderer({ template, data }: { template: string; data: any }) {
+export function NewTemplateRenderer({
+  template,
+  data,
+  format = 'a4',
+  editionId,
+}: {
+  template: string
+  data: any
+  format?: TemplateFormat
+  editionId?: string
+}) {
+  const d = editionId ? { ...data, _editionId: editionId } : data
   for (const render of RENDERERS) {
-    const result = render(template, data)
+    const result = render(template, d, format)
     if (result) {
       if (data.edition_title || data.publication_date) {
         return (
