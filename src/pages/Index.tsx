@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { ArrowRight, BookOpen, Library, AlertCircle, Link2, Check } from 'lucide-react'
 import { SocialShare } from '@/components/SocialShare'
+import { BrandLogo } from '@/components/BrandLogo'
 
 const HOMEPAGE_URL = 'https://revistamodaatual.com.br'
 
@@ -80,6 +81,9 @@ export default function Index() {
 
   return (
     <div className="container mx-auto px-4 py-16 md:py-24">
+      <div className="flex justify-center mb-8">
+        <BrandLogo variant="header" className="h-12 md:h-14 w-auto" />
+      </div>
       <div className="mb-16 text-center max-w-3xl mx-auto">
         <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-6">
           Revista Moda Atual

@@ -250,16 +250,19 @@ export function renderGroup4(template: string, d: any, format: TemplateFormat = 
           </h2>
         )}
         {d.intro && <p className="type-subheadline text-sm text-gray-500 mb-3 italic">{d.intro}</p>}
-        {images.length > 0 && (
+        {images.filter(Boolean).length > 0 && (
           <div className={`grid ${gridCls} gap-2 mb-3`}>
-            {images.slice(0, story ? 1 : isSquare(format) ? 4 : wide ? 3 : 2).map((img, i) => (
-              <img
-                key={i}
-                src={img}
-                alt=""
-                className={`w-full ${story ? 'h-48' : 'h-28'} object-cover rounded-lg`}
-              />
-            ))}
+            {images
+              .filter(Boolean)
+              .slice(0, story ? 1 : isSquare(format) ? 4 : wide ? 3 : 2)
+              .map((img, i) => (
+                <img
+                  key={i}
+                  src={img}
+                  alt=""
+                  className={`w-full ${story ? 'h-48' : 'h-28'} object-cover rounded-lg`}
+                />
+              ))}
           </div>
         )}
         <div className="flex-1 overflow-auto">

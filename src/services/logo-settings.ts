@@ -5,6 +5,8 @@ export interface SiteSettings {
   logo_file: string
   created: string
   updated: string
+  collectionId: string
+  collectionName: string
 }
 
 export async function getSiteSettings(): Promise<SiteSettings | null> {
@@ -35,5 +37,5 @@ export async function removeLogo(): Promise<void> {
 
 export function getLogoUrl(settings: SiteSettings | null): string | null {
   if (!settings || !settings.logo_file) return null
-  return `${import.meta.env.VITE_POCKETBASE_URL}/api/files/site_settings/${settings.id}/${settings.logo_file}`
+  return pb.files.getURL(settings as any, settings.logo_file) as string
 }

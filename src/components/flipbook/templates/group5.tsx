@@ -5,7 +5,7 @@ import type { TemplateFormat } from './format-context'
 import { isVertical } from './format-context'
 
 export function renderGroup5(template: string, d: any, format: TemplateFormat = 'a4') {
-  if (template === 'coluna_holofote_evolvida') {
+  if (template === 'coluna_holofote_evoluida') {
     const story = isVertical(format)
     const highlights: string[] = d.highlights || []
     return (
