@@ -34,6 +34,8 @@ const FORMAT_PREVIEW_TEMPLATES = [
   'newsletter_preview',
   'capa_edicao',
   'fashion_editorial',
+  'coluna_holofote_evolvida',
+  'coluna_marketing_moda',
 ]
 
 export function PageTemplateModal({
