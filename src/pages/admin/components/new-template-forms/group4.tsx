@@ -15,6 +15,26 @@ import { FormField, setField, updateItem, addItem, removeItem } from './shared'
 import { getAllStoryTexts, type StoryText } from '@/services/story-texts'
 import { getCampaigns, type NewsletterCampaign } from '@/services/newsletter'
 
+function CtaVariantField({ data, setData }: { data: any; setData: (d: any) => void }) {
+  return (
+    <FormField label="CTA Variante (A/B/C)">
+      <Select
+        value={data.cta_variant || ''}
+        onValueChange={(val) => setField(data, setData, 'cta_variant', val)}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Selecione..." />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="A">Variante A</SelectItem>
+          <SelectItem value="B">Variante B</SelectItem>
+          <SelectItem value="C">Variante C</SelectItem>
+        </SelectContent>
+      </Select>
+    </FormField>
+  )
+}
+
 export function Group4Form({
   template,
   data,
@@ -114,6 +134,7 @@ export function Group4Form({
             placeholder="/"
           />
         </FormField>
+        <CtaVariantField data={data} setData={setData} />
       </div>
     )
   }
@@ -229,6 +250,7 @@ export function Group4Form({
             placeholder="/"
           />
         </FormField>
+        <CtaVariantField data={data} setData={setData} />
       </div>
     )
   }
@@ -250,6 +272,13 @@ export function Group4Form({
             placeholder="Ex: Edição Especial"
           />
         </FormField>
+        <FormField label="Texto Alternativo da Capa">
+          <Input
+            value={data.cover_alt_text || ''}
+            onChange={(e) => setField(data, setData, 'cover_alt_text', e.target.value)}
+            placeholder="Descrição da imagem para acessibilidade"
+          />
+        </FormField>
         <FormField label="Subtítulo">
           <Input
             value={data.subtitle || ''}
@@ -257,6 +286,38 @@ export function Group4Form({
             placeholder="Ex: Verão 2026"
           />
         </FormField>
+        <div className="flex items-center justify-between">
+          <Label>Destaques da Edição</Label>
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            onClick={() => addItem(data, setData, 'highlights', '')}
+          >
+            <Plus className="w-4 h-4 mr-1" /> Adicionar
+          </Button>
+        </div>
+        {(data.highlights || []).map((h: string, i: number) => (
+          <div key={i} className="flex gap-2">
+            <Input
+              value={h}
+              onChange={(e) => {
+                const arr = [...(data.highlights || [])]
+                arr[i] = e.target.value
+                setField(data, setData, 'highlights', arr)
+              }}
+              placeholder="Ex: Tendências Verão 2026"
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              type="button"
+              onClick={() => removeItem(data, setData, 'highlights', i)}
+            >
+              <Trash2 className="w-4 h-4 text-red-500" />
+            </Button>
+          </div>
+        ))}
         <FormField label="Rótulo do CTA">
           <Input
             value={data.cta_label || ''}
@@ -283,6 +344,13 @@ export function Group4Form({
             value={data.title || ''}
             onChange={(e) => setField(data, setData, 'title', e.target.value)}
             placeholder="Ex: Nova Era"
+          />
+        </FormField>
+        <FormField label="Legenda / Título do Sumário (TOC)">
+          <Input
+            value={data.toc_title || ''}
+            onChange={(e) => setField(data, setData, 'toc_title', e.target.value)}
+            placeholder="Ex: Editorial — Nova Era"
           />
         </FormField>
         <FormField label="Introdução">
@@ -314,6 +382,13 @@ export function Group4Form({
             onChange={(e) => setField(data, setData, 'body', e.target.value)}
             rows={6}
             placeholder="Texto completo..."
+          />
+        </FormField>
+        <FormField label="Créditos">
+          <Input
+            value={data.credits || ''}
+            onChange={(e) => setField(data, setData, 'credits', e.target.value)}
+            placeholder="Ex: Fotografia por João Silva"
           />
         </FormField>
       </div>

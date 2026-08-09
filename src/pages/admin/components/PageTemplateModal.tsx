@@ -57,6 +57,25 @@ export function PageTemplateModal({
       }
     }
 
+    if (template === 'story_social') {
+      if (!templateData.hook?.trim()) errors.hook = 'Hook / gancho é obrigatório.'
+      if (!templateData.subject?.trim()) errors.subject = 'Assunto é obrigatório.'
+    }
+
+    if (template === 'newsletter_preview') {
+      if (!templateData.title?.trim()) errors.title = 'Título é obrigatório.'
+      if (!templateData.subject?.trim()) errors.subject = 'Assunto é obrigatório.'
+    }
+
+    if (template === 'capa_edicao') {
+      if (!templateData.title?.trim()) errors.title = 'Título é obrigatório.'
+    }
+
+    if (template === 'fashion_editorial') {
+      if (!templateData.title?.trim()) errors.title = 'Título é obrigatório.'
+      if (!templateData.body?.trim()) errors.body = 'Corpo do editorial é obrigatório.'
+    }
+
     setValidationErrors(errors)
     return Object.keys(errors).length === 0
   }

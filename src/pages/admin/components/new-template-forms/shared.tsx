@@ -173,6 +173,7 @@ export function getInitialTemplateData(template: string): TemplateData {
         caption: '',
         cta_label: '',
         link: '/',
+        cta_variant: '',
       }
     case 'newsletter_preview':
       return {
@@ -183,17 +184,20 @@ export function getInitialTemplateData(template: string): TemplateData {
         sections: [],
         cta_label: '',
         cta_link: '/',
+        cta_variant: '',
       }
     case 'capa_edicao':
       return {
         cover_image: '',
+        cover_alt_text: '',
         title: '',
         subtitle: '',
+        highlights: [],
         cta_label: '',
         link: '/',
       }
     case 'fashion_editorial':
-      return { title: '', intro: '', images: [], body: '' }
+      return { title: '', toc_title: '', intro: '', images: [], body: '', credits: '' }
     default:
       return {}
   }
