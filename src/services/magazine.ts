@@ -133,4 +133,7 @@ export const updateHotspot = (id: string, data: Partial<Hotspot>) =>
   pb.collection('page_hotspots').update<Hotspot>(id, data)
 export const deleteHotspot = (id: string) => pb.collection('page_hotspots').delete(id)
 
-export const getFileUrl = (record: any, filename: string) => pb.files.getUrl(record, filename)
+export const getFileUrl = (record: any, filename: string): string | null => {
+  if (!filename) return null
+  return pb.files.getURL(record, filename) as string
+}

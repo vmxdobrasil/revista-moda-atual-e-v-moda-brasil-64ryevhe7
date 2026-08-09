@@ -164,38 +164,47 @@ export default function Index() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-12">
-          {editions.map((ed) => (
-            <Card
-              key={ed.id}
-              className="overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-white rounded-xl"
-            >
-              <div className="relative aspect-[0.7118] overflow-hidden bg-gray-100 flex items-center justify-center">
-                <img
-                  src={ed.cover_file ? getFileUrl(ed, ed.cover_file) : ed.cover_url}
-                  alt={ed.title}
-                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700 ease-out"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
-                  <Button
-                    asChild
-                    className="w-full bg-orange-600 hover:bg-orange-500 text-white shadow-lg h-12 text-md"
-                  >
-                    <Link to={`/edition/${ed.id}`}>
-                      Ler Edição <ArrowRight className="w-5 h-5 ml-2" />
-                    </Link>
-                  </Button>
+          {editions.map((ed) => {
+            const coverSrc = ed.cover_file ? getFileUrl(ed, ed.cover_file) : ed.cover_url || null
+            return (
+              <Card
+                key={ed.id}
+                className="overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-white rounded-xl"
+              >
+                <div className="relative aspect-[0.7118] overflow-hidden bg-gray-100 flex items-center justify-center">
+                  {coverSrc ? (
+                    <img
+                      src={coverSrc}
+                      alt={ed.title}
+                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700 ease-out"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100">
+                      <BookOpen className="w-16 h-16 text-orange-300" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                    <Button
+                      asChild
+                      className="w-full bg-orange-600 hover:bg-orange-500 text-white shadow-lg h-12 text-md"
+                    >
+                      <Link to={`/edition/${ed.id}`}>
+                        Ler Edição <ArrowRight className="w-5 h-5 ml-2" />
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
-              </div>
-              <CardContent className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-1 group-hover:text-orange-600 transition-colors">
-                  {ed.title}
-                </h3>
-                <p className="text-gray-600 text-sm line-clamp-3 leading-relaxed">
-                  {ed.description}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-1 group-hover:text-orange-600 transition-colors">
+                    {ed.title}
+                  </h3>
+                  <p className="text-gray-600 text-sm line-clamp-3 leading-relaxed">
+                    {ed.description}
+                  </p>
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
       )}
     </div>

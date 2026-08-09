@@ -112,9 +112,9 @@ export async function toggleFeatured(id: string, featured: boolean): Promise<Mar
   })) as unknown as MarketplaceProduct
 }
 
-export function getImageUrl(record: any, filename: string): string {
-  if (!filename) return ''
-  return pb.files.getUrl(record, filename) as string
+export function getImageUrl(record: any, filename: string): string | null {
+  if (!filename) return null
+  return pb.files.getURL(record, filename) as string
 }
 
 export function formatPrice(price: number, currency = 'BRL'): string {

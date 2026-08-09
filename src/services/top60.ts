@@ -67,9 +67,9 @@ export async function deleteCategory(id: string): Promise<void> {
   await pb.collection('top60_categories').delete(id)
 }
 
-export function getLogoUrl(record: any, filename: string): string {
-  if (!filename) return ''
-  return pb.files.getUrl(record, filename) as string
+export function getLogoUrl(record: any, filename: string): string | null {
+  if (!filename) return null
+  return pb.files.getURL(record, filename) as string
 }
 
 export function slugify(text: string): string {
