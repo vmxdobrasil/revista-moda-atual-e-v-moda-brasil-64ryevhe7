@@ -64,7 +64,7 @@ migrate(
 
     upsertPage(
       'grupo5-test-holofote',
-      'coluna_holofote_evolvida',
+      'coluna_holofote_evoluida',
       {
         title: 'Holofote da Semana: Ana Beltrao',
         person_name: 'Ana Beltrao',
