@@ -1,6 +1,7 @@
 import { Outlet, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { BookOpen, Settings } from 'lucide-react'
+import { BrandLogo } from '@/components/BrandLogo'
 
 export function Layout() {
   return (
@@ -10,12 +11,9 @@ export function Layout() {
           to="/"
           className="shrink-0 hover:opacity-80 transition-opacity flex items-center gap-2"
         >
-          <div className="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-lg bg-orange-600 text-white font-extrabold text-sm md:text-lg shadow-md">
-            V
+          <div className="h-8 md:h-10 w-auto">
+            <BrandLogo variant="header" className="h-full w-auto" />
           </div>
-          <span className="text-orange-600 font-bold text-lg md:text-xl tracking-tight">
-            MODA BRASIL
-          </span>
         </Link>
         <div className="flex items-center gap-4 md:gap-6">
           <nav className="hidden lg:flex items-center gap-5 text-sm">

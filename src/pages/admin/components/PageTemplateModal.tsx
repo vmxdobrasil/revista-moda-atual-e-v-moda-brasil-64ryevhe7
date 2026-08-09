@@ -24,6 +24,17 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { Plus, Trash2, Loader2 } from 'lucide-react'
 import { NewTemplateForms, NEW_TEMPLATE_VALUES, getInitialTemplateData } from './new-template-forms'
+import { SocialFormatPreview } from '@/components/flipbook/SocialFormatPreview'
+
+const FORMAT_PREVIEW_TEMPLATES = [
+  'galeria_produtos',
+  'materia_cta',
+  'comparativo_ab',
+  'story_social',
+  'newsletter_preview',
+  'capa_edicao',
+  'fashion_editorial',
+]
 
 export function PageTemplateModal({
   page,
@@ -427,6 +438,13 @@ export function PageTemplateModal({
 
         {(NEW_TEMPLATE_VALUES as readonly string[]).includes(template) && (
           <NewTemplateForms template={template} data={templateData} setData={setTemplateData} />
+        )}
+
+        {FORMAT_PREVIEW_TEMPLATES.includes(template) && (
+          <div className="border-t pt-4 flex items-center gap-3 flex-wrap">
+            <span className="text-sm font-medium text-gray-700">Pré-visualização por formato:</span>
+            <SocialFormatPreview page={{ ...page, template, template_data: templateData }} />
+          </div>
         )}
 
         <DialogFooter>
