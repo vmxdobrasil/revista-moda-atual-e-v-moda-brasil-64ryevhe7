@@ -1,31 +1,40 @@
 migrate(
   (app) => {
-    var col = app.findCollectionByNameOrId('edition_pages')
-    var field = col.fields.getByName('template')
-    if (!field) return
+    const col = app.findCollectionByNameOrId('edition_pages')
 
-    var existingValues = field.options.values || []
-    var required = ['story_social', 'newsletter_preview', 'capa_edicao', 'fashion_editorial']
+    col.fields.removeByName('template')
 
-    var changed = false
-    for (var i = 0; i < required.length; i++) {
-      if (existingValues.indexOf(required[i]) === -1) {
-        existingValues.push(required[i])
-        changed = true
-      }
-    }
+    col.fields.add(
+      new SelectField({
+        name: 'template',
+        maxSelect: 1,
+        values: [
+          'default',
+          'editorial',
+          'marketing',
+          'holofote',
+          'entrevista',
+          'lookbook',
+          'indice',
+          'trend_report',
+          'anuncio_patrocinado',
+          'top60_marcas',
+          'perfil_marca',
+          'parceiro_anunciante',
+          'galeria_produtos',
+          'materia_cta',
+          'comparativo_ab',
+          'story_social',
+          'newsletter_preview',
+          'capa_edicao',
+          'fashion_editorial',
+          'coluna_holofote_evoluida',
+          'coluna_marketing_moda',
+        ],
+      }),
+    )
 
-    if (changed) {
-      col.fields.removeByName('template')
-      col.fields.add(
-        new SelectField({
-          name: 'template',
-          maxSelect: 1,
-          values: existingValues,
-        }),
-      )
-      app.save(col)
-    }
+    app.save(col)
   },
   (app) => {},
 )
