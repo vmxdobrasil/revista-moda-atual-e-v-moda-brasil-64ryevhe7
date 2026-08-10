@@ -6,7 +6,10 @@ export function AppHeader() {
   return (
     <header className="flex h-16 shrink-0 items-center gap-4 border-b border-border px-6 bg-card sticky top-0 z-30">
       <SidebarTrigger />
-      <div className="flex-1 flex items-center px-4 bg-muted/50 rounded-md h-10 max-w-md ml-4">
+      <div className="hidden sm:flex items-center gap-2">
+        <BrandLogo variant="primary" className="h-8 w-auto" />
+      </div>
+      <div className="flex-1 flex items-center px-4 bg-muted/50 rounded-md h-10 max-w-md ml-2 md:ml-4">
         <Search className="w-4 h-4 text-muted-foreground mr-2" />
         <input
           type="text"

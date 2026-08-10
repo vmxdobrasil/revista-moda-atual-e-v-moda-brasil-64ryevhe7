@@ -6,8 +6,8 @@ export function SiteFooter() {
     <footer className="bg-gray-900 text-gray-400 py-12 px-6 md:px-12">
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-3">
-          <div className="h-8 w-auto opacity-80">
-            <BrandLogo variant="white" className="h-full w-auto" />
+          <div className="h-10 w-auto">
+            <BrandLogo variant="knockout" className="h-full w-auto" />
           </div>
         </div>
         <div className="flex items-center gap-4 md:gap-6 text-sm flex-wrap justify-center">

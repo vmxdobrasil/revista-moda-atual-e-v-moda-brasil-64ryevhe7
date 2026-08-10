@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, Sparkles } from 'lucide-react'
 import type { TemplateFormat } from './format-context'
 import { isVertical, formatTitleSize } from './format-context'
+import { BrandLogo } from '@/components/BrandLogo'
 
 export function EditorialDivider({ className = '' }: { className?: string }) {
   return <div className={`editorial-divider w-12 ${className}`} />
@@ -45,15 +46,19 @@ export function EditorialHeader({
 export function TemplateFooter({
   editionTitle,
   publicationDate,
+  showLogo = true,
 }: {
   editionTitle?: string
   publicationDate?: string
+  showLogo?: boolean
 }) {
-  if (!editionTitle && !publicationDate) return null
   return (
-    <div className="flex items-center justify-between px-4 py-1.5 bg-gray-50/80 border-t border-gray-200 flex-shrink-0">
+    <div className="flex items-center justify-between px-4 py-1.5 bg-gray-50/90 border-t border-gray-200 flex-shrink-0 mt-auto">
+      {showLogo && <BrandLogo variant="primary" className="h-4 w-auto" />}
       {editionTitle && (
-        <span className="text-[0.625rem] text-gray-400 font-serif italic">{editionTitle}</span>
+        <span className="text-[0.625rem] text-gray-500 font-serif italic truncate max-w-[180px]">
+          {editionTitle}
+        </span>
       )}
       {publicationDate && (
         <span className="text-[0.625rem] text-gray-400 whitespace-nowrap">{publicationDate}</span>
@@ -120,9 +125,9 @@ export function HighlightBox({
 
 export function EditionSeal({ text }: { text?: string }) {
   return (
-    <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-100 border border-orange-300 rounded-full text-[0.625rem] font-bold text-orange-800 whitespace-nowrap type-eyebrow">
-      <span className="w-1.5 h-1.5 bg-orange-600 rounded-full" />
-      {text || 'Revista Moda Atual'}
+    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-orange-100/90 border border-orange-300 rounded-full text-[0.625rem] font-bold text-orange-800 whitespace-nowrap type-eyebrow shadow-sm">
+      <span className="w-1.5 h-1.5 bg-orange-600 rounded-full animate-pulse" />
+      <span>{text || 'Revista MODA ATUAL'}</span>
     </div>
   )
 }

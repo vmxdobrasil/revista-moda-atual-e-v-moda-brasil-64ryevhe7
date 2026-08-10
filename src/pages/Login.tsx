@@ -129,11 +129,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
         <div className="flex justify-center mb-8">
-          <img
-            src="https://img.usecurling.com/i?q=v%20moda%20brasil%20logo&color=orange&shape=outline"
-            alt="Logo"
-            className="h-12"
-          />
+          <BrandLogo variant="primary" className="h-14 w-auto" />
         </div>
         <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">Acesso Restrito</h1>
 

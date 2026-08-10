@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Mail, Instagram, Newspaper, Camera } from 'lucide-react'
-import { HighlightBox } from './shared-components'
+import { HighlightBox, EditionSeal } from './shared-components'
 import type { TemplateFormat } from './format-context'
 import { isVertical, isSquare, isWide, formatTitleSize } from './format-context'
 import { getEdition, getFileUrl } from '@/services/magazine'
+import { BrandLogo } from '@/components/BrandLogo'
 
 function renderCTA(label: string, href: string, format: TemplateFormat = 'a4') {
   if (!label) return null
@@ -71,32 +72,38 @@ function CapaEdicaoView({ data, format }: { data: any; format: TemplateFormat })
       <div
         className={`absolute inset-0 ${story ? 'bg-gradient-to-t from-black/90 via-black/40 to-black/20' : 'bg-gradient-to-t from-black/85 via-black/30 to-transparent'}`}
       />
-      <div className="relative z-10 flex flex-col h-full justify-end">
-        <div className="flex items-center gap-2 mb-2">
-          <Newspaper className="w-4 h-4 text-orange-400" />
-          <span className="type-eyebrow text-[0.625rem] text-orange-400">Capa da Edição</span>
+      <div className="relative z-10 flex flex-col h-full justify-between p-6">
+        <div className="flex items-center justify-between w-full pt-2">
+          <BrandLogo variant="knockout" className="h-10 md:h-12 w-auto drop-shadow-md" />
+          <EditionSeal text="Edição Digital" />
         </div>
-        {editionTitle && (
-          <h2
-            className={`type-display ${formatTitleSize(format)} font-serif font-bold text-white mb-1`}
-          >
-            {editionTitle}
-          </h2>
-        )}
-        {data.subtitle && (
-          <p className="type-subheadline text-sm text-white/70 mb-2">{data.subtitle}</p>
-        )}
-        {highlights.length > 0 && !story && (
-          <div className="mb-2">
-            {highlights.slice(0, 3).map((h, i) => (
-              <p key={i} className="type-caption text-xs text-white/60 flex items-start gap-1.5">
-                <span className="text-orange-400 mt-0.5">•</span>
-                <span>{h}</span>
-              </p>
-            ))}
+        <div className="flex flex-col justify-end">
+          <div className="flex items-center gap-2 mb-2">
+            <Newspaper className="w-4 h-4 text-orange-400" />
+            <span className="type-eyebrow text-[0.625rem] text-orange-400">Capa da Edição</span>
           </div>
-        )}
-        {renderCTA(data.cta_label || 'Ler Agora', data.link || '/', format)}
+          {editionTitle && (
+            <h2
+              className={`type-display ${formatTitleSize(format)} font-serif font-bold text-white mb-1`}
+            >
+              {editionTitle}
+            </h2>
+          )}
+          {data.subtitle && (
+            <p className="type-subheadline text-sm text-white/70 mb-2">{data.subtitle}</p>
+          )}
+          {highlights.length > 0 && !story && (
+            <div className="mb-2">
+              {highlights.slice(0, 3).map((h, i) => (
+                <p key={i} className="type-caption text-xs text-white/60 flex items-start gap-1.5">
+                  <span className="text-orange-400 mt-0.5">•</span>
+                  <span>{h}</span>
+                </p>
+              ))}
+            </div>
+          )}
+          {renderCTA(data.cta_label || 'Ler Agora', data.link || '/', format)}
+        </div>
       </div>
     </div>
   )
