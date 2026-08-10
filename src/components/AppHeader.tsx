@@ -1,6 +1,7 @@
 import { Search, Bell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SidebarTrigger } from '@/components/ui/sidebar'
+import { BrandLogo } from '@/components/BrandLogo'
 
 export function AppHeader() {
   return (

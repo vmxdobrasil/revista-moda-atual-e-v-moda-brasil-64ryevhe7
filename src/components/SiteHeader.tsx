@@ -6,7 +6,7 @@ import { BrandLogo } from '@/components/BrandLogo'
 export function SiteHeader() {
   return (
     <header className="bg-white border-b py-5 px-6 md:px-12 flex items-center justify-between sticky top-0 z-30 shadow-sm">
-      <Link to="/" className="shrink-0 hover:opacity-80 transition-opacity flex items-center gap-2">
+      <Link to="/" className="shrink-0 hover:opacity-90 transition-opacity flex items-center gap-2">
         <div className="h-9 md:h-11 w-auto">
           <BrandLogo variant="primary" className="h-full w-auto" />
         </div>

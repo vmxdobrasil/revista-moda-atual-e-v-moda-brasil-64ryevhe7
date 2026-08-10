@@ -7,7 +7,7 @@ export function SiteFooter() {
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-3">
           <div className="h-10 w-auto">
-            <BrandLogo variant="knockout" className="h-full w-auto" />
+            <BrandLogo variant="vazada" className="h-full w-auto" />
           </div>
         </div>
         <div className="flex items-center gap-4 md:gap-6 text-sm flex-wrap justify-center">

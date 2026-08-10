@@ -1,8 +1,17 @@
 import { useLogo } from '@/hooks/use-logo'
 import { cn } from '@/lib/utils'
-import officialLogoUrl from '@/assets/editedimage1786389429173-467b1.png'
+import officialLogoUrl from '@/assets/editedimage1786392642267-e8fe7.png'
 
-export type BrandLogoVariant = 'primary' | 'header' | 'knockout' | 'white' | 'mono' | 'monochrome'
+export type BrandLogoVariant =
+  | 'primary'
+  | 'header'
+  | 'default'
+  | 'knockout'
+  | 'white'
+  | 'hollow'
+  | 'vazada'
+  | 'mono'
+  | 'monochrome'
 
 export interface BrandLogoProps {
   variant?: BrandLogoVariant
@@ -23,25 +32,33 @@ export function BrandLogo({
 }: BrandLogoProps) {
   const { logoUrl } = useLogo()
 
-  const isWhiteOrKnockout = variant === 'knockout' || variant === 'white'
+  const isHollowOrVazada =
+    variant === 'knockout' || variant === 'white' || variant === 'hollow' || variant === 'vazada'
   const isMono = variant === 'mono' || variant === 'monochrome'
 
-  // Primary / Header variant: Uses custom site_settings logo if provided, or the official primary asset (cropped to isolate orange rectangle)
-  if (!isWhiteOrKnockout && !isMono) {
+  // Primary / Header / Default variant: Uses custom site_settings logo if provided, or the official primary asset (precision-cropped to isolate orange rectangle, removing external checkerboard background)
+  if (!isHollowOrVazada && !isMono) {
     const isCustomLogo = Boolean(logoUrl)
     const srcToUse = logoUrl || officialLogoUrl
 
     if (isCustomLogo) {
       return (
-        <div className={cn('inline-flex items-center shrink-0 p-0.5', className)}>
+        <div
+          className={cn(
+            'inline-flex items-center shrink-0 p-0.5',
+            onClick && 'cursor-pointer',
+            className,
+          )}
+          onClick={onClick}
+          role={onClick ? 'button' : undefined}
+        >
           <img
             src={srcToUse}
             alt={alt}
             className={cn(
               'h-full w-auto max-w-full object-contain select-none transition-opacity duration-200',
-              watermark && 'opacity-30 hover:opacity-50',
+              watermark && 'opacity-35 hover:opacity-60',
             )}
-            onClick={onClick}
             loading="eager"
             decoding="async"
           />
@@ -49,25 +66,26 @@ export function BrandLogo({
       )
     }
 
-    // Official brand logo (src/assets/editedimage1786389429173-467b1.png) - precision cropped to isolate orange rectangle
+    // Official brand logo (src/assets/editedimage1786392642267-e8fe7.png) - precision cropped to isolate orange rectangle and eliminate external background
     return (
       <div
         className={cn(
-          'relative inline-flex items-center justify-center shrink-0 overflow-hidden rounded-[6px] select-none cursor-pointer transition-opacity duration-200',
-          watermark && 'opacity-30 hover:opacity-50',
+          'relative inline-flex items-center justify-center shrink-0 overflow-hidden rounded-[8px] select-none transition-opacity duration-200',
+          onClick && 'cursor-pointer',
+          watermark && 'opacity-35 hover:opacity-60',
           className,
         )}
-        style={{ aspectRatio: '2.41 / 1' }}
+        style={{ aspectRatio: '2.77 / 1' }}
         onClick={onClick}
         role={onClick ? 'button' : undefined}
       >
         <img
           src={officialLogoUrl}
           alt={alt}
-          className="absolute left-1/2 top-1/2 max-w-none -translate-x-1/2 -translate-y-1/2 select-none object-cover pointer-events-none"
+          className="absolute left-1/2 top-[48.25%] max-w-none -translate-x-1/2 -translate-y-1/2 select-none object-cover pointer-events-none"
           style={{
-            width: '112.5%',
-            height: '270%',
+            width: '114.4%',
+            height: '317.5%',
           }}
           loading="eager"
           decoding="async"
@@ -76,10 +94,18 @@ export function BrandLogo({
     )
   }
 
-  // Knockout / White version (Transparent background, white vector typography for dark backgrounds and photo overlays)
-  if (isWhiteOrKnockout) {
+  // Hollow / Vazada / Knockout / White version (Transparent background, white vector typography for dark photo overlays and video frames)
+  if (isHollowOrVazada) {
     return (
-      <div className={cn('inline-flex items-center shrink-0 p-0.5', className)}>
+      <div
+        className={cn(
+          'inline-flex items-center shrink-0 p-0.5',
+          onClick && 'cursor-pointer',
+          className,
+        )}
+        onClick={onClick}
+        role={onClick ? 'button' : undefined}
+      >
         <svg
           viewBox="0 0 300 76"
           fill="none"
@@ -88,7 +114,6 @@ export function BrandLogo({
           style={watermark ? { opacity: 0.35 } : undefined}
           role="img"
           aria-label={alt}
-          onClick={onClick}
         >
           <text
             x="150"
@@ -135,7 +160,15 @@ export function BrandLogo({
   const fillColor =
     monoColor === 'orange' ? '#ea580c' : monoColor === 'white' ? '#ffffff' : '#111827'
   return (
-    <div className={cn('inline-flex items-center shrink-0 p-0.5', className)}>
+    <div
+      className={cn(
+        'inline-flex items-center shrink-0 p-0.5',
+        onClick && 'cursor-pointer',
+        className,
+      )}
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+    >
       <svg
         viewBox="0 0 300 76"
         fill="none"
@@ -144,7 +177,6 @@ export function BrandLogo({
         style={watermark ? { opacity: 0.35 } : undefined}
         role="img"
         aria-label={alt}
-        onClick={onClick}
       >
         <text
           x="150"
