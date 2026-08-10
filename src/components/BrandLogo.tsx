@@ -1,6 +1,6 @@
 import { useLogo } from '@/hooks/use-logo'
 import { cn } from '@/lib/utils'
-import officialLogoUrl from '@/assets/editedimage1786320628187-25f71.png'
+import officialLogoUrl from '@/assets/editedimage1786389429173-467b1.png'
 
 export type BrandLogoVariant = 'primary' | 'header' | 'knockout' | 'white' | 'mono' | 'monochrome'
 
@@ -26,19 +26,49 @@ export function BrandLogo({
   const isWhiteOrKnockout = variant === 'knockout' || variant === 'white'
   const isMono = variant === 'mono' || variant === 'monochrome'
 
-  // Primary / Header variant: Uses custom site_settings logo if provided, or the official primary asset
+  // Primary / Header variant: Uses custom site_settings logo if provided, or the official primary asset (cropped to isolate orange rectangle)
   if (!isWhiteOrKnockout && !isMono) {
+    const isCustomLogo = Boolean(logoUrl)
     const srcToUse = logoUrl || officialLogoUrl
+
+    if (isCustomLogo) {
+      return (
+        <div className={cn('inline-flex items-center shrink-0 p-0.5', className)}>
+          <img
+            src={srcToUse}
+            alt={alt}
+            className={cn(
+              'h-full w-auto max-w-full object-contain select-none transition-opacity duration-200',
+              watermark && 'opacity-30 hover:opacity-50',
+            )}
+            onClick={onClick}
+            loading="eager"
+            decoding="async"
+          />
+        </div>
+      )
+    }
+
+    // Official brand logo (src/assets/editedimage1786389429173-467b1.png) - precision cropped to isolate orange rectangle
     return (
-      <div className={cn('inline-flex items-center shrink-0 p-0.5', className)}>
+      <div
+        className={cn(
+          'relative inline-flex items-center justify-center shrink-0 overflow-hidden rounded-[6px] select-none cursor-pointer transition-opacity duration-200',
+          watermark && 'opacity-30 hover:opacity-50',
+          className,
+        )}
+        style={{ aspectRatio: '2.41 / 1' }}
+        onClick={onClick}
+        role={onClick ? 'button' : undefined}
+      >
         <img
-          src={srcToUse}
+          src={officialLogoUrl}
           alt={alt}
-          className={cn(
-            'h-full w-auto max-w-full object-contain select-none transition-opacity duration-200',
-            watermark && 'opacity-30 hover:opacity-50',
-          )}
-          onClick={onClick}
+          className="absolute left-1/2 top-1/2 max-w-none -translate-x-1/2 -translate-y-1/2 select-none object-cover pointer-events-none"
+          style={{
+            width: '112.5%',
+            height: '270%',
+          }}
           loading="eager"
           decoding="async"
         />

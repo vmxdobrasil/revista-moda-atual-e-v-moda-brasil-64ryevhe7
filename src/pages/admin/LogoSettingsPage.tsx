@@ -76,24 +76,24 @@ export default function LogoSettingsPage() {
       <div>
         <h2 className="text-2xl font-bold text-gray-800">Identidade Visual & Logomarca Oficial</h2>
         <p className="text-gray-500 mt-1">
-          Gerencie a exibição da marca "Revista MODA ATUAL Digital" em todo o ecossistema (Portal,
-          Painel Admin, Leitor e Redes Sociais).
+          Gerencie a exibição do retângulo laranja oficial da "Revista MODA ATUAL Digital" em todo o
+          ecossistema (Portal, Painel Admin, Leitor Imersivo e Redes Sociais).
         </p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <span>Previsualização das Variantes Oficiais</span>
+            <span>Previsualização do Retângulo Laranja Oficial</span>
             {!logoUrl && (
               <span className="inline-flex items-center gap-1 text-xs bg-orange-100 text-orange-800 font-semibold px-2.5 py-0.5 rounded-full">
-                <ShieldCheck className="w-3.5 h-3.5" /> Marca Oficial Ativa
+                <ShieldCheck className="w-3.5 h-3.5" /> Marca Oficial #ea580c Ativa
               </span>
             )}
           </CardTitle>
           <CardDescription>
-            A logomarca oficial é otimizada para alta resolução (300 DPI) e adapta-se
-            automaticamente conforme o contraste da tela.
+            A logomarca oficial utiliza exclusivamente o bloco retangular laranja isolado (sem fundo
+            branco), otimizada para alta resolução (300 DPI) e layouts de impressão A4.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
