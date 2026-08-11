@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/sidebar'
 import { BookOpen, Share2, BarChart2, Layers } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
+import { BrandLogo } from '@/components/BrandLogo'
 
 export function AppSidebar() {
   const location = useLocation()
@@ -15,11 +16,15 @@ export function AppSidebar() {
   return (
     <Sidebar variant="inset" className="border-r border-border">
       <SidebarHeader className="p-6 flex flex-col items-center justify-center border-b border-border">
-        <div className="font-serif text-2xl font-bold tracking-widest text-brand-gold text-center leading-tight">
-          V MODA
-          <br />
-          <span className="text-xs text-foreground tracking-widest">BRASIL</span>
-        </div>
+        <Link
+          to="/admin"
+          className="hover:opacity-95 transition-opacity flex flex-col items-center gap-2"
+        >
+          <BrandLogo variant="admin_sidebar" />
+          <span className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">
+            HUB DE NEGÓCIOS
+          </span>
+        </Link>
       </SidebarHeader>
       <SidebarContent className="pt-6 px-2">
         <SidebarMenu className="space-y-2">

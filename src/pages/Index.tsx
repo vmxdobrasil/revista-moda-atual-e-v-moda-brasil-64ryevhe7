@@ -82,7 +82,7 @@ export default function Index() {
   return (
     <div className="container mx-auto px-4 py-16 md:py-24">
       <div className="flex justify-center mb-8">
-        <BrandLogo variant="primary" className="h-14 md:h-20 w-auto" />
+        <BrandLogo variant="hero" />
       </div>
       <div className="mb-16 text-center max-w-3xl mx-auto">
         <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-6">

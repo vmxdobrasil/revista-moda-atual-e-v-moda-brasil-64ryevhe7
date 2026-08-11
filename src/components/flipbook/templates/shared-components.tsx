@@ -54,16 +54,18 @@ export function TemplateFooter({
   showLogo?: boolean
   format?: TemplateFormat
 }) {
+  const story = isVertical(format)
+  const logoSize = story ? 'h-6 md:h-7' : 'h-7 md:h-9'
   return (
-    <div className="flex items-center justify-between px-4 py-1.5 bg-gray-50/90 border-t border-gray-200 flex-shrink-0 mt-auto">
-      {showLogo && <BrandLogo format={format} variant="primary" className="h-4 md:h-5 w-auto" />}
+    <div className="flex items-center justify-between px-4 py-2 bg-gray-50/90 border-t border-gray-200 flex-shrink-0 mt-auto">
+      {showLogo && <BrandLogo format={format} variant="primary" className={`${logoSize} w-auto`} />}
       {editionTitle && (
-        <span className="text-[0.625rem] text-gray-500 font-serif italic truncate max-w-[180px]">
+        <span className="text-xs text-gray-500 font-serif italic truncate max-w-[220px]">
           {editionTitle}
         </span>
       )}
       {publicationDate && (
-        <span className="text-[0.625rem] text-gray-400 whitespace-nowrap">{publicationDate}</span>
+        <span className="text-[0.6875rem] text-gray-400 whitespace-nowrap">{publicationDate}</span>
       )}
     </div>
   )

@@ -9,6 +9,8 @@ export type BrandLogoVariant =
   | 'public_header'
   | 'admin_sidebar'
   | 'footer'
+  | 'login'
+  | 'hero'
   | 'default'
   | 'knockout'
   | 'white'
@@ -46,23 +48,32 @@ export function BrandLogo({
   // Always utilize the official restored logo asset or custom settings
   const srcToUse = logoUrl || officialOrangeLogoUrl
 
-  // Determine variant-specific default heights for layout consistency
-  let variantSize = 'h-8 md:h-10'
+  // Optical sizing definitions ensuring "MODA ATUAL DIGITAL" text is crisp & prominent
+  let variantSize = 'h-12 md:h-16'
   if (variant === 'public_header' || variant === 'header') {
-    variantSize = 'h-8 md:h-10'
+    variantSize = 'h-12 md:h-16 lg:h-20'
   } else if (variant === 'admin_sidebar') {
-    variantSize = 'h-8 md:h-9'
+    variantSize = 'h-12 md:h-14 lg:h-16'
   } else if (variant === 'footer') {
-    variantSize = 'h-9 md:h-11'
-  } else if (variant === 'social_portrait' || variant === 'vertical') {
-    variantSize = 'h-10 md:h-12'
+    variantSize = 'h-12 md:h-16'
+  } else if (variant === 'login') {
+    variantSize = 'h-20 md:h-24 lg:h-28'
+  } else if (variant === 'hero') {
+    variantSize = 'h-20 md:h-28 lg:h-32'
+  } else if (variant === 'social_portrait' || variant === 'vertical' || variant === 'portrait') {
+    variantSize = 'h-14 md:h-18'
+  } else if (variant === 'social_landscape' || variant === 'social_square') {
+    variantSize = 'h-12 md:h-16'
   }
+
+  // Allow custom height class in className to take precedence if explicitly provided
+  const hasCustomHeight = className?.split(' ').some((c) => c.startsWith('h-'))
 
   return (
     <div
       className={cn(
         'relative inline-flex items-center justify-center shrink-0 select-none transition-all duration-200',
-        variantSize,
+        !hasCustomHeight && variantSize,
         onClick && 'cursor-pointer hover:opacity-95 hover:scale-[1.02]',
         watermark && 'opacity-40 hover:opacity-75',
         className,
@@ -74,7 +85,7 @@ export function BrandLogo({
       <img
         src={srcToUse}
         alt={alt}
-        className="h-full w-auto max-w-full object-contain pointer-events-none select-none rounded-[6px]"
+        className="h-full w-auto max-w-full object-contain pointer-events-none select-none drop-shadow-sm rounded-[6px]"
         loading="eager"
         decoding="async"
       />
