@@ -1,12 +1,15 @@
+import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { BrandLogo } from '@/components/BrandLogo'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
-import { BookOpen, Award, LayoutDashboard, Sparkles, Megaphone } from 'lucide-react'
+import { BookOpen, Award, LayoutDashboard, Sparkles, Megaphone, Menu } from 'lucide-react'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 
 export function SiteHeader() {
   const location = useLocation()
   const { isAuthenticated } = useAuth()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const navItems = [
     { label: 'Edições', path: '/editions', icon: BookOpen },
@@ -25,6 +28,7 @@ export function SiteHeader() {
           <BrandLogo size="md" className="h-12 sm:h-14 md:h-16 w-auto" />
         </Link>
 
+        {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1 lg:gap-2">
           {navItems.map((item) => {
             const Icon = item.icon
@@ -44,11 +48,12 @@ export function SiteHeader() {
           })}
         </nav>
 
+        {/* Actions & Mobile Trigger */}
         <div className="flex items-center gap-2">
           <Link to="/reader/latest">
             <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-sm text-xs sm:text-sm">
-              <BookOpen className="h-4 w-4 mr-2" />
-              Ler Última Edição
+              <BookOpen className="h-4 w-4 mr-1.5 sm:mr-2" />
+              <span className="hidden xs:inline">Ler </span>Última Edição
             </Button>
           </Link>
 
@@ -66,6 +71,60 @@ export function SiteHeader() {
               </Button>
             </Link>
           )}
+
+          {/* Mobile Sheet Menu */}
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden ml-1"
+                aria-label="Abrir menu de navegação"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[280px] sm:w-[350px] p-6">
+              <SheetHeader className="text-left pb-4 border-b">
+                <SheetTitle className="flex items-center gap-2">
+                  <BrandLogo size="xs" className="h-8 w-auto" />
+                </SheetTitle>
+              </SheetHeader>
+              <div className="flex flex-col gap-2 mt-6">
+                {navItems.map((item) => {
+                  const Icon = item.icon
+                  const isActive = location.pathname === item.path
+                  return (
+                    <Link key={item.path} to={item.path} onClick={() => setMobileMenuOpen(false)}>
+                      <Button
+                        variant={isActive ? 'secondary' : 'ghost'}
+                        className="w-full justify-start gap-3 text-base font-medium"
+                      >
+                        <Icon className="h-5 w-5 text-primary" />
+                        {item.label}
+                      </Button>
+                    </Link>
+                  )
+                })}
+                <div className="pt-4 mt-2 border-t flex flex-col gap-2">
+                  {isAuthenticated ? (
+                    <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
+                      <Button variant="outline" className="w-full justify-start gap-3">
+                        <LayoutDashboard className="h-5 w-5" />
+                        Painel Administrativo
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Link to="/admin/login" onClick={() => setMobileMenuOpen(false)}>
+                      <Button variant="outline" className="w-full justify-start gap-3">
+                        Área Restrita
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>

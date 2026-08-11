@@ -10,6 +10,8 @@ export type BrandLogoVariant =
   | 'symbol'
   | 'full'
   | 'orange'
+  | 'header'
+
 export type BrandLogoSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'hero' | '2xl'
 
 export interface BrandLogoProps {
@@ -34,6 +36,7 @@ const sizeClasses: Record<BrandLogoSize, string> = {
 
 const variantColors: Record<BrandLogoVariant, { bg: string; text: string }> = {
   default: { bg: '#EA580C', text: '#FFFFFF' },
+  header: { bg: '#EA580C', text: '#FFFFFF' },
   orange: { bg: '#EA580C', text: '#FFFFFF' },
   white: { bg: '#FFFFFF', text: '#EA580C' },
   dark: { bg: '#0F172A', text: '#FFFFFF' },
@@ -64,6 +67,7 @@ export function BrandLogo({
           onClick && 'cursor-pointer',
           className,
         )}
+        style={{ backgroundColor: 'transparent' }}
       >
         <img
           src={logoUrl}
@@ -74,6 +78,7 @@ export function BrandLogo({
             sizeClasses[size],
             className,
           )}
+          style={{ backgroundColor: 'transparent' }}
         />
       </div>
     )
@@ -88,6 +93,7 @@ export function BrandLogo({
         onClick && 'cursor-pointer',
         className,
       )}
+      style={{ backgroundColor: 'transparent' }}
       title="Revista MODA ATUAL Digital"
     >
       <svg
@@ -99,7 +105,7 @@ export function BrandLogo({
           sizeClasses[size],
           className,
         )}
-        style={{ aspectRatio: '380 / 140' }}
+        style={{ aspectRatio: '380 / 140', backgroundColor: 'transparent' }}
       >
         <rect
           width="380"
