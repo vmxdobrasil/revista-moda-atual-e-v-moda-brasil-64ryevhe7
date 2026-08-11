@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   Image,
   Layout,
+  Smartphone,
   Layers,
 } from 'lucide-react'
 
@@ -84,11 +85,11 @@ export default function LogoSettingsPage() {
     <div className="space-y-6 max-w-4xl">
       <div>
         <h2 className="text-2xl font-bold text-gray-800">
-          Identidade Visual & Logomarcas Oficiais
+          Identidade Visual & Logomarcas Oficiais Social Media
         </h2>
         <p className="text-gray-500 mt-1">
-          Gerencie as 3 variações oficiais da logomarca "Revista MODA ATUAL Digital" aplicadas em
-          todo o ecossistema (Portal, Painel Admin, Leitor Imersivo, Capas e Redes Sociais).
+          Gerencie a matriz visual "Revista MODA ATUAL Digital" otimizada para os 8+ formatos de
+          redes sociais (Stories, Reels, Feed, Facebook, LinkedIn, YouTube) e leitores digitais.
         </p>
       </div>
 
@@ -97,76 +98,109 @@ export default function LogoSettingsPage() {
           <CardTitle className="flex items-center justify-between">
             <span className="flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-orange-600" />
-              <span>Matriz Visual Oficial — Revista MODA ATUAL Digital</span>
+              <span>Matriz de Branding Social & Editorial</span>
             </span>
             {!logoUrl && (
               <span className="inline-flex items-center gap-1 text-xs bg-orange-100 text-orange-800 font-semibold px-2.5 py-0.5 rounded-full">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Padronização Ativa
+                <CheckCircle2 className="w-3.5 h-3.5" /> Transparência & Vetorização Ativas
               </span>
             )}
           </CardTitle>
           <CardDescription>
-            Ativos visuais em altíssima resolução (300 DPI equivalentes), preparados para layouts
-            web, mobile, e-reader e exportações A4 para impressão.
+            Ativos em altíssima resolução com letras brancas vazadas sobre retângulo laranja
+            (#ea580c), sem bordas ou fundos externos indesejados.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Variant 1: Primary Orange */}
+          {/* Variant 1: Social Landscape */}
           <div className="border border-gray-200 rounded-xl p-4 bg-white space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Layout className="w-4 h-4 text-orange-600" />
                 <p className="text-sm font-semibold text-gray-900">
-                  1. Variante Principal (Retângulo Laranja) — `primary`
+                  1. Variante Horizontal / Landscape (16:9 - Facebook, LinkedIn, YouTube)
                 </p>
               </div>
               <span className="text-[0.6875rem] font-mono bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
-                Header, Footer, Admin, Páginas Institucionais
+                social_landscape (16:9)
               </span>
             </div>
             <div className="flex items-center justify-center p-6 bg-gray-50 border border-gray-100 rounded-lg">
               <div className="h-14">
-                <BrandLogo variant="primary" className="h-full" />
+                <BrandLogo
+                  variant="social_landscape"
+                  className="h-full"
+                  alt="Logomarca Oficial Revista Moda Atual Digital"
+                />
               </div>
             </div>
           </div>
 
-          {/* Variant 2: Knockout White */}
-          <div className="border border-gray-200 rounded-xl p-4 bg-white space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Image className="w-4 h-4 text-orange-600" />
-                <p className="text-sm font-semibold text-gray-900">
-                  2. Variante Knockout (Letras Brancas Transparentes) — `knockout`
-                </p>
-              </div>
-              <span className="text-[0.6875rem] font-mono bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
-                Capas de Revista, Fotos, Vídeos, Overlays Imersivos
-              </span>
-            </div>
-            <div className="flex items-center justify-center p-6 bg-stone-900 rounded-lg shadow-inner">
-              <div className="h-12">
-                <BrandLogo variant="knockout" className="h-full" />
-              </div>
-            </div>
-          </div>
-
-          {/* Variant 3: Alternative Orange */}
+          {/* Variant 2: Social Square / Feed */}
           <div className="border border-gray-200 rounded-xl p-4 bg-white space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Layers className="w-4 h-4 text-orange-600" />
                 <p className="text-sm font-semibold text-gray-900">
-                  3. Variante Alternativa (Formato Vertical / Compacto) — `alt`
+                  2. Variante Quadrada / Compacta (1:1 - Instagram Post, Pinterest, Carrosséis)
                 </p>
               </div>
               <span className="text-[0.6875rem] font-mono bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
-                Stories, Formatos Verticais, Redes Sociais
+                social_square (1:1)
               </span>
             </div>
             <div className="flex items-center justify-center p-6 bg-gray-50 border border-gray-100 rounded-lg">
               <div className="h-16">
-                <BrandLogo variant="alt" className="h-full" />
+                <BrandLogo
+                  variant="social_square"
+                  className="h-full"
+                  alt="Logomarca Oficial Revista Moda Atual Digital"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Variant 3: Social Vertical / Portrait */}
+          <div className="border border-gray-200 rounded-xl p-4 bg-white space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Smartphone className="w-4 h-4 text-orange-600" />
+                <p className="text-sm font-semibold text-gray-900">
+                  3. Variante Vertical / Portrait (9:16 - Instagram Stories, Reels, TikTok,
+                  WhatsApp)
+                </p>
+              </div>
+              <span className="text-[0.6875rem] font-mono bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                social_portrait (9:16)
+              </span>
+            </div>
+            <div className="flex items-center justify-center p-6 bg-gray-50 border border-gray-100 rounded-lg">
+              <div className="h-24">
+                <BrandLogo
+                  variant="social_portrait"
+                  className="h-full"
+                  alt="Logomarca Oficial Revista Moda Atual Digital"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Variant 4: Knockout White */}
+          <div className="border border-gray-200 rounded-xl p-4 bg-white space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Image className="w-4 h-4 text-orange-600" />
+                <p className="text-sm font-semibold text-gray-900">
+                  4. Variante Knockout / Vazada (Capas de Revista, Overlays de Vídeo e Fotos)
+                </p>
+              </div>
+              <span className="text-[0.6875rem] font-mono bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                knockout
+              </span>
+            </div>
+            <div className="flex items-center justify-center p-6 bg-stone-900 rounded-lg shadow-inner">
+              <div className="h-12">
+                <BrandLogo variant="knockout" className="h-full" />
               </div>
             </div>
           </div>
@@ -207,9 +241,9 @@ export default function LogoSettingsPage() {
           <div className="p-3.5 bg-orange-50 rounded-lg border border-orange-200 flex items-start gap-2.5 text-xs text-orange-900">
             <CheckCircle2 className="w-4 h-4 text-orange-600 shrink-0 mt-0.5" />
             <p>
-              A marca oficial "Revista MODA ATUAL Digital" está integrada ao Leitor Imersivo,
-              exportadores PDF, geradores de conteúdo social e aos 16 templates editoriais com
-              margens de segurança pré-configuradas.
+              Todos os 16 templates editoriais e geradores de mídia social alternam automaticamente
+              a logomarca de acordo com a proporção de tela do canal de destino (landscape, square
+              ou portrait).
             </p>
           </div>
         </CardContent>

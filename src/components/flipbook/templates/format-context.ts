@@ -62,3 +62,13 @@ export const FORMAT_CONFIG: Record<
 }
 
 export const ALL_FORMATS = Object.keys(FORMAT_CONFIG) as TemplateFormat[]
+
+import socialVerticalLogoUrl from '@/assets/editedimage1786407117674-685c3.png'
+import socialSquareLogoUrl from '@/assets/editedimage1786407138361-e2583.png'
+import socialLandscapeLogoUrl from '@/assets/editedimage1786407167503-234ea.png'
+
+export function getSocialLogoAsset(format: TemplateFormat): string {
+  if (isVertical(format)) return socialVerticalLogoUrl
+  if (isSquare(format)) return socialSquareLogoUrl
+  return socialLandscapeLogoUrl
+}

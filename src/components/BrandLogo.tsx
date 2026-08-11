@@ -1,8 +1,10 @@
-import primaryLogoUrl from '@/assets/editedimage1786393760384-c6be2.png'
 import knockoutLogoUrl from '@/assets/editedimage1786393837731-f85ec.png'
-import altLogoUrl from '@/assets/editedimage1786393802751-f7a99.png'
+import socialVerticalLogoUrl from '@/assets/editedimage1786407117674-685c3.png'
+import socialSquareLogoUrl from '@/assets/editedimage1786407138361-e2583.png'
+import socialLandscapeLogoUrl from '@/assets/editedimage1786407167503-234ea.png'
 import { useLogo } from '@/hooks/use-logo'
 import { cn } from '@/lib/utils'
+import type { TemplateFormat } from '@/components/flipbook/templates/format-context'
 
 export type BrandLogoVariant =
   | 'primary'
@@ -15,11 +17,15 @@ export type BrandLogoVariant =
   | 'alt'
   | 'vertical'
   | 'portrait'
+  | 'social_portrait'
+  | 'social_landscape'
+  | 'social_square'
   | 'mono'
   | 'monochrome'
 
 export interface BrandLogoProps {
   variant?: BrandLogoVariant
+  format?: TemplateFormat
   className?: string
   watermark?: boolean
   monoColor?: 'orange' | 'white' | 'black'
@@ -29,20 +35,20 @@ export interface BrandLogoProps {
 
 export function BrandLogo({
   variant = 'primary',
+  format,
   className,
   watermark = false,
   monoColor = 'orange',
   onClick,
-  alt = 'REVISTA MODA ATUAL DIGITAL',
+  alt = 'Logomarca Oficial Revista Moda Atual Digital',
 }: BrandLogoProps) {
   const { logoUrl } = useLogo()
 
   const isKnockout =
     variant === 'knockout' || variant === 'white' || variant === 'hollow' || variant === 'vazada'
-  const isAlt = variant === 'alt' || variant === 'vertical' || variant === 'portrait'
   const isMono = variant === 'mono' || variant === 'monochrome'
 
-  // Knockout white version (transparent background with white letters) for magazine cover overlays, photo/video overlays and dark backgrounds
+  // Knockout white version for overlays and dark backgrounds
   if (isKnockout) {
     return (
       <div
@@ -59,30 +65,6 @@ export function BrandLogo({
           src={knockoutLogoUrl}
           alt={alt}
           className="h-full w-auto max-w-full object-contain select-none pointer-events-none filter drop-shadow-sm"
-          loading="eager"
-          decoding="async"
-        />
-      </div>
-    )
-  }
-
-  // Alternative vertical / compact layout logo asset
-  if (isAlt) {
-    return (
-      <div
-        className={cn(
-          'inline-flex items-center justify-center shrink-0 select-none transition-opacity duration-200 p-0.5',
-          onClick && 'cursor-pointer hover:opacity-90',
-          watermark && 'opacity-40 hover:opacity-75',
-          className,
-        )}
-        onClick={onClick}
-        role={onClick ? 'button' : undefined}
-      >
-        <img
-          src={altLogoUrl}
-          alt={alt}
-          className="h-full w-auto max-w-full object-contain select-none pointer-events-none rounded-md"
           loading="eager"
           decoding="async"
         />
@@ -154,8 +136,34 @@ export function BrandLogo({
     )
   }
 
-  // Primary / Header / Default variant: Custom logo if uploaded, or Primary official logo asset
-  const srcToUse = logoUrl || primaryLogoUrl
+  // Select context-aware logo asset based on format or explicit variant
+  let srcToUse: string | null = null
+
+  if (format) {
+    if (format === 'story' || format === 'whatsapp' || format === 'pinterest') {
+      srcToUse = socialVerticalLogoUrl
+    } else if (format === 'instagram_post') {
+      srcToUse = socialSquareLogoUrl
+    } else {
+      srcToUse = socialLandscapeLogoUrl
+    }
+  } else if (variant === 'social_portrait' || variant === 'portrait' || variant === 'vertical') {
+    srcToUse = socialVerticalLogoUrl
+  } else if (variant === 'social_square' || variant === 'alt') {
+    srcToUse = socialSquareLogoUrl
+  } else if (
+    variant === 'social_landscape' ||
+    variant === 'header' ||
+    variant === 'primary' ||
+    variant === 'default'
+  ) {
+    srcToUse = socialLandscapeLogoUrl
+  }
+
+  // Fall back to custom upload from site settings if present and format/variant wasn't explicit
+  if (!srcToUse) {
+    srcToUse = logoUrl || socialLandscapeLogoUrl
+  }
 
   return (
     <div
