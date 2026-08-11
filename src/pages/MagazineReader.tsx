@@ -210,7 +210,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
     return (
       <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-50 gap-6">
         <div className="h-20 md:h-28 animate-pulse">
-          <BrandLogo variant="primary" className="h-full w-auto" />
+          <BrandLogo className="h-full w-auto" />
         </div>
         <div className="flex items-center gap-3 text-orange-500 mt-4">
           <Loader2 className="w-6 h-6 animate-spin" />
@@ -224,7 +224,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
     return (
       <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-50 gap-6 px-4">
         <div className="h-12 md:h-16 opacity-60">
-          <BrandLogo variant="white" className="h-full w-auto" />
+          <BrandLogo className="h-full w-auto" />
         </div>
         <div className="flex flex-col items-center gap-4 max-w-md text-center">
           {loadError ? (
@@ -367,7 +367,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
         <div className="flex items-center gap-4">
           <Link to="/" className="shrink-0 hover:opacity-80 transition-opacity">
             <div className="h-10 md:h-12 w-auto">
-              <BrandLogo variant="primary" className="h-full w-auto" />
+              <BrandLogo className="h-full w-auto" />
             </div>
           </Link>
           <div className="h-6 w-px bg-gray-300 hidden md:block" />
