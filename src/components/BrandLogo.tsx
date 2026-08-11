@@ -1,4 +1,4 @@
-import officialOrangeLogoUrl from '@/assets/editedimage1786408634881-d3703.png'
+import officialLogoUrl from '@/assets/editedimage1786389429173-467b1.png'
 import { useLogo } from '@/hooks/use-logo'
 import { cn } from '@/lib/utils'
 import type { TemplateFormat } from '@/components/flipbook/templates/format-context'
@@ -35,6 +35,29 @@ export interface BrandLogoProps {
   alt?: string
 }
 
+const VARIANT_SIZES: Record<string, string> = {
+  primary: 'h-14 md:h-20 lg:h-24',
+  header: 'h-14 md:h-20 lg:h-24',
+  public_header: 'h-14 md:h-20 lg:h-24',
+  admin_sidebar: 'h-14 md:h-18 lg:h-20',
+  footer: 'h-14 md:h-20',
+  login: 'h-24 md:h-32 lg:h-40',
+  hero: 'h-24 md:h-36 lg:h-44',
+  default: 'h-14 md:h-20 lg:h-24',
+  knockout: 'h-14 md:h-20 lg:h-24',
+  white: 'h-14 md:h-20 lg:h-24',
+  hollow: 'h-14 md:h-20 lg:h-24',
+  vazada: 'h-14 md:h-20 lg:h-24',
+  alt: 'h-14 md:h-20 lg:h-24',
+  vertical: 'h-18 md:h-24',
+  portrait: 'h-18 md:h-24',
+  social_portrait: 'h-18 md:h-24',
+  social_landscape: 'h-14 md:h-20',
+  social_square: 'h-14 md:h-20',
+  mono: 'h-14 md:h-20 lg:h-24',
+  monochrome: 'h-14 md:h-20 lg:h-24',
+}
+
 export function BrandLogo({
   variant = 'primary',
   format,
@@ -45,28 +68,10 @@ export function BrandLogo({
 }: BrandLogoProps) {
   const { logoUrl } = useLogo()
 
-  // Always utilize the official restored logo asset or custom settings
-  const srcToUse = logoUrl || officialOrangeLogoUrl
+  const srcToUse = logoUrl || officialLogoUrl
 
-  // Optical sizing definitions ensuring "MODA ATUAL DIGITAL" text is crisp & prominent
-  let variantSize = 'h-12 md:h-16'
-  if (variant === 'public_header' || variant === 'header') {
-    variantSize = 'h-12 md:h-16 lg:h-20'
-  } else if (variant === 'admin_sidebar') {
-    variantSize = 'h-12 md:h-14 lg:h-16'
-  } else if (variant === 'footer') {
-    variantSize = 'h-12 md:h-16'
-  } else if (variant === 'login') {
-    variantSize = 'h-20 md:h-24 lg:h-28'
-  } else if (variant === 'hero') {
-    variantSize = 'h-20 md:h-28 lg:h-32'
-  } else if (variant === 'social_portrait' || variant === 'vertical' || variant === 'portrait') {
-    variantSize = 'h-14 md:h-18'
-  } else if (variant === 'social_landscape' || variant === 'social_square') {
-    variantSize = 'h-12 md:h-16'
-  }
+  const variantSize = VARIANT_SIZES[variant] || VARIANT_SIZES.primary
 
-  // Allow custom height class in className to take precedence if explicitly provided
   const hasCustomHeight = className?.split(' ').some((c) => c.startsWith('h-'))
 
   return (
@@ -85,9 +90,10 @@ export function BrandLogo({
       <img
         src={srcToUse}
         alt={alt}
-        className="h-full w-auto max-w-full object-contain pointer-events-none select-none drop-shadow-sm rounded-[6px]"
+        className="h-full w-auto max-w-full object-contain pointer-events-none select-none"
         loading="eager"
         decoding="async"
+        style={{ imageRendering: 'auto' }}
       />
     </div>
   )

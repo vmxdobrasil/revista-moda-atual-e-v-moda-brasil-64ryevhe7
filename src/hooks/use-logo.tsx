@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { getSiteSettings, getLogoUrl } from '@/services/logo-settings'
 import { useRealtime } from '@/hooks/use-realtime'
-import officialOrangeLogoUrl from '@/assets/editedimage1786408634881-d3703.png'
+import officialOrangeLogoUrl from '@/assets/editedimage1786389429173-467b1.png'
 
 interface LogoContextType {
   logoUrl: string

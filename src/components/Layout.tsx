@@ -11,7 +11,7 @@ export function Layout() {
           to="/"
           className="shrink-0 hover:opacity-80 transition-opacity flex items-center gap-2"
         >
-          <div className="h-8 md:h-10 w-auto">
+          <div className="h-12 md:h-16 w-auto">
             <BrandLogo variant="header" className="h-full w-auto" />
           </div>
         </Link>

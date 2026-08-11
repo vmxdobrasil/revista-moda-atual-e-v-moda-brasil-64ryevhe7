@@ -128,8 +128,8 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
-        <div className="flex justify-center mb-8">
-          <BrandLogo variant="login" />
+        <div className="flex justify-center mb-6">
+          <BrandLogo variant="login" className="h-20 md:h-28" />
         </div>
         <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">Acesso Restrito</h1>
 

@@ -55,7 +55,7 @@ export function TemplateFooter({
   format?: TemplateFormat
 }) {
   const story = isVertical(format)
-  const logoSize = story ? 'h-6 md:h-7' : 'h-7 md:h-9'
+  const logoSize = story ? 'h-8 md:h-10' : 'h-10 md:h-12'
   return (
     <div className="flex items-center justify-between px-4 py-2 bg-gray-50/90 border-t border-gray-200 flex-shrink-0 mt-auto">
       {showLogo && <BrandLogo format={format} variant="primary" className={`${logoSize} w-auto`} />}
