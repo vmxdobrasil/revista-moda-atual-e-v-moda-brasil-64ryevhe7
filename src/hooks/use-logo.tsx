@@ -1,11 +1,11 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { getSiteSettings, getLogoUrl } from '@/services/logo-settings'
 import { useRealtime } from '@/hooks/use-realtime'
-import officialOrangeLogoUrl from '@/assets/editedimage1786389429173-467b1.png'
 
 interface LogoContextType {
   logoUrl: string | null
   isCustomLogo: boolean
+  visualParams: Record<string, any> | null
   loading: boolean
   refresh: () => Promise<void>
 }
@@ -20,6 +20,7 @@ export function useLogo() {
 
 export function LogoProvider({ children }: { children: ReactNode }) {
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
+  const [visualParams, setVisualParams] = useState<Record<string, any> | null>(null)
   const [loading, setLoading] = useState(true)
 
   const refresh = async () => {
@@ -27,9 +28,11 @@ export function LogoProvider({ children }: { children: ReactNode }) {
     try {
       const settings = await getSiteSettings()
       const customUrl = getLogoUrl(settings)
-      setLogoUrl(customUrl || officialOrangeLogoUrl)
+      setLogoUrl(customUrl || null)
+      setVisualParams(settings?.logo_visual_params || null)
     } catch {
-      setLogoUrl(officialOrangeLogoUrl)
+      setLogoUrl(null)
+      setVisualParams(null)
     } finally {
       setLoading(false)
     }
@@ -44,7 +47,15 @@ export function LogoProvider({ children }: { children: ReactNode }) {
   })
 
   return (
-    <LogoContext.Provider value={{ logoUrl, isCustomLogo: !!logoUrl, loading, refresh }}>
+    <LogoContext.Provider
+      value={{
+        logoUrl,
+        isCustomLogo: Boolean(logoUrl),
+        visualParams,
+        loading,
+        refresh,
+      }}
+    >
       {children}
     </LogoContext.Provider>
   )

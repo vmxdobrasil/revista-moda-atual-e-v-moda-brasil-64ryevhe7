@@ -32,7 +32,7 @@ export default function Index() {
               HUB DIGITAL DE MODA ATACADISTA
             </Badge>
 
-            {/* High Visibility Hero Logo - Clean Orange Box without any white square container */}
+            {/* High Visibility Hero Logo - Clean Orange Box with 100% transparent canvas background */}
             <div className="py-4 my-2 transition-transform duration-300 hover:scale-[1.02] flex justify-center items-center bg-transparent">
               <BrandLogo size="hero" className="h-44 sm:h-56 md:h-64 lg:h-72 w-auto" />
             </div>

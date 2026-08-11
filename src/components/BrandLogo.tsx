@@ -1,7 +1,6 @@
 import React from 'react'
 import { cn } from '@/lib/utils'
 import { useLogo } from '@/hooks/use-logo'
-import officialOrangeLogoUrl from '@/assets/editedimage1786389429173-467b1.png'
 
 export type BrandLogoVariant =
   | 'default'
@@ -49,20 +48,14 @@ export function BrandLogo({
   className,
   onClick,
   alt = 'Revista MODA ATUAL Digital',
-  useImageOnly = false,
 }: BrandLogoProps) {
-  const { logoUrl } = useLogo()
+  const { logoUrl, isCustomLogo } = useLogo()
   const [imgError, setImgError] = React.useState(false)
 
-  const activeLogoUrl = logoUrl || officialOrangeLogoUrl
   const colors = variantColors[variant] || variantColors.default
 
-  // Render official PNG image asset when available and using default/orange variants
-  if (
-    (useImageOnly || variant === 'default' || variant === 'orange') &&
-    activeLogoUrl &&
-    !imgError
-  ) {
+  // Custom logo uploaded in site settings
+  if (isCustomLogo && logoUrl && !imgError) {
     return (
       <div
         onClick={onClick}
@@ -73,11 +66,11 @@ export function BrandLogo({
         )}
       >
         <img
-          src={activeLogoUrl}
+          src={logoUrl}
           alt={alt}
           onError={() => setImgError(true)}
           className={cn(
-            'object-contain max-w-full bg-transparent p-0 m-0 border-0 mix-blend-multiply',
+            'object-contain max-w-full bg-transparent p-0 m-0 border-0',
             sizeClasses[size],
             className,
           )}
@@ -86,6 +79,7 @@ export function BrandLogo({
     )
   }
 
+  // Official vector logo: transparent canvas around the orange rounded box
   return (
     <div
       onClick={onClick}
@@ -101,7 +95,7 @@ export function BrandLogo({
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         className={cn(
-          'object-contain max-w-full w-auto bg-transparent p-0 m-0 border-0 mix-blend-multiply',
+          'object-contain max-w-full w-auto bg-transparent p-0 m-0 border-0',
           sizeClasses[size],
           className,
         )}
