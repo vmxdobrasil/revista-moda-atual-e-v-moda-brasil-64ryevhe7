@@ -54,7 +54,7 @@ export function TemplateFooter({
 }) {
   return (
     <div className="flex items-center justify-between px-4 py-1.5 bg-gray-50/90 border-t border-gray-200 flex-shrink-0 mt-auto">
-      {showLogo && <BrandLogo variant="primary" className="h-4 w-auto" />}
+      {showLogo && <BrandLogo variant="primary" className="h-4 md:h-4.5 w-auto object-contain" />}
       {editionTitle && (
         <span className="text-[0.625rem] text-gray-500 font-serif italic truncate max-w-[180px]">
           {editionTitle}

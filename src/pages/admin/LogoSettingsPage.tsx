@@ -5,7 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useToast } from '@/hooks/use-toast'
 import { useLogo } from '@/hooks/use-logo'
 import { BrandLogo } from '@/components/BrandLogo'
-import { Upload, Trash2, Loader2, CheckCircle2, ShieldCheck } from 'lucide-react'
+import {
+  Upload,
+  Trash2,
+  Loader2,
+  CheckCircle2,
+  ShieldCheck,
+  Image,
+  Layout,
+  Layers,
+} from 'lucide-react'
 
 export default function LogoSettingsPage() {
   const { toast } = useToast()
@@ -29,7 +38,7 @@ export default function LogoSettingsPage() {
       await refresh()
       toast({
         title: 'Logo atualizado!',
-        description: 'O novo logo personalizado foi aplicado em todo o sistema.',
+        description: 'O novo logo personalizado foi aplicado no ecossistema.',
       })
     } catch (err: any) {
       toast({
@@ -72,67 +81,92 @@ export default function LogoSettingsPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 max-w-4xl">
       <div>
-        <h2 className="text-2xl font-bold text-gray-800">Identidade Visual & Logomarca Oficial</h2>
+        <h2 className="text-2xl font-bold text-gray-800">
+          Identidade Visual & Logomarcas Oficiais
+        </h2>
         <p className="text-gray-500 mt-1">
-          Gerencie a exibição do retângulo laranja oficial da "Revista MODA ATUAL Digital" em todo o
-          ecossistema (Portal, Painel Admin, Leitor Imersivo e Redes Sociais).
+          Gerencie as 3 variações oficiais da logomarca "Revista MODA ATUAL Digital" aplicadas em
+          todo o ecossistema (Portal, Painel Admin, Leitor Imersivo, Capas e Redes Sociais).
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <span>Previsualização do Retângulo Laranja Oficial</span>
+          <CardTitle className="flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-orange-600" />
+              <span>Matriz Visual Oficial — Revista MODA ATUAL Digital</span>
+            </span>
             {!logoUrl && (
               <span className="inline-flex items-center gap-1 text-xs bg-orange-100 text-orange-800 font-semibold px-2.5 py-0.5 rounded-full">
-                <ShieldCheck className="w-3.5 h-3.5" /> Marca Oficial #ea580c Ativa
+                <CheckCircle2 className="w-3.5 h-3.5" /> Padronização Ativa
               </span>
             )}
           </CardTitle>
           <CardDescription>
-            A logomarca oficial utiliza exclusivamente o bloco retangular laranja isolado (sem fundo
-            branco), otimizada para alta resolução (300 DPI) e layouts de impressão A4.
+            Ativos visuais em altíssima resolução (300 DPI equivalentes), preparados para layouts
+            web, mobile, e-reader e exportações A4 para impressão.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div>
-            <p className="text-sm font-medium text-gray-700 mb-2">
-              1. Variante Principal (Header & Destaques) — Fundo Laranja #ea580c
-            </p>
-            <div className="flex items-center justify-center p-6 bg-gray-50 border border-gray-200 rounded-lg">
+          {/* Variant 1: Primary Orange */}
+          <div className="border border-gray-200 rounded-xl p-4 bg-white space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Layout className="w-4 h-4 text-orange-600" />
+                <p className="text-sm font-semibold text-gray-900">
+                  1. Variante Principal (Retângulo Laranja) — `primary`
+                </p>
+              </div>
+              <span className="text-[0.6875rem] font-mono bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                Header, Footer, Admin, Páginas Institucionais
+              </span>
+            </div>
+            <div className="flex items-center justify-center p-6 bg-gray-50 border border-gray-100 rounded-lg">
               <div className="h-14">
                 <BrandLogo variant="primary" className="h-full" />
               </div>
             </div>
           </div>
 
-          <div>
-            <p className="text-sm font-medium text-gray-700 mb-2">
-              2. Variante Knockout (Transparente / Vazada) — Para sobreposição em fotos e capas
-            </p>
-            <div className="flex items-center justify-center p-6 bg-gray-900 rounded-lg">
+          {/* Variant 2: Knockout White */}
+          <div className="border border-gray-200 rounded-xl p-4 bg-white space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Image className="w-4 h-4 text-orange-600" />
+                <p className="text-sm font-semibold text-gray-900">
+                  2. Variante Knockout (Letras Brancas Transparentes) — `knockout`
+                </p>
+              </div>
+              <span className="text-[0.6875rem] font-mono bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                Capas de Revista, Fotos, Vídeos, Overlays Imersivos
+              </span>
+            </div>
+            <div className="flex items-center justify-center p-6 bg-stone-900 rounded-lg shadow-inner">
               <div className="h-12">
                 <BrandLogo variant="knockout" className="h-full" />
               </div>
             </div>
           </div>
 
-          <div>
-            <p className="text-sm font-medium text-gray-700 mb-2">
-              3. Variante Monocromática — Para layouts minimalistas e impressões
-            </p>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center justify-center p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                <div className="h-10">
-                  <BrandLogo variant="mono" monoColor="orange" className="h-full" />
-                </div>
+          {/* Variant 3: Alternative Orange */}
+          <div className="border border-gray-200 rounded-xl p-4 bg-white space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Layers className="w-4 h-4 text-orange-600" />
+                <p className="text-sm font-semibold text-gray-900">
+                  3. Variante Alternativa (Formato Vertical / Compacto) — `alt`
+                </p>
               </div>
-              <div className="flex items-center justify-center p-4 bg-gray-100 border border-gray-200 rounded-lg">
-                <div className="h-10">
-                  <BrandLogo variant="mono" monoColor="black" className="h-full" />
-                </div>
+              <span className="text-[0.6875rem] font-mono bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                Stories, Formatos Verticais, Redes Sociais
+              </span>
+            </div>
+            <div className="flex items-center justify-center p-6 bg-gray-50 border border-gray-100 rounded-lg">
+              <div className="h-16">
+                <BrandLogo variant="alt" className="h-full" />
               </div>
             </div>
           </div>
@@ -155,7 +189,7 @@ export default function LogoSettingsPage() {
               ) : (
                 <Upload className="w-4 h-4" />
               )}
-              Enviar Logo Personalizado
+              Enviar Customização de Logo
             </Button>
             {logoUrl && (
               <Button
@@ -165,15 +199,17 @@ export default function LogoSettingsPage() {
                 className="gap-2 text-orange-600 border-orange-200 hover:bg-orange-50"
               >
                 <Trash2 className="w-4 h-4" />
-                Restaurar Logomarca Oficial
+                Restaurar Marca Oficial Padrão
               </Button>
             )}
           </div>
-          <div className="p-3 bg-blue-50 rounded-md border border-blue-200 flex items-start gap-2.5 text-xs text-blue-800">
-            <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+
+          <div className="p-3.5 bg-orange-50 rounded-lg border border-orange-200 flex items-start gap-2.5 text-xs text-orange-900">
+            <CheckCircle2 className="w-4 h-4 text-orange-600 shrink-0 mt-0.5" />
             <p>
-              A marca oficial "Revista MODA ATUAL Digital" está sincronizada diretamente com o
-              leitor da revista, exportador de relatórios e geradores de conteúdo social.
+              A marca oficial "Revista MODA ATUAL Digital" está integrada ao Leitor Imersivo,
+              exportadores PDF, geradores de conteúdo social e aos 16 templates editoriais com
+              margens de segurança pré-configuradas.
             </p>
           </div>
         </CardContent>
