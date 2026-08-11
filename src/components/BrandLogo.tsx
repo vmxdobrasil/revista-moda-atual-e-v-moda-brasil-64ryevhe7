@@ -70,7 +70,7 @@ export function BrandLogo({
           alt={alt}
           onError={() => setImgError(true)}
           className={cn(
-            'object-contain max-w-full bg-transparent p-0 m-0 border-0',
+            'object-contain max-w-full bg-transparent p-0 m-0 border-0 shadow-none filter-none mix-blend-normal',
             sizeClasses[size],
             className,
           )}
