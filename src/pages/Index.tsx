@@ -1,215 +1,160 @@
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getEditions, Edition, getFileUrl } from '@/services/magazine'
-import { useRealtime } from '@/hooks/use-realtime'
-import { useMetaTags } from '@/hooks/use-meta-tags'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
-import { ArrowRight, BookOpen, Library, AlertCircle, Link2, Check } from 'lucide-react'
-import { SocialShare } from '@/components/SocialShare'
 import { BrandLogo } from '@/components/BrandLogo'
-
-const HOMEPAGE_URL = 'https://revistamodaatual.com.br'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { getLatestEdition, Edition } from '@/services/magazine'
+import { BookOpen, Award, ArrowRight, Sparkles, CheckCircle, TrendingUp, Zap } from 'lucide-react'
 
 export default function Index() {
-  const [editions, setEditions] = useState<Edition[]>([])
+  const [latestEdition, setLatestEdition] = useState<Edition | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(false)
-  const [linkCopied, setLinkCopied] = useState(false)
-
-  const handleCopyLink = useCallback(() => {
-    navigator.clipboard
-      .writeText(HOMEPAGE_URL)
-      .then(() => {
-        setLinkCopied(true)
-        setTimeout(() => setLinkCopied(false), 2000)
-      })
-      .catch(() => {
-        const textarea = document.createElement('textarea')
-        textarea.value = HOMEPAGE_URL
-        textarea.style.position = 'fixed'
-        textarea.style.opacity = '0'
-        document.body.appendChild(textarea)
-        textarea.select()
-        try {
-          document.execCommand('copy')
-          setLinkCopied(true)
-          setTimeout(() => setLinkCopied(false), 2000)
-        } catch {
-          // ignore
-        }
-        document.body.removeChild(textarea)
-      })
-  }, [])
-
-  const loadData = useCallback(async () => {
-    try {
-      const data = await getEditions()
-      setEditions(data)
-      setError(false)
-    } catch (err) {
-      console.error('Failed to load editions on Index page:', err)
-      setError(true)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
 
   useEffect(() => {
-    loadData()
-  }, [loadData])
-
-  useRealtime('editions', () => {
-    loadData().catch((err) => {
-      console.error('Realtime data reload failed for editions:', err)
-    })
-  })
-
-  const homeMeta = useMemo(
-    () => ({
-      title: 'Revista Moda Atual',
-      description: 'A revista de moda brasileira que conecta estilo, tendências e informação.',
-      image: '/og-image.png',
-      url: window.location.origin,
-      type: 'website',
-    }),
-    [],
-  )
-
-  useMetaTags(homeMeta)
+    getLatestEdition()
+      .then((edition) => setLatestEdition(edition))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
 
   return (
-    <div className="container mx-auto px-4 py-16 md:py-24">
-      <div className="flex justify-center mb-8">
-        <BrandLogo variant="hero" />
-      </div>
-      <div className="mb-16 text-center max-w-3xl mx-auto">
-        <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-6">
-          Revista Moda Atual
-        </h2>
-        <p className="text-lg md:text-xl text-gray-600 leading-relaxed mb-8">
-          Explore as últimas edições da nossa revista digital imersiva. Descubra as principais
-          tendências, editoriais exclusivos e tenha acesso direto ao melhor do atacado brasileiro
-          através de nossa vitrine interativa.
-        </p>
-        <Button
-          asChild
-          size="lg"
-          className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-6 text-lg rounded-full shadow-xl animate-fade-in-up"
-        >
-          <Link to="/reader/latest">
-            <BookOpen className="w-6 h-6 mr-3" /> Ler Última Edição
-          </Link>
-        </Button>
+    <div className="space-y-16 pb-20">
+      {/* Hero Branding Section */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-background text-white pt-16 pb-20 md:pt-24 md:pb-28">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="flex flex-col items-center text-center space-y-8">
+            <Badge
+              variant="outline"
+              className="border-orange-500/50 text-orange-400 bg-orange-500/10 px-4 py-1.5 text-xs font-semibold rounded-full tracking-wide"
+            >
+              <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+              HUB DIGITAL DE MODA ATACADISTA
+            </Badge>
 
-        <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleCopyLink}
-            className={cn(
-              'gap-2 rounded-full px-5 py-2.5 border-2 transition-all duration-200',
-              linkCopied
-                ? 'border-green-500 text-green-600 bg-green-50'
-                : 'border-orange-200 text-orange-700 hover:border-orange-400 hover:bg-orange-50',
-            )}
-          >
-            {linkCopied ? (
-              <>
-                <Check className="w-4 h-4" />
-                <span className="font-semibold">Copiado!</span>
-              </>
-            ) : (
-              <>
-                <Link2 className="w-4 h-4" />
-                <span className="font-semibold">Copiar link</span>
-              </>
-            )}
-          </Button>
-          <SocialShare title="Revista Moda Atual" url={HOMEPAGE_URL} />
-        </div>
-      </div>
+            {/* High Visibility Hero Logo - Clean Orange Box without any white square container */}
+            <div className="py-4 my-2 transition-transform duration-300 hover:scale-[1.02]">
+              <BrandLogo
+                size="hero"
+                className="h-44 sm:h-56 md:h-64 lg:h-72 w-auto filter drop-shadow-2xl"
+              />
+            </div>
 
-      {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="aspect-[0.7118] bg-gray-200 animate-pulse rounded-xl" />
-          ))}
-        </div>
-      ) : error ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mb-6">
-            <AlertCircle className="w-10 h-10 text-red-500" />
+            <p className="max-w-2xl text-base sm:text-lg md:text-xl text-slate-300 font-light leading-relaxed">
+              A revista digital referência no ecossistema de moda brasileiro. Conectando marcas
+              atacadistas, fabricantes e lojistas de todo o Brasil.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
+              <Link to="/reader/latest">
+                <Button
+                  size="lg"
+                  className="bg-orange-600 hover:bg-orange-500 text-white font-bold px-8 py-6 text-base shadow-xl shadow-orange-600/30"
+                >
+                  <BookOpen className="h-5 w-5 mr-2" />
+                  Ler Edição Atual
+                </Button>
+              </Link>
+              <Link to="/partners">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-slate-700 text-slate-200 hover:bg-slate-800 hover:text-white px-8 py-6 text-base"
+                >
+                  <Award className="h-5 w-5 mr-2 text-orange-400" />
+                  Explorar TOP 60 Marcas
+                </Button>
+              </Link>
+            </div>
           </div>
-          <h3 className="text-2xl font-bold text-gray-800 mb-3">Erro ao carregar edições</h3>
-          <p className="text-gray-500 max-w-md text-lg mb-6">
-            Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.
-          </p>
-          <Button
-            onClick={() => {
-              setLoading(true)
-              loadData()
-            }}
-            className="bg-orange-600 hover:bg-orange-700 text-white rounded-full px-8"
-          >
-            Tentar Novamente
-          </Button>
         </div>
-      ) : editions.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-20 h-20 rounded-full bg-orange-100 flex items-center justify-center mb-6">
-            <Library className="w-10 h-10 text-orange-500" />
-          </div>
-          <h3 className="text-2xl font-bold text-gray-800 mb-3">Nenhuma edição disponível</h3>
-          <p className="text-gray-500 max-w-md text-lg">
-            Ainda não há edições publicadas. Volte em breve para conferir as novidades!
-          </p>
+      </section>
+
+      {/* Highlights Showcase */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="border-border/60 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-6 space-y-3">
+              <div className="p-3 rounded-lg bg-orange-500/10 text-orange-600 w-fit">
+                <BookOpen className="h-6 w-6" />
+              </div>
+              <h3 className="text-lg font-bold">Edições Interativas</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Navegue pelas coleções com hotspots clicáveis e compra direta integrada ao mercado
+                atacadista.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/60 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-6 space-y-3">
+              <div className="p-3 rounded-lg bg-orange-500/10 text-orange-600 w-fit">
+                <Award className="h-6 w-6" />
+              </div>
+              <h3 className="text-lg font-bold">TOP 60 Marcas</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Ranking curado das melhores marcas do polo de moda atacadista nacional com
+                inteligência de mercado.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/60 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-6 space-y-3">
+              <div className="p-3 rounded-lg bg-orange-500/10 text-orange-600 w-fit">
+                <TrendingUp className="h-6 w-6" />
+              </div>
+              <h3 className="text-lg font-bold">Conexão B2B</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Integração via WhatsApp e catálogo inteligente para fechamento de pedidos em
+                atacado.
+              </p>
+            </CardContent>
+          </Card>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-12">
-          {editions.map((ed) => {
-            const coverSrc = ed.cover_file ? getFileUrl(ed, ed.cover_file) : ed.cover_url || null
-            return (
-              <Card
-                key={ed.id}
-                className="overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-white rounded-xl"
-              >
-                <div className="relative aspect-[0.7118] overflow-hidden bg-gray-100 flex items-center justify-center">
-                  {coverSrc ? (
-                    <img
-                      src={coverSrc}
-                      alt={ed.title}
-                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700 ease-out"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100">
-                      <BookOpen className="w-16 h-16 text-orange-300" />
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
-                    <Button
-                      asChild
-                      className="w-full bg-orange-600 hover:bg-orange-500 text-white shadow-lg h-12 text-md"
-                    >
-                      <Link to={`/edition/${ed.id}`}>
-                        Ler Edição <ArrowRight className="w-5 h-5 ml-2" />
-                      </Link>
-                    </Button>
-                  </div>
+      </section>
+
+      {/* Latest Edition Section */}
+      {latestEdition && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-card border border-border/80 rounded-2xl p-6 sm:p-10 shadow-lg flex flex-col md:flex-row items-center gap-8">
+            <div className="w-full md:w-1/3 aspect-[3/4] bg-slate-100 rounded-xl overflow-hidden relative shadow-md">
+              {latestEdition.cover_url ? (
+                <img
+                  src={latestEdition.cover_url}
+                  alt={latestEdition.title}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center p-6 bg-slate-900 text-white text-center">
+                  <BrandLogo size="lg" className="h-20 w-auto mb-4" />
+                  <p className="text-sm font-semibold">{latestEdition.title}</p>
                 </div>
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-1 group-hover:text-orange-600 transition-colors">
-                    {ed.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm line-clamp-3 leading-relaxed">
-                    {ed.description}
-                  </p>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
+              )}
+            </div>
+
+            <div className="w-full md:w-2/3 space-y-4 text-left">
+              <Badge className="bg-orange-600 hover:bg-orange-500 text-white font-medium">
+                Último Lançamento
+              </Badge>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+                {latestEdition.title}
+              </h2>
+              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
+                {latestEdition.description ||
+                  'Confira as principais tendências, lookbooks e destaques das marcas que estão transformando o mercado de moda.'}
+              </p>
+              <div className="pt-2">
+                <Link to={`/edition/${latestEdition.id}`}>
+                  <Button className="bg-primary text-primary-foreground font-semibold gap-2">
+                    Acessar Revista Digital
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
       )}
     </div>
   )

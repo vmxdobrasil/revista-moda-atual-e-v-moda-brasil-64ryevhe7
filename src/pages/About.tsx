@@ -1,106 +1,74 @@
-import { useEffect, useState, useCallback, useMemo } from 'react'
-import { getAboutContent, type AboutContent } from '@/services/about-content'
-import { useRealtime } from '@/hooks/use-realtime'
-import { useMetaTags } from '@/hooks/use-meta-tags'
-import { SiteHeader } from '@/components/SiteHeader'
-import { SiteFooter } from '@/components/SiteFooter'
-import { AlertCircle, BookHeart } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { useEffect, useState } from 'react'
+import { BrandLogo } from '@/components/BrandLogo'
+import { getAboutContent, AboutContent } from '@/services/about-content'
+import { Card, CardContent } from '@/components/ui/card'
+import { Sparkles, Award, ShieldCheck, Heart } from 'lucide-react'
 
 export default function About() {
   const [content, setContent] = useState<AboutContent | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(false)
-
-  const loadData = useCallback(async () => {
-    try {
-      const data = await getAboutContent()
-      setContent(data)
-      setError(false)
-    } catch (err) {
-      console.error(err)
-      setError(true)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
 
   useEffect(() => {
-    loadData()
-  }, [loadData])
-
-  useRealtime('about_content', () => loadData())
-
-  const meta = useMemo(
-    () => ({
-      title: 'Sobre Nós — Revista Moda Atual',
-      description:
-        'Conheça a história, a equipe, o propósito e a visão tecnológica da Revista Moda Atual e do V Moda Brasil.',
-      image: '/og-image.png',
-      url: window.location.origin,
-      type: 'website',
-    }),
-    [],
-  )
-  useMetaTags(meta)
+    getAboutContent()
+      .then((data) => setContent(data))
+      .catch(() => {})
+  }, [])
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-      <SiteHeader />
-      <main className="flex-1 container mx-auto px-4 py-16 md:py-24">
-        <div className="max-w-3xl mx-auto">
-          {loading ? (
-            <div className="space-y-6 animate-pulse">
-              <div className="h-12 bg-gray-200 rounded-lg w-3/4" />
-              <div className="h-4 bg-gray-200 rounded w-full" />
-              <div className="h-4 bg-gray-200 rounded w-full" />
-              <div className="h-4 bg-gray-200 rounded w-5/6" />
-              <div className="h-4 bg-gray-200 rounded w-full" />
-              <div className="h-4 bg-gray-200 rounded w-4/6" />
-            </div>
-          ) : error ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mb-6">
-                <AlertCircle className="w-10 h-10 text-red-500" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-3">Não foi possível carregar</h3>
-              <p className="text-gray-500 max-w-md text-lg mb-6">
-                Ocorreu um erro ao carregar o conteúdo. Tente novamente.
-              </p>
-              <Button
-                onClick={() => {
-                  setLoading(true)
-                  loadData()
-                }}
-                className="bg-orange-600 hover:bg-orange-700 text-white rounded-full px-8"
-              >
-                Tentar Novamente
-              </Button>
-            </div>
-          ) : content ? (
-            <article className="animate-fade-in-up">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-orange-100 mb-8">
-                <BookHeart className="w-8 h-8 text-orange-600" />
-              </div>
-              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-8">
-                {content.title}
-              </h1>
-              <div className="prose prose-lg max-w-none">
-                {content.body.split('\n').map((paragraph, i) => {
-                  const trimmed = paragraph.trim()
-                  if (!trimmed) return null
-                  return (
-                    <p key={i} className="text-gray-700 leading-relaxed mb-6 text-lg">
-                      {trimmed}
-                    </p>
-                  )
-                })}
-              </div>
-            </article>
-          ) : null}
+    <div className="max-w-4xl mx-auto px-4 py-12 sm:py-16 space-y-12">
+      <div className="text-center space-y-6">
+        <div className="flex justify-center py-2">
+          <BrandLogo size="hero" className="h-40 sm:h-52 w-auto" />
         </div>
-      </main>
-      <SiteFooter />
+        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+          {content?.title || 'Sobre a Revista MODA ATUAL Digital'}
+        </h1>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-light leading-relaxed">
+          Conectando o atacado de moda brasileiro através de tecnologia, editorial de alto nível e
+          inteligência comercial.
+        </p>
+      </div>
+
+      <Card className="border-border/80 shadow-md">
+        <CardContent className="p-6 sm:p-10 space-y-6 text-foreground leading-relaxed text-sm sm:text-base whitespace-pre-line">
+          {content?.body || (
+            <>
+              A Revista MODA ATUAL Digital é o principal veículo de comunicação e negócios voltado
+              exclusivamente para o ecossistema atacadista de moda do Brasil. Nossa missão é
+              aproximar marcas fabricantes, lojistas revendedores e compradores em uma plataforma
+              interativa e inovadora, combinando o charme e o refinamento do design editorial
+              impresso com o poder de conversão da tecnologia digital. Através de nossas edições
+              interativas, catálogo inteligente TOP 60 e agentes de inteligência de mercado,
+              ajudamos empresas a escalarem suas vendas e fortalecerem suas marcas nacionalmente.
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4">
+        <div className="text-center p-6 rounded-xl bg-card border border-border/60 space-y-2">
+          <Award className="h-8 w-8 text-orange-500 mx-auto" />
+          <h3 className="font-bold text-base">Curadoria Exclusiva</h3>
+          <p className="text-xs text-muted-foreground">
+            Seleção rigorosa das melhores coleções e fabricantes.
+          </p>
+        </div>
+
+        <div className="text-center p-6 rounded-xl bg-card border border-border/60 space-y-2">
+          <Sparkles className="h-8 w-8 text-orange-500 mx-auto" />
+          <h3 className="font-bold text-base">Design Senior</h3>
+          <p className="text-xs text-muted-foreground">
+            Proporções perfeitas e estética de revista internacional.
+          </p>
+        </div>
+
+        <div className="text-center p-6 rounded-xl bg-card border border-border/60 space-y-2">
+          <ShieldCheck className="h-8 w-8 text-orange-500 mx-auto" />
+          <h3 className="font-bold text-base">Atacado Verificado</h3>
+          <p className="text-xs text-muted-foreground">
+            Conexão direta com compradores B2B qualificados.
+          </p>
+        </div>
+      </div>
     </div>
   )
 }

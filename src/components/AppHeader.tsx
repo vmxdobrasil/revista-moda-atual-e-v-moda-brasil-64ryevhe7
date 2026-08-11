@@ -1,35 +1,47 @@
-import { Search, Bell } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { SidebarTrigger } from '@/components/ui/sidebar'
+import { Link } from 'react-router-dom'
 import { BrandLogo } from '@/components/BrandLogo'
+import { Button } from '@/components/ui/button'
+import { useAuth } from '@/hooks/use-auth'
+import { LogOut, ExternalLink, ShieldCheck } from 'lucide-react'
 
 export function AppHeader() {
+  const { user, signOut } = useAuth()
+
   return (
-    <header className="flex h-16 shrink-0 items-center gap-4 border-b border-border px-6 bg-card sticky top-0 z-30">
-      <SidebarTrigger />
-      <div className="hidden sm:flex items-center gap-2">
-        <BrandLogo variant="admin_sidebar" className="h-10 md:h-12 w-auto" />
+    <header className="h-16 border-b border-border bg-background/95 backdrop-blur-xs px-4 md:px-6 flex items-center justify-between sticky top-0 z-30">
+      <div className="flex items-center gap-4">
+        <Link to="/admin" className="flex items-center gap-2">
+          <BrandLogo size="md" className="h-10 md:h-12 w-auto" />
+        </Link>
       </div>
-      <div className="flex-1 flex items-center px-4 bg-muted/50 rounded-md h-10 max-w-md ml-2 md:ml-4">
-        <Search className="w-4 h-4 text-muted-foreground mr-2" />
-        <input
-          type="text"
-          placeholder="Buscar edições, marcas ou relatórios..."
-          className="bg-transparent border-none outline-none text-sm w-full text-foreground placeholder:text-muted-foreground"
-        />
-      </div>
-      <div className="ml-auto flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative text-muted-foreground hover:text-foreground"
-        >
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-brand-orange rounded-full"></span>
-        </Button>
-        <div className="w-9 h-9 bg-brand-gold rounded-full flex items-center justify-center text-black font-bold text-sm shadow-md">
-          EA
-        </div>
+
+      <div className="flex items-center gap-3">
+        <Link to="/" target="_blank">
+          <Button variant="ghost" size="sm" className="gap-2 text-xs text-muted-foreground">
+            <ExternalLink className="h-3.5 w-3.5" />
+            Ver Site
+          </Button>
+        </Link>
+
+        {user && (
+          <div className="flex items-center gap-3 border-l pl-3 border-border">
+            <div className="hidden sm:block text-right">
+              <p className="text-xs font-semibold text-foreground">{user.name || user.email}</p>
+              <p className="text-[10px] text-muted-foreground flex items-center justify-end gap-1">
+                <ShieldCheck className="h-3 w-3 text-emerald-500" /> Administrador
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+              onClick={signOut}
+              title="Sair"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
     </header>
   )

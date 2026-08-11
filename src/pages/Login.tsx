@@ -1,188 +1,129 @@
 import { useState } from 'react'
-import { useNavigate, Navigate, Link, useSearchParams } from 'react-router-dom'
-import { ClientResponseError } from 'pocketbase'
-import { useAuth } from '@/hooks/use-auth'
+import { useNavigate } from 'react-router-dom'
+import { BrandLogo } from '@/components/BrandLogo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
-import { getErrorMessage } from '@/lib/pocketbase/errors'
-import { logAuthFailure } from '@/services/auth-audit'
-import { Loader2, AlertCircle } from 'lucide-react'
-
-function getAuthErrorMessage(error: unknown): string {
-  if (error instanceof ClientResponseError) {
-    if (error.status === 0) {
-      return 'Não foi possível conectar ao servidor. Verifique sua conexão de internet e tente novamente.'
-    }
-    if (error.status === 401) {
-      return 'E-mail ou senha inválidos.'
-    }
-    if (error.status === 400) {
-      return 'Dados inválidos. Verifique o formato do e-mail e a senha.'
-    }
-    return getErrorMessage(error)
-  }
-  if (error instanceof Error) {
-    return error.message
-  }
-  return 'Ocorreu um erro inesperado. Tente novamente.'
-}
-
-function validateEmail(email: string): string | null {
-  if (!email.trim()) return 'E-mail é obrigatório'
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Formato de e-mail inválido'
-  return null
-}
-
-function validatePassword(password: string): string | null {
-  if (!password) return 'Senha é obrigatória'
-  if (password.length < 8) return 'A senha deve ter pelo menos 8 caracteres'
-  return null
-}
+import { Lock, Mail, ArrowLeft } from 'lucide-react'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
-  const [emailError, setEmailError] = useState('')
-  const [passwordError, setPasswordError] = useState('')
-  const { signIn, isAuthenticated, loading, checkBackendHealth } = useAuth()
+  const [loading, setLoading] = useState(false)
+  const { signIn } = useAuth()
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const redirectTo = searchParams.get('redirect')
-  const safeRedirect = redirectTo && redirectTo.startsWith('/admin') ? redirectTo : '/admin'
   const { toast } = useToast()
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
-      </div>
-    )
-  }
-
-  if (isAuthenticated) {
-    return <Navigate to={safeRedirect} replace />
-  }
-
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value)
-    setEmailError('')
-    setErrorMessage('')
-  }
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value)
-    setPasswordError('')
-    setErrorMessage('')
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setLoading(true)
 
-    const emailErr = validateEmail(email)
-    const passwordErr = validatePassword(password)
-
-    if (emailErr) setEmailError(emailErr)
-    if (passwordErr) setPasswordError(passwordErr)
-
-    if (emailErr || passwordErr) {
-      setErrorMessage('Por favor, corrija os campos destacados.')
-      return
-    }
-
-    setIsSubmitting(true)
-    setErrorMessage('')
-
-    const isBackendReachable = await checkBackendHealth()
-    if (!isBackendReachable) {
-      const msg =
-        'Não foi possível conectar ao servidor. Verifique sua conexão de internet e tente novamente.'
-      setErrorMessage(msg)
-      toast({ title: 'Erro de Conexão', description: msg, variant: 'destructive' })
-      await logAuthFailure(msg, email)
-      setIsSubmitting(false)
-      return
-    }
-
-    const result = await signIn(email, password)
-
-    if (result.error) {
-      const msg = getAuthErrorMessage(result.error)
-      setErrorMessage(msg)
-      toast({ title: 'Erro de Autenticação', description: msg, variant: 'destructive' })
-      await logAuthFailure(msg, email)
-    } else if (result.requires2FA) {
-      const params = new URLSearchParams({ email: result.email || '' })
-      if (result.otp) params.set('otp', result.otp)
-      navigate(`/admin/2fa-verify?${params.toString()}`)
+    const { error } = await signIn(email, password)
+    if (error) {
+      toast({
+        title: 'Falha no login',
+        description: 'E-mail ou senha incorretos. Tente novamente.',
+        variant: 'destructive',
+      })
+      setLoading(false)
     } else {
-      navigate(safeRedirect)
+      toast({
+        title: 'Bem-vindo(a)!',
+        description: 'Login realizado com sucesso.',
+      })
+      navigate('/admin')
     }
-
-    setIsSubmitting(false)
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
-        <div className="flex justify-center mb-6">
-          <BrandLogo variant="login" className="h-20 md:h-28" />
+    <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center p-4 relative overflow-hidden">
+      <div className="absolute top-4 left-4 z-10">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-slate-400 hover:text-white hover:bg-slate-900 gap-2"
+          onClick={() => navigate('/')}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Voltar ao site
+        </Button>
+      </div>
+
+      <div className="w-full max-w-md z-10 space-y-6">
+        <div className="flex justify-center py-2">
+          <BrandLogo size="hero" className="h-28 sm:h-36 md:h-40 w-auto" />
         </div>
-        <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">Acesso Restrito</h1>
 
-        {errorMessage && (
-          <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 flex items-start gap-2 animate-fade-in">
-            <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-            <p className="text-sm text-red-700">{errorMessage}</p>
-          </div>
-        )}
+        <Card className="border-slate-800 bg-slate-900/90 text-slate-100 backdrop-blur-md shadow-2xl">
+          <CardHeader className="space-y-1 text-center pb-4">
+            <CardTitle className="text-xl font-bold tracking-tight">
+              Acesso Administrativo
+            </CardTitle>
+            <CardDescription className="text-slate-400 text-xs">
+              Entre com suas credenciais para gerenciar a Revista MODA ATUAL
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-slate-300 text-xs font-medium">
+                  E-mail
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="pl-9 bg-slate-950 border-slate-800 text-white placeholder:text-slate-600 focus:border-orange-500"
+                  />
+                </div>
+              </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">E-mail</Label>
-            <Input
-              id="email"
-              type="email"
-              required
-              value={email}
-              onChange={handleEmailChange}
-              placeholder="admin@exemplo.com"
-              className={emailError ? 'border-red-500' : ''}
-            />
-            {emailError && <p className="text-sm text-red-500">{emailError}</p>}
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Senha</Label>
-              <Link
-                to="/esqueci-senha"
-                className="text-xs text-orange-500 hover:text-orange-600 hover:underline"
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="password" className="text-slate-300 text-xs font-medium">
+                    Senha
+                  </Label>
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="p-0 h-auto text-xs text-orange-400 hover:text-orange-300"
+                    onClick={() => navigate('/esqueci-senha')}
+                  >
+                    Esqueceu?
+                  </Button>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="pl-9 bg-slate-950 border-slate-800 text-white placeholder:text-slate-600 focus:border-orange-500"
+                  />
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-orange-600 hover:bg-orange-500 text-white font-semibold shadow-lg shadow-orange-600/20 py-5"
               >
-                Esqueci minha senha?
-              </Link>
-            </div>
-            <Input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={handlePasswordChange}
-              className={passwordError ? 'border-red-500' : ''}
-            />
-            {passwordError && <p className="text-sm text-red-500">{passwordError}</p>}
-          </div>
-          <Button
-            type="submit"
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-            {isSubmitting ? 'Entrando...' : 'Entrar'}
-          </Button>
-        </form>
+                {loading ? 'Autenticando...' : 'Entrar no Painel'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
