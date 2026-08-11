@@ -3,11 +3,12 @@ import officialOrangeLogoUrl from '@/assets/editedimage1786389429173-467b1.png'
 
 export interface SiteSettings {
   id: string
-  logo_file: string
+  logo_file: string | null
   created: string
   updated: string
   collectionId: string
   collectionName: string
+  logo_visual_params?: Record<string, any>
 }
 
 export async function getSiteSettings(): Promise<SiteSettings | null> {
@@ -40,9 +41,9 @@ export async function removeLogo(): Promise<void> {
   }
 }
 
-export function getLogoUrl(settings: SiteSettings | null): string {
+export function getLogoUrl(settings: SiteSettings | null): string | null {
   if (settings && settings.logo_file) {
     return pb.files.getURL(settings, settings.logo_file)
   }
-  return officialOrangeLogoUrl
+  return null
 }

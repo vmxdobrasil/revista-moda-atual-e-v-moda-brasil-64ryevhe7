@@ -22,7 +22,7 @@ export function SiteHeader() {
           to="/"
           className="flex items-center gap-3 transition-opacity hover:opacity-90 shrink-0"
         >
-          <BrandLogo size="md" className="h-14 sm:h-16 md:h-18 lg:h-20 w-auto" />
+          <BrandLogo size="md" className="h-12 sm:h-14 md:h-16 w-auto" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-1 lg:gap-2">

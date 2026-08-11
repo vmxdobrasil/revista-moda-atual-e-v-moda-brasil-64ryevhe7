@@ -34,7 +34,7 @@ export default function Index() {
 
             {/* High Visibility Hero Logo - Clean Orange Box with 100% transparent canvas background */}
             <div className="py-4 my-2 transition-transform duration-300 hover:scale-[1.02] flex justify-center items-center bg-transparent">
-              <BrandLogo size="hero" className="h-44 sm:h-56 md:h-64 lg:h-72 w-auto" />
+              <BrandLogo size="hero" className="h-40 sm:h-52 md:h-60 lg:h-64 w-auto" />
             </div>
 
             <p className="max-w-2xl text-base sm:text-lg md:text-xl text-slate-300 font-light leading-relaxed">

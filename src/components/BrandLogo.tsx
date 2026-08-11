@@ -25,11 +25,11 @@ export interface BrandLogoProps {
 const sizeClasses: Record<BrandLogoSize, string> = {
   xs: 'h-8 sm:h-9 text-[10px]',
   sm: 'h-10 sm:h-12 text-xs',
-  md: 'h-14 sm:h-16 md:h-18 lg:h-20 text-sm',
-  lg: 'h-20 sm:h-24 md:h-28 text-base',
-  xl: 'h-28 sm:h-32 md:h-36 text-lg',
-  hero: 'h-44 sm:h-56 md:h-64 lg:h-72 text-xl',
-  '2xl': 'h-60 sm:h-72 md:h-80 lg:h-96 text-2xl',
+  md: 'h-12 sm:h-14 md:h-16 text-sm',
+  lg: 'h-18 sm:h-22 md:h-24 text-base',
+  xl: 'h-24 sm:h-28 md:h-32 text-lg',
+  hero: 'h-40 sm:h-52 md:h-60 lg:h-64 text-xl',
+  '2xl': 'h-52 sm:h-64 md:h-72 lg:h-80 text-2xl',
 }
 
 const variantColors: Record<BrandLogoVariant, { bg: string; text: string }> = {
@@ -95,7 +95,7 @@ export function BrandLogo({
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         className={cn(
-          'object-contain max-w-full w-auto bg-transparent p-0 m-0 border-0',
+          'object-contain max-w-full w-auto bg-transparent p-0 m-0 border-0 drop-shadow-none',
           sizeClasses[size],
           className,
         )}

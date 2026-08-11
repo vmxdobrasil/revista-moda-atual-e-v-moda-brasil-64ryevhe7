@@ -28,7 +28,7 @@ export function LogoProvider({ children }: { children: ReactNode }) {
     try {
       const settings = await getSiteSettings()
       const customUrl = getLogoUrl(settings)
-      setLogoUrl(customUrl || null)
+      setLogoUrl(customUrl)
       setVisualParams(settings?.logo_visual_params || null)
     } catch {
       setLogoUrl(null)
