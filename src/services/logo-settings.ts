@@ -36,9 +36,9 @@ export async function removeLogo(): Promise<void> {
   }
 }
 
-export function getLogoUrl(settings: SiteSettings | null): string {
+export function getLogoUrl(settings: SiteSettings | null): string | null {
   if (settings && settings.logo_file) {
     return pb.files.getURL(settings as any, settings.logo_file) as string
   }
-  return officialOrangeLogoUrl
+  return null
 }

@@ -4,7 +4,8 @@ import { useRealtime } from '@/hooks/use-realtime'
 import officialOrangeLogoUrl from '@/assets/editedimage1786389429173-467b1.png'
 
 interface LogoContextType {
-  logoUrl: string
+  logoUrl: string | null
+  isCustomLogo: boolean
   loading: boolean
   refresh: () => Promise<void>
 }
@@ -18,16 +19,17 @@ export function useLogo() {
 }
 
 export function LogoProvider({ children }: { children: ReactNode }) {
-  const [logoUrl, setLogoUrl] = useState<string>(officialOrangeLogoUrl)
+  const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   const refresh = async () => {
     setLoading(true)
     try {
       const settings = await getSiteSettings()
-      setLogoUrl(getLogoUrl(settings) || officialOrangeLogoUrl)
+      const customUrl = getLogoUrl(settings)
+      setLogoUrl(customUrl)
     } catch {
-      setLogoUrl(officialOrangeLogoUrl)
+      setLogoUrl(null)
     } finally {
       setLoading(false)
     }
@@ -42,6 +44,8 @@ export function LogoProvider({ children }: { children: ReactNode }) {
   })
 
   return (
-    <LogoContext.Provider value={{ logoUrl, loading, refresh }}>{children}</LogoContext.Provider>
+    <LogoContext.Provider value={{ logoUrl, isCustomLogo: !!logoUrl, loading, refresh }}>
+      {children}
+    </LogoContext.Provider>
   )
 }
