@@ -101,7 +101,7 @@ export function BrandLogo({
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         className={cn(
-          'object-contain max-w-full drop-shadow-md w-auto bg-transparent p-0 m-0 border-0',
+          'object-contain max-w-full w-auto bg-transparent p-0 m-0 border-0 mix-blend-multiply',
           sizeClasses[size],
           className,
         )}
