@@ -43,25 +43,25 @@ export function BrandLogo({
 }: BrandLogoProps) {
   const { logoUrl } = useLogo()
 
-  // Always utilize the official restored orange rectangle logo asset
-  const srcToUse = officialOrangeLogoUrl
+  // Always utilize the official restored logo asset or custom settings
+  const srcToUse = logoUrl || officialOrangeLogoUrl
 
   // Determine variant-specific default heights for layout consistency
-  let variantSize = 'h-9 md:h-10'
+  let variantSize = 'h-8 md:h-10'
   if (variant === 'public_header' || variant === 'header') {
     variantSize = 'h-8 md:h-10'
   } else if (variant === 'admin_sidebar') {
-    variantSize = 'h-9 md:h-10'
+    variantSize = 'h-8 md:h-9'
   } else if (variant === 'footer') {
-    variantSize = 'h-10 md:h-12'
+    variantSize = 'h-9 md:h-11'
   } else if (variant === 'social_portrait' || variant === 'vertical') {
-    variantSize = 'h-12 md:h-14'
+    variantSize = 'h-10 md:h-12'
   }
 
   return (
     <div
       className={cn(
-        'relative inline-flex items-center justify-center shrink-0 overflow-hidden rounded-[8px] select-none transition-all duration-200 aspect-[2.35/1]',
+        'relative inline-flex items-center justify-center shrink-0 select-none transition-all duration-200',
         variantSize,
         onClick && 'cursor-pointer hover:opacity-95 hover:scale-[1.02]',
         watermark && 'opacity-40 hover:opacity-75',
@@ -74,8 +74,7 @@ export function BrandLogo({
       <img
         src={srcToUse}
         alt={alt}
-        className="absolute max-w-none w-[162%] h-[162%] object-cover pointer-events-none select-none rounded-[8px]"
-        style={{ objectPosition: 'center 45.5%' }}
+        className="h-full w-auto max-w-full object-contain pointer-events-none select-none rounded-[6px]"
         loading="eager"
         decoding="async"
       />
