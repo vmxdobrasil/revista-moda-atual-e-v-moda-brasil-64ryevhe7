@@ -8,8 +8,8 @@ export function SiteFooter() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-12">
           <div className="md:col-span-2 space-y-4">
-            <Link to="/" className="inline-block">
-              <BrandLogo size="xl" className="h-20 md:h-24 w-auto" />
+            <Link to="/" className="inline-block bg-transparent p-0 m-0">
+              <BrandLogo size="lg" className="h-16 md:h-20 w-auto" />
             </Link>
             <p className="text-sm text-slate-400 max-w-md leading-relaxed">
               Revista de moda digital e hub de negócios para o mercado atacadista brasileiro.

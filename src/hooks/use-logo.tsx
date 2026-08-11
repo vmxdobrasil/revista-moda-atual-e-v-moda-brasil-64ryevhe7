@@ -27,9 +27,9 @@ export function LogoProvider({ children }: { children: ReactNode }) {
     try {
       const settings = await getSiteSettings()
       const customUrl = getLogoUrl(settings)
-      setLogoUrl(customUrl)
+      setLogoUrl(customUrl || officialOrangeLogoUrl)
     } catch {
-      setLogoUrl(null)
+      setLogoUrl(officialOrangeLogoUrl)
     } finally {
       setLoading(false)
     }

@@ -53,7 +53,7 @@ export default function Login() {
       </div>
 
       <div className="w-full max-w-md z-10 space-y-6">
-        <div className="flex justify-center py-2">
+        <div className="flex justify-center py-2 bg-transparent">
           <BrandLogo size="hero" className="h-28 sm:h-36 md:h-40 w-auto" />
         </div>
 

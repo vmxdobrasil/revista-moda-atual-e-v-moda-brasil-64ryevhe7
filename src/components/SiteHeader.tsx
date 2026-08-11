@@ -18,8 +18,11 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 md:h-24 flex items-center justify-between gap-4">
-        <Link to="/" className="flex items-center gap-3 transition-opacity hover:opacity-90">
-          <BrandLogo size="md" className="h-12 md:h-14 lg:h-16 w-auto" />
+        <Link
+          to="/"
+          className="flex items-center gap-3 transition-opacity hover:opacity-90 shrink-0"
+        >
+          <BrandLogo size="md" className="h-14 sm:h-16 md:h-18 lg:h-20 w-auto" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-1 lg:gap-2">
