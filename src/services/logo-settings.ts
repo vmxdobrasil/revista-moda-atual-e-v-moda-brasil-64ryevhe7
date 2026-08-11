@@ -1,4 +1,5 @@
 import pb from '@/lib/pocketbase/client'
+import officialOrangeLogoUrl from '@/assets/editedimage1786408634881-d3703.png'
 
 export interface SiteSettings {
   id: string
@@ -35,7 +36,9 @@ export async function removeLogo(): Promise<void> {
   }
 }
 
-export function getLogoUrl(settings: SiteSettings | null): string | null {
-  if (!settings || !settings.logo_file) return null
-  return pb.files.getURL(settings as any, settings.logo_file) as string
+export function getLogoUrl(settings: SiteSettings | null): string {
+  if (settings && settings.logo_file) {
+    return pb.files.getURL(settings as any, settings.logo_file) as string
+  }
+  return officialOrangeLogoUrl
 }
