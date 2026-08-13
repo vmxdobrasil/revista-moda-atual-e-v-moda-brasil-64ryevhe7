@@ -11,6 +11,7 @@ export type BrandLogoVariant =
   | 'full'
   | 'orange'
   | 'header'
+  | 'primary'
 
 export type BrandLogoSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'hero' | '2xl'
 
@@ -34,11 +35,12 @@ const sizeClasses: Record<BrandLogoSize, string> = {
   '2xl': 'h-52 sm:h-64 md:h-72 lg:h-80 text-2xl',
 }
 
-const variantColors: Record<BrandLogoVariant, { bg: string; text: string }> = {
+const variantColors: Record<string, { bg: string; text: string }> = {
   default: { bg: '#EA580C', text: '#FFFFFF' },
   header: { bg: '#EA580C', text: '#FFFFFF' },
   orange: { bg: '#EA580C', text: '#FFFFFF' },
-  white: { bg: '#FFFFFF', text: '#EA580C' },
+  primary: { bg: '#EA580C', text: '#FFFFFF' },
+  white: { bg: '#EA580C', text: '#FFFFFF' },
   dark: { bg: '#0F172A', text: '#FFFFFF' },
   monochrome: { bg: '#000000', text: '#FFFFFF' },
   symbol: { bg: '#EA580C', text: '#FFFFFF' },

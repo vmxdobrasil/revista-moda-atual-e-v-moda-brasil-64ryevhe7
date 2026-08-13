@@ -78,13 +78,14 @@ const App = () => (
                 <Route path="/partners" element={<Partners />} />
                 <Route path="/advertisements" element={<Advertisements />} />
                 <Route path="/offers" element={<Navigate to="/" replace />} />
-                <Route path="/edition/:id" element={<MagazineReader />} />
-                <Route path="/reader/latest" element={<MagazineReader isLatest />} />
-                <Route path="/reader/:id" element={<MagazineReader />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/texto/:id" element={<StoryTextView />} />
                 <Route path="/sobre-nos" element={<About />} />
               </Route>
+
+              <Route path="/edition/:id" element={<MagazineReader />} />
+              <Route path="/reader/latest" element={<MagazineReader isLatest />} />
+              <Route path="/reader/:id" element={<MagazineReader />} />
 
               <Route path="/public/anunciante" element={<PublicAdvertiser />} />
               <Route path="/esqueci-senha" element={<ForgotPassword />} />

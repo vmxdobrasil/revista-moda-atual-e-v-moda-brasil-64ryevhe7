@@ -365,9 +365,13 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
         )}
       >
         <div className="flex items-center gap-4">
-          <Link to="/" className="shrink-0 hover:opacity-80 transition-opacity">
-            <div className="h-10 md:h-12 w-auto">
-              <BrandLogo className="h-full w-auto" />
+          <Link
+            to="/"
+            className="shrink-0 hover:opacity-80 transition-opacity"
+            title="Voltar para a página inicial"
+          >
+            <div className="h-10 md:h-12 w-auto flex items-center">
+              <BrandLogo size="sm" className="h-full w-auto shrink-0" />
             </div>
           </Link>
           <div className="h-6 w-px bg-gray-300 hidden md:block" />
