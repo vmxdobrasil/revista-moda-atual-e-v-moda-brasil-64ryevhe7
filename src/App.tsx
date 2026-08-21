@@ -36,6 +36,8 @@ import PromptRefinementPage from './pages/admin/PromptRefinementPage'
 import PromptsPage from './pages/admin/PromptsPage'
 import About from './pages/About'
 import AboutPage from './pages/admin/AboutPage'
+import Contributors from './pages/Contributors'
+import ContributorProfile from './pages/ContributorProfile'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import TwoFactorVerify from './pages/TwoFactorVerify'
@@ -85,6 +87,8 @@ const App = () => (
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/texto/:id" element={<StoryTextView />} />
                 <Route path="/sobre-nos" element={<About />} />
+                <Route path="/contributors" element={<Contributors />} />
+                <Route path="/contributor/:slug" element={<ContributorProfile />} />
               </Route>
 
               {/* LinkInBio page */}

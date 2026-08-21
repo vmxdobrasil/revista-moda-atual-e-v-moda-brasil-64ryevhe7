@@ -11,7 +11,7 @@ import {
   Megaphone,
   Menu,
   Camera,
-  Link2,
+  Users,
 } from 'lucide-react'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 
@@ -24,6 +24,7 @@ export function SiteHeader() {
     { label: 'Edições', path: '/editions', icon: BookOpen },
     { label: 'TOP 60 Marcas', path: '/partners', icon: Award },
     { label: 'Eventos', path: '/events', icon: Camera },
+    { label: 'Colaboradores', path: '/contributors', icon: Users },
     { label: 'Anúncios', path: '/advertisements', icon: Megaphone },
     { label: 'Sobre Nós', path: '/sobre-nos', icon: Sparkles },
   ]

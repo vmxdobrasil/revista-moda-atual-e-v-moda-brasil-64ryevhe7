@@ -63,6 +63,11 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
+                <Link to="/contributors" className="hover:text-white transition-colors">
+                  Colaboradores
+                </Link>
+              </li>
+              <li>
                 <Link to="/bio" className="hover:text-white transition-colors">
                   Link na Bio
                 </Link>
