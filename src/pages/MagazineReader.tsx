@@ -16,6 +16,7 @@ import { trackPageView } from '@/services/analytics'
 import { getAllSocialPosts, type SocialPost } from '@/services/social-posts'
 import { FlipbookDesktop } from '@/components/flipbook/FlipbookDesktop'
 import { FlipbookMobile } from '@/components/flipbook/FlipbookMobile'
+import { FlipbookThumbnails } from '@/components/flipbook/FlipbookThumbnails'
 import { SmartImage } from '@/components/flipbook/SmartImage'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useMetaTags } from '@/hooks/use-meta-tags'
@@ -31,7 +32,7 @@ import {
 } from '@/components/ui/sheet'
 import { Drawer, DrawerContent, DrawerTrigger, DrawerClose } from '@/components/ui/drawer'
 import { Button } from '@/components/ui/button'
-import { LayoutGrid, List, Loader2, Instagram, Maximize2 } from 'lucide-react'
+import { LayoutGrid, List, Loader2, Instagram, Maximize2, Sparkles } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 import { BrandLogo } from '@/components/BrandLogo'
 import { FullscreenImageViewer } from '@/components/FullscreenImageViewer'
@@ -89,7 +90,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
     if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current)
     inactivityTimerRef.current = setTimeout(
       () => setUiVisible(false),
-      2000,
+      4000,
     ) as unknown as ReturnType<typeof setTimeout>
   }, [])
 
@@ -151,6 +152,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
         const pgs = await getEditionPages(edition.id)
         setPages(pgs)
         setCurrentPage(0)
+        setCurrentSpread(0)
         try {
           const hts = await getHotspots(edition.id, pgs)
           setHotspots(hts)
@@ -194,8 +196,19 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
 
   useMetaTags(metaConfig)
 
-  const handleSpreadChange = (spread: number) => setCurrentSpread(spread)
-  const handlePageChange = (page: number) => setCurrentPage(page)
+  const handleSpreadChange = (spread: number) => {
+    setCurrentSpread(spread)
+    if (spread === 0) {
+      setCurrentPage(0)
+    } else {
+      setCurrentPage(2 * spread - 1)
+    }
+  }
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    setCurrentSpread(Math.floor((page + 1) / 2))
+  }
 
   const isValidEdition = !loadingEdition && !errorEmpty && !!edition
   const isValidPages = isValidEdition && !loadingPages && pages.length > 0
@@ -210,13 +223,19 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
     trackPageView(currentVisiblePageId, edition?.id).catch(() => {})
   }, [currentVisiblePageId, isValidPages, edition])
 
+  const jumpToPage = (pageNum: number) => {
+    const clamped = Math.max(0, Math.min(pages.length - 1, pageNum))
+    setCurrentPage(clamped)
+    setCurrentSpread(Math.floor((clamped + 1) / 2))
+  }
+
   if (loadingEdition) {
     return (
-      <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-50 gap-6">
+      <div className="flex flex-col h-screen w-full items-center justify-center bg-slate-950 text-slate-100 gap-6">
         <div className="h-20 md:h-28 animate-pulse">
-          <BrandLogo className="h-full w-auto" />
+          <BrandLogo size="hero" className="h-full w-auto" />
         </div>
-        <div className="flex items-center gap-3 text-orange-500 mt-4">
+        <div className="flex items-center gap-3 text-[#ea580c] mt-4">
           <Loader2 className="w-6 h-6 animate-spin" />
           <span className="text-lg font-medium tracking-wide">Buscando edição...</span>
         </div>
@@ -226,28 +245,28 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
 
   if (notFound || errorEmpty || loadError || !edition) {
     return (
-      <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-50 gap-6 px-4">
-        <div className="h-12 md:h-16 opacity-60">
-          <BrandLogo className="h-full w-auto" />
+      <div className="flex flex-col h-screen w-full items-center justify-center bg-slate-950 text-slate-100 gap-6 px-4">
+        <div className="h-12 md:h-16 opacity-80">
+          <BrandLogo size="lg" className="h-full w-auto" />
         </div>
         <div className="flex flex-col items-center gap-4 max-w-md text-center">
           {loadError ? (
             <>
-              <h2 className="text-2xl font-bold text-gray-800">Erro ao carregar edição</h2>
-              <p className="text-gray-500">
+              <h2 className="text-2xl font-bold text-slate-100">Erro ao carregar edição</h2>
+              <p className="text-slate-400">
                 Não foi possível carregar esta edição. Verifique sua conexão e tente novamente.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
                 <Button
                   onClick={() => window.location.reload()}
-                  className="bg-orange-500 hover:bg-orange-600 active:scale-95 transition-transform duration-100"
+                  className="bg-[#ea580c] hover:bg-[#c2410c] text-white active:scale-95 transition-transform duration-100"
                 >
                   Tentar Novamente
                 </Button>
                 <Button
                   asChild
                   variant="outline"
-                  className="text-orange-600 border-orange-300 hover:bg-orange-50 active:scale-95 transition-transform duration-100"
+                  className="text-orange-400 border-orange-500/30 hover:bg-orange-950/40 active:scale-95 transition-transform duration-100"
                 >
                   <Link to="/">Voltar para Home</Link>
                 </Button>
@@ -255,28 +274,28 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
             </>
           ) : (
             <>
-              <h2 className="text-2xl font-bold text-gray-800">Edição não encontrada</h2>
-              <p className="text-gray-500">
+              <h2 className="text-2xl font-bold text-slate-100">Edição não encontrada</h2>
+              <p className="text-slate-400">
                 A edição que você procura não existe ou foi removida. Que tal explorar outras
                 edições disponíveis?
               </p>
               <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
                 <Button
                   asChild
-                  className="bg-orange-500 hover:bg-orange-600 active:scale-95 transition-transform duration-100"
+                  className="bg-[#ea580c] hover:bg-[#c2410c] text-white active:scale-95 transition-transform duration-100"
                 >
                   <Link to="/">Voltar para Home</Link>
                 </Button>
                 <Button
                   asChild
-                  className="bg-orange-600 hover:bg-orange-700 text-white active:scale-95 transition-transform duration-100"
+                  className="bg-slate-800 hover:bg-slate-700 text-white active:scale-95 transition-transform duration-100"
                 >
                   <Link to="/reader/latest">Ler Última Edição</Link>
                 </Button>
                 <Button
                   asChild
                   variant="outline"
-                  className="text-orange-600 border-orange-300 hover:bg-orange-50 active:scale-95 transition-transform duration-100"
+                  className="text-orange-400 border-orange-500/30 hover:bg-orange-950/40 active:scale-95 transition-transform duration-100"
                 >
                   <Link to="/editions">Ver Edições</Link>
                 </Button>
@@ -293,7 +312,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
       ? getFileUrl(edition, edition.cover_file)
       : edition.cover_url
     return (
-      <div className="flex flex-col h-screen w-full items-center justify-center bg-[#f4f4f4] relative overflow-hidden">
+      <div className="flex flex-col h-screen w-full items-center justify-center bg-slate-950 text-slate-100 relative overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
             src={coverImage}
@@ -304,7 +323,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
           />
         </div>
         <div className="z-10 flex flex-col items-center gap-8 animate-fade-in-up">
-          <div className="w-48 md:w-64 aspect-[0.7118] rounded-md shadow-2xl overflow-hidden bg-white relative">
+          <div className="w-48 md:w-64 aspect-[0.7118] rounded-md shadow-2xl overflow-hidden bg-slate-900 relative ring-1 ring-white/10">
             <SmartImage
               src={coverImage}
               alt={edition.title}
@@ -316,11 +335,11 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
             </div>
           </div>
           <div className="flex flex-col items-center gap-3">
-            <h2 className="text-xl md:text-2xl font-bold text-gray-800 text-center drop-shadow-md">
+            <h2 className="text-xl md:text-2xl font-bold text-slate-100 text-center drop-shadow-md">
               {edition.title}
             </h2>
-            <div className="flex items-center gap-2 text-orange-600 bg-white/80 px-4 py-2 rounded-full shadow-sm backdrop-blur">
-              <Loader2 className="w-5 h-5 animate-spin" />
+            <div className="flex items-center gap-2 text-orange-400 bg-slate-900/90 border border-slate-800 px-5 py-2.5 rounded-full shadow-lg backdrop-blur">
+              <Loader2 className="w-5 h-5 animate-spin text-[#ea580c]" />
               <span className="font-medium tracking-wide">Carregando páginas...</span>
             </div>
           </div>
@@ -331,15 +350,15 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
 
   if (pages.length === 0) {
     return (
-      <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-50 gap-4">
-        <h2 className="text-2xl font-bold text-gray-800 text-center px-4">
+      <div className="flex flex-col h-screen w-full items-center justify-center bg-slate-950 text-slate-100 gap-4">
+        <h2 className="text-2xl font-bold text-slate-100 text-center px-4">
           Nenhuma página encontrada
         </h2>
         <div className="flex items-center gap-2">
           <SocialShare title={edition.title} url={window.location.href} />
           <Button
             asChild
-            className="bg-orange-500 hover:bg-orange-600 active:scale-95 transition-transform duration-100"
+            className="bg-[#ea580c] hover:bg-[#c2410c] active:scale-95 transition-transform duration-100"
           >
             <Link to="/">Voltar para Home</Link>
           </Button>
@@ -352,78 +371,81 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
   const displayPage = isMobile ? currentPage : Math.min(currentSpread * 2, totalPages - 1)
   const progress = totalPages > 1 ? (displayPage / (totalPages - 1)) * 100 : 0
 
-  const jumpToPage = (pageNum: number) => {
-    if (isMobile) {
-      setCurrentPage(pageNum)
-    } else {
-      setCurrentSpread(Math.floor((pageNum + 1) / 2))
-    }
-  }
-
   return (
     <div
-      className="flex flex-col h-screen w-full bg-[#f4f4f4] overflow-hidden text-gray-900 font-sans"
+      className="flex flex-col h-screen w-full bg-slate-950 text-slate-100 overflow-hidden font-sans select-none"
       onPointerDown={resetInactivityTimer}
+      onPointerMove={resetInactivityTimer}
     >
+      {/* Editorial Header (Dark theme with #ea580c accents) */}
       <header
         className={cn(
-          'h-16 bg-white border-b flex items-center justify-between px-4 md:px-6 shrink-0 z-50 shadow-sm transition-opacity duration-300',
-          isMobile && !uiVisible ? 'opacity-30' : 'opacity-100',
+          'h-14 sm:h-16 bg-slate-900/95 border-b border-slate-800 flex items-center justify-between px-3 md:px-6 shrink-0 z-50 shadow-md backdrop-blur-md transition-opacity duration-300',
+          isMobile && !uiVisible ? 'opacity-30 hover:opacity-100' : 'opacity-100',
         )}
       >
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 md:gap-4 min-w-0">
           <Link
             to="/"
-            className="shrink-0 hover:opacity-80 transition-opacity"
+            className="shrink-0 hover:opacity-85 transition-opacity flex items-center"
             title="Voltar para a página inicial"
           >
-            <div className="h-10 md:h-12 w-auto flex items-center">
+            <div className="h-9 md:h-11 w-auto flex items-center">
               <BrandLogo size="sm" className="h-full w-auto shrink-0" />
             </div>
           </Link>
-          <div className="h-6 w-px bg-gray-300 hidden md:block" />
-          <h1 className="font-semibold text-gray-800 text-sm md:text-lg hidden md:block truncate max-w-sm">
+          <div className="h-5 w-px bg-slate-800 hidden md:block" />
+          <h1 className="font-semibold text-slate-200 text-xs sm:text-sm md:text-base hidden sm:block truncate max-w-xs md:max-w-md">
             {edition.title}
           </h1>
         </div>
-        <div className="flex items-center gap-2 md:gap-4">
+
+        <div className="flex items-center gap-1.5 sm:gap-3">
+          {/* Social Posts Sheet */}
           <Sheet>
             <SheetTrigger asChild>
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-2 text-gray-700 active:scale-95 transition-transform duration-100"
+                className="gap-1.5 bg-slate-850 border-slate-700 text-slate-200 hover:text-white hover:bg-slate-800 active:scale-95 transition-all text-xs h-8 sm:h-9"
               >
-                <Instagram className="w-4 h-4" />
+                <Instagram className="w-3.5 h-3.5 text-[#ea580c]" />
                 <span className="hidden md:inline">Redes Sociais</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="overflow-y-auto">
+            <SheetContent
+              side="right"
+              className="overflow-y-auto bg-slate-900 text-slate-100 border-slate-800"
+            >
               <SheetHeader>
-                <SheetTitle>Redes Sociais</SheetTitle>
+                <SheetTitle className="text-slate-100">Redes Sociais</SheetTitle>
               </SheetHeader>
               <div className="mt-6">
                 <SocialGallery posts={socialPosts} />
               </div>
             </SheetContent>
           </Sheet>
+
+          {/* Social Share */}
           <div className="hidden md:block">
             <SocialShare title={edition.title} url={window.location.href} />
           </div>
+
+          {/* Table of Contents Sheet */}
           <Sheet>
             <SheetTrigger asChild>
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-2 text-gray-700 active:scale-95 transition-transform duration-100"
+                className="gap-1.5 bg-slate-850 border-slate-700 text-slate-200 hover:text-white hover:bg-slate-800 active:scale-95 transition-all text-xs h-8 sm:h-9"
               >
-                <List className="w-4 h-4" />
+                <List className="w-3.5 h-3.5 text-[#ea580c]" />
                 <span className="hidden md:inline">Índice</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right">
+            <SheetContent side="right" className="bg-slate-900 text-slate-100 border-slate-800">
               <SheetHeader>
-                <SheetTitle>Índice da Edição</SheetTitle>
+                <SheetTitle className="text-slate-100">Índice da Edição</SheetTitle>
               </SheetHeader>
               <div className="mt-8 flex flex-col gap-2">
                 {pages
@@ -432,11 +454,13 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
                     <SheetClose asChild key={p.id}>
                       <Button
                         variant="ghost"
-                        className="w-full justify-start text-left h-auto py-3 border border-transparent hover:border-gray-200 active:scale-95 transition-transform duration-100"
+                        className="w-full justify-start text-left h-auto py-3 border border-slate-800/60 hover:border-slate-700 hover:bg-slate-800/80 active:scale-95 transition-all text-slate-300"
                         onClick={() => jumpToPage(pages.indexOf(p))}
                       >
-                        <span className="font-medium text-gray-700">{p.toc_title}</span>
-                        <span className="ml-auto text-gray-400 text-sm">Pág {p.page_number}</span>
+                        <span className="font-medium text-slate-200">{p.toc_title}</span>
+                        <span className="ml-auto text-[#ea580c] text-xs font-mono">
+                          Pág {p.page_number}
+                        </span>
                       </Button>
                     </SheetClose>
                   ))}
@@ -444,24 +468,30 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
             </SheetContent>
           </Sheet>
 
+          {/* Grid Overview Drawer */}
           <Drawer>
             <DrawerTrigger asChild>
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-2 text-gray-700 active:scale-95 transition-transform duration-100"
+                className="gap-1.5 bg-slate-850 border-slate-700 text-slate-200 hover:text-white hover:bg-slate-800 active:scale-95 transition-all text-xs h-8 sm:h-9"
               >
-                <LayoutGrid className="w-4 h-4" />
+                <LayoutGrid className="w-3.5 h-3.5 text-[#ea580c]" />
                 <span className="hidden md:inline">Páginas</span>
               </Button>
             </DrawerTrigger>
-            <DrawerContent>
+            <DrawerContent className="bg-slate-900 text-slate-100 border-slate-800">
               <div className="p-4 md:p-8 h-[60vh] overflow-y-auto">
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 max-w-6xl mx-auto">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6 max-w-6xl mx-auto">
                   {pages.map((p, index) => (
-                    <div key={p.id} className="group flex flex-col gap-3">
+                    <div key={p.id} className="group flex flex-col gap-2">
                       <div
-                        className="relative aspect-[0.7118] overflow-hidden rounded-sm shadow-sm group-hover:shadow-lg group-hover:ring-2 ring-orange-500 transition-all flex items-center justify-center bg-gray-50 cursor-pointer active:scale-95 transition-transform duration-100"
+                        className={cn(
+                          'relative aspect-[0.7118] overflow-hidden rounded-md shadow-md transition-all flex items-center justify-center bg-slate-800 cursor-pointer active:scale-95',
+                          index === (isMobile ? currentPage : currentSpread * 2)
+                            ? 'ring-2 ring-[#ea580c] ring-offset-2 ring-offset-slate-900'
+                            : 'hover:ring-1 hover:ring-white/40',
+                        )}
                         onClick={() =>
                           setFullscreenImage({
                             src: p.image_file ? getFileUrl(p, p.image_file) : p.image_url,
@@ -472,17 +502,20 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
                         <img
                           src={p.image_file ? getFileUrl(p, p.image_file) : p.image_url}
                           alt={`Página ${p.page_number}`}
-                          className="w-full h-full object-contain"
+                          className="w-full h-full object-cover"
                           loading="lazy"
                           decoding="async"
                         />
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors">
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/40 transition-colors">
                           <Maximize2 className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                       </div>
                       <DrawerClose asChild>
-                        <button className="text-center text-sm font-medium text-gray-600 group-hover:text-orange-600 transition-colors cursor-pointer">
-                          Ir para Página {p.page_number || 'Capa'}
+                        <button
+                          onClick={() => jumpToPage(index)}
+                          className="text-center text-xs font-medium text-slate-400 group-hover:text-[#ea580c] transition-colors cursor-pointer"
+                        >
+                          {index === 0 ? 'Capa' : `Pág ${p.page_number || index + 1}`}
                         </button>
                       </DrawerClose>
                     </div>
@@ -494,7 +527,8 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
         </div>
       </header>
 
-      <main className="flex-1 relative overflow-hidden flex items-center justify-center">
+      {/* Main Flipbook Canvas */}
+      <main className="flex-1 relative overflow-hidden flex items-center justify-center bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
         {isMobile ? (
           <FlipbookMobile
             pages={pages}
@@ -512,33 +546,50 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
         )}
       </main>
 
+      {/* MELHORIA B: Barra de Miniaturas fixa na parte inferior */}
+      <FlipbookThumbnails
+        pages={pages}
+        currentPage={currentPage}
+        currentSpread={currentSpread}
+        isMobile={isMobile}
+        onSelectPage={jumpToPage}
+      />
+
+      {/* Bottom Status / Progress bar */}
       <footer
         className={cn(
-          'h-12 bg-white border-t flex flex-col shrink-0 relative z-40 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] transition-opacity duration-300',
+          'h-9 bg-slate-900 border-t border-slate-800/80 flex flex-col shrink-0 relative z-40 transition-opacity duration-300',
           isMobile && !uiVisible ? 'opacity-30' : 'opacity-100',
         )}
       >
-        <div className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 z-50">
-          <SocialShare title={edition.title} url={window.location.href} />
-        </div>
+        {/* Interactive progress bar */}
         <div
-          className="h-2 w-full cursor-pointer group"
+          className="h-1.5 w-full cursor-pointer group bg-slate-800"
           onClick={(e) => {
             if (totalPages <= 1) return
             const rect = e.currentTarget.getBoundingClientRect()
             const x = e.clientX - rect.left
             const percent = x / rect.width
-            const targetPage = Math.round(percent * (totalPages - 1))
-            jumpToPage(targetPage)
+            const target = Math.round(percent * (totalPages - 1))
+            jumpToPage(target)
           }}
+          title="Clique para saltar para uma página"
         >
           <Progress
             value={progress}
-            className="h-1 group-hover:h-2 bg-gray-200 rounded-none [&>div]:bg-orange-500 transition-all cursor-pointer"
+            className="h-1.5 bg-slate-800 rounded-none [&>div]:bg-[#ea580c] transition-all cursor-pointer"
           />
         </div>
-        <div className="flex-1 flex items-center justify-center px-20 md:px-6 text-xs md:text-sm font-medium text-gray-500 tracking-wide uppercase">
-          Página {displayPage} de {totalPages - 1}
+
+        <div className="flex-1 flex items-center justify-between px-4 sm:px-6 text-[11px] font-medium text-slate-400 tracking-wider uppercase">
+          <div className="flex items-center gap-1.5 text-slate-500">
+            <Sparkles className="w-3 h-3 text-[#ea580c]" />
+            <span className="hidden sm:inline">Revista Digital Interativa</span>
+          </div>
+          <div className="text-slate-300 font-semibold">
+            {displayPage === 0 ? 'Capa' : `Página ${displayPage}`} / {totalPages - 1}
+          </div>
+          <div className="text-slate-500 text-[10px]">{Math.round(progress)}%</div>
         </div>
       </footer>
 
