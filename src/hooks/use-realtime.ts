@@ -27,13 +27,6 @@ export function useRealtime<TRecord extends RecordModel = RecordModel>(
     let unsubscribeFn: (() => Promise<void>) | undefined
     let cancelled = false
 
-    // Safety timeout to force abort/cleanup if subscribe doesn't resolve
-    const timeoutId = setTimeout(() => {
-      if (!unsubscribeFn) {
-        cancelled = true
-      }
-    }, 8000)
-
     pb.collection<TRecord>(collectionName)
       .subscribe('*', (e) => {
         callbackRef.current(e)
@@ -49,7 +42,6 @@ export function useRealtime<TRecord extends RecordModel = RecordModel>(
 
     return () => {
       cancelled = true
-      clearTimeout(timeoutId)
       if (unsubscribeFn) {
         unsubscribeFn().catch(() => {})
       }
