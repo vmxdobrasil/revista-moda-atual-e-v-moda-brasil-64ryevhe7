@@ -53,7 +53,7 @@ export default function EditionCoversPage() {
         imageUrl: edition.cover_url,
         title: edition.title,
         subtitle: '',
-        altText: edition.cover_alt_text || edition.title,
+        altText: edition.title,
         stockSource: 'unsplash',
         theme: edition.title,
       }

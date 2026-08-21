@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { getLatestEdition, Edition } from '@/services/magazine'
 import { BookOpen, Award, ArrowRight, Sparkles, CheckCircle, TrendingUp, Zap } from 'lucide-react'
+import { LeadCaptureSection } from '@/components/LeadCaptureSection'
 
 export default function Index() {
   const [latestEdition, setLatestEdition] = useState<Edition | null>(null)
@@ -153,6 +154,9 @@ export default function Index() {
           </div>
         </section>
       )}
+
+      {/* Lead Capture Form Section */}
+      <LeadCaptureSection source="landing_page" />
     </div>
   )
 }

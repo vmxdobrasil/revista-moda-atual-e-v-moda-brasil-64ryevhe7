@@ -81,12 +81,15 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
   const [uiVisible, setUiVisible] = useState(true)
   const [fullscreenImage, setFullscreenImage] = useState<{ src: string; alt: string } | null>(null)
 
-  const inactivityTimerRef = useRef<ReturnType<typeof setTimeout>>()
+  const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const resetInactivityTimer = useCallback(() => {
     setUiVisible(true)
     if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current)
-    inactivityTimerRef.current = setTimeout(() => setUiVisible(false), 2000)
+    inactivityTimerRef.current = setTimeout(
+      () => setUiVisible(false),
+      2000,
+    ) as unknown as ReturnType<typeof setTimeout>
   }, [])
 
   useEffect(() => {

@@ -3,7 +3,16 @@ import { Link, useLocation } from 'react-router-dom'
 import { BrandLogo } from '@/components/BrandLogo'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
-import { BookOpen, Award, LayoutDashboard, Sparkles, Megaphone, Menu } from 'lucide-react'
+import {
+  BookOpen,
+  Award,
+  LayoutDashboard,
+  Sparkles,
+  Megaphone,
+  Menu,
+  Camera,
+  Link2,
+} from 'lucide-react'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 
 export function SiteHeader() {
@@ -14,6 +23,7 @@ export function SiteHeader() {
   const navItems = [
     { label: 'Edições', path: '/editions', icon: BookOpen },
     { label: 'TOP 60 Marcas', path: '/partners', icon: Award },
+    { label: 'Eventos', path: '/events', icon: Camera },
     { label: 'Anúncios', path: '/advertisements', icon: Megaphone },
     { label: 'Sobre Nós', path: '/sobre-nos', icon: Sparkles },
   ]

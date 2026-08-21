@@ -47,5 +47,5 @@ export async function generateMetaPrompt(objective: string): Promise<PromptLibra
     method: 'POST',
     body: JSON.stringify({ objective }),
     headers: { 'Content-Type': 'application/json' },
-  })) as Promise<PromptLibraryItem>
+  })) as unknown as PromptLibraryItem
 }

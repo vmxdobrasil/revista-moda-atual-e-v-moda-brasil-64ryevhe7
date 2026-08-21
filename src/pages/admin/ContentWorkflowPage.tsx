@@ -136,11 +136,11 @@ export default function ContentWorkflowPage() {
     try {
       const themeValue =
         theme.trim() || editions.find((e) => e.id === selectedEdition)?.title || 'Workflow Result'
-      await saveWorkflowToGeneratedContent({
-        theme: themeValue,
-        original_edition: selectedEdition || undefined,
-        content_data: result.final_content,
-      })
+      await saveWorkflowToGeneratedContent(
+        themeValue,
+        result.final_content,
+        selectedEdition || undefined,
+      )
       toast({ title: 'Sucesso', description: 'Conteúdo salvo com sucesso!' })
     } catch {
       toast({ title: 'Erro', description: 'Falha ao salvar.', variant: 'destructive' })

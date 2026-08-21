@@ -11,6 +11,7 @@ import {
   Calendar,
   GitBranch,
   Zap,
+  Sparkles,
 } from 'lucide-react'
 
 const SUBSCRIBER_FIELDS = [

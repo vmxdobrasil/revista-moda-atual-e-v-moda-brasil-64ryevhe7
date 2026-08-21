@@ -203,9 +203,7 @@ export async function getCampaignPreviewData(
     const pages = await getEditionPages(campaign.edition)
     const hotspots = await getHotspots(campaign.edition, pages)
     const cover =
-      edition.cover_url ||
-      (edition.cover_file ? getFileUrl(edition, edition.cover_file) : '') ||
-      (edition.cover_image ? getFileUrl(edition, edition.cover_image) : '')
+      edition.cover_url || (edition.cover_file ? getFileUrl(edition, edition.cover_file) : '')
     const products: ProductCallout[] = hotspots
       .filter((h) => h.expand?.product)
       .map((h) => ({

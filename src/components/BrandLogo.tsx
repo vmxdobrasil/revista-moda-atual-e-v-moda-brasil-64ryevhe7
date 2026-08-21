@@ -12,6 +12,10 @@ export type BrandLogoVariant =
   | 'orange'
   | 'header'
   | 'primary'
+  | 'social_landscape'
+  | 'social_square'
+  | 'social_portrait'
+  | 'knockout'
 
 export type BrandLogoSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'hero' | '2xl'
 
@@ -45,6 +49,10 @@ const variantColors: Record<string, { bg: string; text: string }> = {
   monochrome: { bg: '#000000', text: '#FFFFFF' },
   symbol: { bg: '#EA580C', text: '#FFFFFF' },
   full: { bg: '#EA580C', text: '#FFFFFF' },
+  social_landscape: { bg: '#EA580C', text: '#FFFFFF' },
+  social_square: { bg: '#EA580C', text: '#FFFFFF' },
+  social_portrait: { bg: '#EA580C', text: '#FFFFFF' },
+  knockout: { bg: '#EA580C', text: '#FFFFFF' },
 }
 
 export function BrandLogo({

@@ -7,6 +7,8 @@ import { OfflineIndicator } from '@/components/OfflineIndicator'
 import { PwaInstallPrompt } from '@/components/PwaInstallPrompt'
 import Index from './pages/Index'
 import Editions from './pages/Editions'
+import Events from './pages/Events'
+import LinkInBio from './pages/LinkInBio'
 import NotFound from './pages/NotFound'
 import { Layout } from '@/components/Layout'
 import MagazineReader from './pages/MagazineReader'
@@ -75,6 +77,7 @@ const App = () => (
               <Route element={<Layout />}>
                 <Route path="/" element={<Index />} />
                 <Route path="/editions" element={<Editions />} />
+                <Route path="/events" element={<Events />} />
                 <Route path="/partners" element={<Partners />} />
                 <Route path="/advertisements" element={<Advertisements />} />
                 <Route path="/offers" element={<Navigate to="/" replace />} />
@@ -82,6 +85,10 @@ const App = () => (
                 <Route path="/texto/:id" element={<StoryTextView />} />
                 <Route path="/sobre-nos" element={<About />} />
               </Route>
+
+              {/* LinkInBio page */}
+              <Route path="/bio" element={<LinkInBio />} />
+              <Route path="/linkinbio" element={<LinkInBio />} />
 
               <Route path="/edition/:id" element={<MagazineReader />} />
               <Route path="/reader/latest" element={<MagazineReader isLatest />} />

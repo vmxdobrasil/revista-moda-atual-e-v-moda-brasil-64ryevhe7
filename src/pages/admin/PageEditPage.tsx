@@ -118,7 +118,12 @@ export default function PageEditPage() {
       </Card>
 
       {hotspotOpen && (
-        <HotspotEditorModal page={page} open={hotspotOpen} onOpenChange={setHotspotOpen} />
+        <HotspotEditorModal
+          pageId={page.id}
+          open={hotspotOpen}
+          onOpenChange={setHotspotOpen}
+          onSaved={loadData}
+        />
       )}
       {adapterOpen && (
         <ImageAdapterModal

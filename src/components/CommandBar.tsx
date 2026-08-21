@@ -874,7 +874,7 @@ export function CommandBar() {
           setOpen(o)
         }}
       >
-        <DialogContent className="max-w-lg p-0 gap-0" showCloseButton={false}>
+        <DialogContent className="max-w-lg p-0 gap-0">
           <div className="flex items-center border-b px-4 py-3">
             <Terminal className="w-4 h-4 text-orange-500 mr-2 shrink-0" />
             <Input

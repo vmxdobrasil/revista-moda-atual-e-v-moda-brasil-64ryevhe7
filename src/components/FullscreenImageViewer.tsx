@@ -16,7 +16,7 @@ export function FullscreenImageViewer({ src, alt, open, onClose }: FullscreenIma
           <div className="relative flex items-center justify-center w-full h-[90vh]">
             <img src={src} alt={alt} className="max-w-full max-h-full object-contain" />
             <div className="absolute bottom-6 right-6 w-28 md:w-36 pointer-events-none">
-              <BrandLogo variant="white" watermark />
+              <BrandLogo size="md" />
             </div>
           </div>
         )}

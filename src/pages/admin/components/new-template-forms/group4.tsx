@@ -54,7 +54,7 @@ export function Group4Form({
         .catch(() => {})
     if (template === 'newsletter_preview')
       getCampaigns()
-        .then(setCampaigns)
+        .then((c) => setCampaigns(c as unknown as NewsletterCampaign[]))
         .catch(() => {})
   }, [template])
 

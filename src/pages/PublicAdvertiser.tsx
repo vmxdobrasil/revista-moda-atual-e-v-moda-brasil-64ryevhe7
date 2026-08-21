@@ -18,21 +18,21 @@ export default function PublicAdvertiser() {
     if (!token.trim()) return
 
     setLoading(true)
-    const result = await loginAdvertiser(token.trim())
-    setLoading(false)
-
-    if (result.error || !result.proposal) {
+    try {
+      const result = await loginAdvertiser(token.trim(), '')
+      setProposalData(result)
+      toast({
+        title: 'Acesso liberado',
+        description: `Bem-vindo(a), ${result.advertiser || 'Anunciante'}!`,
+      })
+    } catch {
       toast({
         title: 'Código inválido',
         description: 'Verifique o código de acesso informado no seu contrato/proposta.',
         variant: 'destructive',
       })
-    } else {
-      setProposalData(result.proposal)
-      toast({
-        title: 'Acesso liberado',
-        description: `Bem-vindo(a), ${result.proposal.advertiser}!`,
-      })
+    } finally {
+      setLoading(false)
     }
   }
 

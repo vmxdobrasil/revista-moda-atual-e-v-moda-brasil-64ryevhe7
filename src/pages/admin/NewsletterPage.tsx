@@ -10,6 +10,7 @@ import {
   getEditionsForSelect,
   generateNewsletter,
   type Subscriber,
+  type NewsletterCampaign,
   type NewsletterSequence,
   type EditionOption,
 } from '@/services/newsletter'
@@ -38,9 +39,9 @@ export default function NewsletterPage() {
         getSequences(),
         getEditionsForSelect(),
       ])
-      setSubscribers(subs)
-      setCampaigns(camps)
-      setSequences(seqs)
+      setSubscribers(subs as unknown as Subscriber[])
+      setCampaigns(camps as unknown as NewsletterCampaign[])
+      setSequences(seqs as unknown as NewsletterSequence[])
       setEditions(eds)
     } catch {
       toast.error('Erro ao carregar dados.')

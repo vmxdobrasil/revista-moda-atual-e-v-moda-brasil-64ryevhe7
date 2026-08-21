@@ -74,7 +74,7 @@ function CapaEdicaoView({ data, format }: { data: any; format: TemplateFormat })
       />
       <div className="relative z-10 flex flex-col h-full justify-between p-6">
         <div className="flex items-center justify-between w-full pt-2">
-          <BrandLogo variant="knockout" className="h-14 md:h-20 w-auto drop-shadow-md" />
+          <BrandLogo variant="white" className="h-14 md:h-20 w-auto drop-shadow-md" />
           <EditionSeal text="Edição Digital" />
         </div>
         <div className="flex flex-col justify-end">

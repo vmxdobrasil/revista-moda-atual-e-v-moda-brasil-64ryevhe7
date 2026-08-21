@@ -49,15 +49,14 @@ export function parseSkillFlow(flow: unknown): Stage[] {
     if (Array.isArray(stages)) return parseSkillFlow(stages)
     return Object.entries(obj).map(([key, value]) => {
       const items: ChecklistItem[] = Array.isArray(value)
-        ? value.map((item: unknown, j: number) => ({
-            key: `${key}_${j}`,
-            title:
-              typeof item === 'string'
-                ? item
-                : (item as Record<string, unknown>).text ||
-                  (item as Record<string, unknown>).title ||
-                  String(item),
-          }))
+        ? value.map((item: unknown, j: number) => {
+            const raw = item as Record<string, unknown> | string
+            const t = typeof raw === 'string' ? raw : raw?.text || raw?.title || String(raw)
+            return {
+              key: `${key}_${j}`,
+              title: typeof t === 'string' ? t : String(t),
+            }
+          })
         : [{ key: `${key}_0`, title: String(value) }]
       return { key, title: key.replace(/_/g, ' '), description: '', items }
     })

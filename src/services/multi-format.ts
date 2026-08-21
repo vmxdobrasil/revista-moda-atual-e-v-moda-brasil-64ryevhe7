@@ -37,6 +37,10 @@ export interface MultiFormatResult {
   id: string
   final_content?: MultiFormatFinalContent
   error?: string
+  theme?: string
+  status?: string
+  created?: string
+  error_note?: string
 }
 
 export async function runMultiFormatGenerator(

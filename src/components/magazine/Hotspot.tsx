@@ -1,7 +1,7 @@
 import { useState, MouseEvent } from 'react'
 import { Info, X, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Hotspot } from '@/services/magazine'
+import type { Hotspot } from '@/services/magazine'
 import { trackHotspotClick } from '@/services/analytics'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'

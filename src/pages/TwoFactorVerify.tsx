@@ -40,7 +40,7 @@ export default function TwoFactorVerify() {
 
     try {
       const result = await verify2FA(email, value.trim(), mode === 'backup')
-      pb.authStore.save(result.token, result.record)
+      pb.authStore.save(result.token, result.record as any)
       toast({ title: 'Login realizado com sucesso!' })
       navigate('/admin')
     } catch (err: any) {

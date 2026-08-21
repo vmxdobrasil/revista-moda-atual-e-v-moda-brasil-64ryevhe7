@@ -58,6 +58,16 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
+                <Link to="/events" className="hover:text-white transition-colors">
+                  Eventos & Desfiles
+                </Link>
+              </li>
+              <li>
+                <Link to="/bio" className="hover:text-white transition-colors">
+                  Link na Bio
+                </Link>
+              </li>
+              <li>
                 <Link to="/advertisements" className="hover:text-white transition-colors">
                   Anúncios e Mídia
                 </Link>

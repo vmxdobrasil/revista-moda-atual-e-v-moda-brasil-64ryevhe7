@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { FileText, PlaySquare, LayoutGrid, Search, Copy, Check } from 'lucide-react'
 import { useState } from 'react'
+import { Badge } from '@/components/ui/badge'
 
 export default function Social() {
   const [copied, setCopied] = useState(false)
