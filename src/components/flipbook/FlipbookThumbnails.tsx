@@ -122,24 +122,13 @@ interface FlipbookThumbnailsProps {
 export function FlipbookThumbnails({
   pages,
   currentPage,
-  currentSpread = 0,
-  isMobile = false,
   onSelectPage,
   className,
 }: FlipbookThumbnailsProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // In desktop mode, a spread corresponds to left & right page
   const isPageActive = (index: number) => {
-    if (isMobile) {
-      return index === currentPage
-    }
-    if (currentSpread === 0) {
-      return index === 0 // Cover is spread 0
-    }
-    const leftIndex = 2 * currentSpread - 1
-    const rightIndex = 2 * currentSpread
-    return index === leftIndex || index === rightIndex
+    return index === currentPage
   }
 
   return (

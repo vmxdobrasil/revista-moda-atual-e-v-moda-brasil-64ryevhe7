@@ -193,26 +193,20 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
 
   useMetaTags(metaConfig)
 
-  const handleSpreadChange = (spread: number) => {
-    setCurrentSpread(spread)
-    if (spread === 0) {
-      setCurrentPage(0)
-    } else {
-      setCurrentPage(2 * spread - 1)
-    }
+  const handleSpreadChange = (pageIndex: number) => {
+    setCurrentPage(pageIndex)
+    setCurrentSpread(pageIndex)
   }
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-    setCurrentSpread(Math.floor((page + 1) / 2))
+  const handlePageChange = (pageIndex: number) => {
+    setCurrentPage(pageIndex)
+    setCurrentSpread(pageIndex)
   }
 
   const isValidEdition = !loadingEdition && !errorEmpty && !!edition
   const isValidPages = isValidEdition && !loadingPages && pages.length > 0
 
-  const currentVisiblePageIndex = isMobile
-    ? currentPage
-    : Math.min(currentSpread * 2, Math.max(pages.length - 1, 0))
+  const currentVisiblePageIndex = currentPage
   const currentVisiblePageId = pages[currentVisiblePageIndex]?.id
 
   useEffect(() => {
@@ -223,7 +217,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
   const jumpToPage = (pageNum: number) => {
     const clamped = Math.max(0, Math.min(pages.length - 1, pageNum))
     setCurrentPage(clamped)
-    setCurrentSpread(Math.floor((clamped + 1) / 2))
+    setCurrentSpread(clamped)
   }
 
   if (loadingEdition) {
@@ -365,7 +359,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
   }
 
   const totalPages = pages.length
-  const displayPage = isMobile ? currentPage : Math.min(currentSpread * 2, totalPages - 1)
+  const displayPage = currentPage
   const progress = totalPages > 1 ? (displayPage / (totalPages - 1)) * 100 : 0
 
   return (
@@ -468,7 +462,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
                       >
                         <span className="font-medium text-slate-200">{p.toc_title}</span>
                         <span className="ml-auto text-[#ea580c] text-xs font-mono">
-                          Pág {p.page_number}
+                          Pág {p.page_number || pages.indexOf(p) + 1}
                         </span>
                       </Button>
                     </SheetClose>
@@ -476,7 +470,6 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
               </div>
             </SheetContent>
           </Sheet>
-
           {/* Grid Overview Drawer */}
           <Drawer>
             <DrawerTrigger asChild>
@@ -507,7 +500,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
                         <div
                           className={cn(
                             'relative aspect-[0.7118] overflow-hidden rounded-md shadow-md transition-all flex items-center justify-center bg-slate-800 cursor-pointer active:scale-95',
-                            index === (isMobile ? currentPage : currentSpread * 2)
+                            index === currentPage
                               ? 'ring-2 ring-[#ea580c] ring-offset-2 ring-offset-slate-900'
                               : 'hover:ring-1 hover:ring-white/40',
                           )}
@@ -583,20 +576,14 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
           <FlipbookDesktop
             pages={pages}
             hotspots={hotspots}
-            currentSpread={currentSpread}
-            onSpreadChange={handleSpreadChange}
+            currentPage={currentPage}
+            onPageChange={handlePageChange}
           />
         )}
       </main>
 
       {/* MELHORIA B: Barra de Miniaturas fixa na parte inferior */}
-      <FlipbookThumbnails
-        pages={pages}
-        currentPage={currentPage}
-        currentSpread={currentSpread}
-        isMobile={isMobile}
-        onSelectPage={jumpToPage}
-      />
+      <FlipbookThumbnails pages={pages} currentPage={currentPage} onSelectPage={jumpToPage} />
 
       {/* Bottom Status / Progress bar */}
       <footer
@@ -630,7 +617,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
             <span className="hidden sm:inline">Revista Digital Interativa</span>
           </div>
           <div className="text-slate-300 font-semibold">
-            {displayPage === 0 ? 'Capa' : `Página ${displayPage}`} / {totalPages - 1}
+            {displayPage === 0 ? 'Capa' : `Página ${displayPage + 1}`} / {totalPages}
           </div>
           <div className="text-slate-500 text-[10px]">{Math.round(progress)}%</div>
         </div>

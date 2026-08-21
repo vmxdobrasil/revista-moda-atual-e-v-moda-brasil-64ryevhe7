@@ -18,13 +18,8 @@ export function PageRenderer({ page, hotspots = [], isLeft = false }: PageRender
 
   if (!page) {
     return (
-      <div
-        className={cn(
-          'w-full h-full bg-[#fdfcf9] flex items-center justify-center',
-          isLeft ? 'rounded-l-md' : 'rounded-r-md',
-        )}
-      >
-        <div className="w-12 h-full bg-gradient-to-r from-black/5 to-transparent absolute right-0" />
+      <div className={cn('w-full h-full bg-[#fdfcf9] flex items-center justify-center rounded-md')}>
+        <div className="w-12 h-full bg-gradient-to-r from-black/5 to-transparent absolute right-0 pointer-events-none" />
       </div>
     )
   }
@@ -52,7 +47,7 @@ export function PageRenderer({ page, hotspots = [], isLeft = false }: PageRender
 
   return (
     <div
-      className="relative w-full h-full overflow-hidden bg-[#fdfcf9]"
+      className="relative w-full h-full overflow-hidden bg-[#fdfcf9] rounded-md"
       onDoubleClick={handleDoubleClick}
     >
       <div
@@ -76,7 +71,7 @@ export function PageRenderer({ page, hotspots = [], isLeft = false }: PageRender
           <div
             className={cn(
               'absolute inset-0 w-full h-full flex flex-col pointer-events-none overflow-hidden z-[2]',
-              hasImage ? 'p-6 md:p-10' : 'p-4 md:p-8',
+              hasImage ? 'p-4 md:p-6' : 'p-3 md:p-6',
             )}
           >
             <div className="w-full h-full pointer-events-auto">
@@ -94,19 +89,15 @@ export function PageRenderer({ page, hotspots = [], isLeft = false }: PageRender
 
         {zoom === 1 && hotspots.map((h) => <HotspotMarker key={h.id} hotspot={h} />)}
 
-        {/* Book shadow effect */}
-        {isLeft ? (
-          <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-black/10 to-transparent pointer-events-none" />
-        ) : (
-          <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-black/10 to-transparent pointer-events-none" />
-        )}
+        {/* Subtle page edge shade */}
+        <div className="absolute inset-y-0 left-0 w-6 bg-gradient-to-r from-black/5 to-transparent pointer-events-none" />
       </div>
 
       {/* Page Number */}
       <div
         className={cn(
-          'absolute bottom-4 text-xs font-medium text-gray-500 bg-white/50 px-2 py-1 rounded-sm backdrop-blur-sm pointer-events-none',
-          isLeft ? 'left-4' : 'right-4',
+          'absolute bottom-3 text-xs font-medium text-gray-500 bg-white/70 px-2 py-0.5 rounded-sm backdrop-blur-sm pointer-events-none shadow-sm',
+          isLeft ? 'left-3' : 'right-3',
         )}
       >
         {page.page_number > 0 ? page.page_number : ''}

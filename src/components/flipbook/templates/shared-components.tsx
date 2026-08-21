@@ -46,7 +46,7 @@ export function EditorialHeader({
 export function TemplateFooter({
   editionTitle,
   publicationDate,
-  showLogo = true,
+  showLogo = false,
   format = 'a4',
 }: {
   editionTitle?: string
@@ -65,7 +65,9 @@ export function TemplateFooter({
         </span>
       )}
       {publicationDate && (
-        <span className="text-[0.6875rem] text-gray-400 whitespace-nowrap">{publicationDate}</span>
+        <span className="text-[0.6875rem] text-gray-400 whitespace-nowrap ml-auto">
+          {publicationDate}
+        </span>
       )}
     </div>
   )

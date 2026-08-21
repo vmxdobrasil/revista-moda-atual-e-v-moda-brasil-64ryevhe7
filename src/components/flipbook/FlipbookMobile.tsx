@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { cn } from '@/lib/utils'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
-interface FlipbookMobileProps {
+export interface FlipbookMobileProps {
   pages: EditionPage[]
   hotspots: Hotspot[]
   onPageChange: (page: number) => void
@@ -171,11 +171,11 @@ export function FlipbookMobile({ pages, hotspots, onPageChange, targetPage }: Fl
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchEnd}
     >
-      {/* Container aspect ratio */}
+      {/* Container aspect ratio (A4 vertical ratio 210 / 295 ≈ 0.71186) */}
       <div
-        className="relative w-full max-w-sm sm:max-w-md mx-auto flex items-center justify-center p-3"
+        className="relative w-full max-w-sm sm:max-w-md mx-auto flex items-center justify-center p-2"
         style={{
-          aspectRatio: '0.7118',
+          aspectRatio: '210 / 295',
           maxHeight: '74vh',
         }}
       >
