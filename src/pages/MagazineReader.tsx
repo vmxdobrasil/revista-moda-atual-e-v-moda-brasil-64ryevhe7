@@ -32,12 +32,13 @@ import {
 } from '@/components/ui/sheet'
 import { Drawer, DrawerContent, DrawerTrigger, DrawerClose } from '@/components/ui/drawer'
 import { Button } from '@/components/ui/button'
-import { LayoutGrid, List, Loader2, Instagram, Maximize2, Sparkles } from 'lucide-react'
+import { LayoutGrid, List, Loader2, Instagram, Maximize2, Sparkles, Download } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 import { BrandLogo } from '@/components/BrandLogo'
 import { FullscreenImageViewer } from '@/components/FullscreenImageViewer'
 import { SubscriberCoverBadge } from '@/components/SubscriberCoverBadge'
 import { TemplateRenderer } from '@/components/flipbook/TemplateRenderer'
+import { ExportDialog } from '@/components/magazine/ExportDialog'
 
 function isNotFoundResponseError(err: unknown): boolean {
   if (err instanceof ClientResponseError) {
@@ -83,6 +84,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
   const [currentPage, setCurrentPage] = useState(0)
   const [uiVisible, setUiVisible] = useState(true)
   const [fullscreenImage, setFullscreenImage] = useState<{ src: string; alt: string } | null>(null)
+  const [exportDialogOpen, setExportDialogOpen] = useState(false)
 
   const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
@@ -396,6 +398,18 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-3">
+          {/* Export Dialog Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setExportDialogOpen(true)}
+            className="gap-1.5 bg-slate-850 border-slate-700 text-slate-200 hover:text-white hover:bg-slate-800 active:scale-95 transition-all text-xs h-8 sm:h-9"
+            title="Exportar edição (PDF ou Link)"
+          >
+            <Download className="w-3.5 h-3.5 text-[#ea580c]" />
+            <span className="hidden md:inline">Exportar</span>
+          </Button>
+
           {/* Social Posts Sheet */}
           <Sheet>
             <SheetTrigger asChild>
@@ -627,6 +641,13 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
         alt={fullscreenImage?.alt ?? ''}
         open={!!fullscreenImage}
         onClose={() => setFullscreenImage(null)}
+      />
+
+      <ExportDialog
+        open={exportDialogOpen}
+        onOpenChange={setExportDialogOpen}
+        edition={edition}
+        pages={pages}
       />
     </div>
   )

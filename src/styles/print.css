@@ -1,0 +1,106 @@
+/* =========================================================================
+   Print Stylesheet for Revista Moda Atual
+   Configures standard A4 layout (210mm x 297mm) and print optimizations
+   ========================================================================= */
+
+@media print {
+  /* Reset background and layout for ink saving & clean printing */
+  html,
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-family:
+      'Inter',
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      Roboto,
+      sans-serif !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Page setup for standard A4 */
+  @page {
+    size: 210mm 297mm;
+    margin: 0;
+  }
+
+  /* Hide interactive UI chrome, headers, footers, sidebars, thumbnails, navigation, and dialogs */
+  header,
+  footer,
+  aside,
+  nav,
+  .no-print,
+  button,
+  [role='dialog'],
+  [data-radix-portal],
+  .lucide,
+  .flipbook-thumbnails,
+  .print-hide {
+    display: none !important;
+  }
+
+  /* Force display of print-only content if present */
+  .print-only {
+    display: block !important;
+  }
+
+  /* Magazine print page structure */
+  .magazine-print-sheet {
+    width: 210mm !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    position: relative !important;
+    background: #ffffff !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 12mm !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Cover specifics */
+  .magazine-print-sheet.cover {
+    padding: 0 !important;
+  }
+
+  /* Remove drop shadows and borders that waste toner or artifact */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* Ensure images fit within the printable A4 boundaries */
+  img {
+    max-width: 100% !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Maintain readable typography contrast */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: #0f172a !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  p {
+    color: #334155 !important;
+    orphans: 3 !important;
+    widows: 3 !important;
+  }
+}
