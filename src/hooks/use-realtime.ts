@@ -27,21 +27,43 @@ export function useRealtime<TRecord extends RecordModel = RecordModel>(
     let unsubscribeFn: (() => Promise<void>) | undefined
     let cancelled = false
 
-    pb.collection<TRecord>(collectionName)
-      .subscribe('*', (e) => {
+    // Timeout guard of 5 seconds to ensure subscription attempts never hang or block
+    let timerId: ReturnType<typeof setTimeout> | undefined
+
+    const subscribeWithTimeout = Promise.race([
+      pb.collection<TRecord>(collectionName).subscribe('*', (e) => {
         callbackRef.current(e)
-      })
+      }),
+      new Promise<never>((_, reject) => {
+        timerId = setTimeout(() => {
+          reject(new Error(`Realtime subscription timeout for "${collectionName}"`))
+        }, 5000)
+      }),
+    ])
+
+    subscribeWithTimeout
       .then((fn) => {
+        if (timerId) clearTimeout(timerId)
         if (cancelled) {
           fn().catch(() => {})
         } else {
           unsubscribeFn = fn
         }
       })
-      .catch(() => {})
+      .catch((err) => {
+        if (timerId) clearTimeout(timerId)
+        // Silent fallback - realtime failure should never crash or block UI
+        if (import.meta.env.DEV) {
+          console.warn(
+            `[useRealtime] Realtime subscription to "${collectionName}" not established:`,
+            err?.message || err,
+          )
+        }
+      })
 
     return () => {
       cancelled = true
+      if (timerId) clearTimeout(timerId)
       if (unsubscribeFn) {
         unsubscribeFn().catch(() => {})
       }

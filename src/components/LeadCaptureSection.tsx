@@ -20,7 +20,6 @@ import {
   Camera,
   Upload,
 } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
 
 export function LeadCaptureSection({ source = 'landing_page' }: { source?: string }) {
   const { toast } = useToast()

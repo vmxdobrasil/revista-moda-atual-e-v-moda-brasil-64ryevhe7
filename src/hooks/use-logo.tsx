@@ -19,18 +19,25 @@ export function useLogo() {
 }
 
 export function LogoProvider({ children }: { children: ReactNode }) {
+  // Always initialize synchronously with default fallback values (logoUrl=null, isCustomLogo=false)
+  // so consumer components can render immediately without waiting for network calls
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [visualParams, setVisualParams] = useState<Record<string, any> | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
 
   const refresh = async () => {
-    setLoading(true)
     try {
-      const settings = await getSiteSettings()
-      const customUrl = getLogoUrl(settings)
-      setLogoUrl(customUrl)
-      setVisualParams(settings?.logo_visual_params || null)
-    } catch {
+      // 4 second timeout guard for getSiteSettings so it never hangs indefinitely
+      const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 4000))
+      const settings = await Promise.race([getSiteSettings(), timeoutPromise])
+      if (settings) {
+        const customUrl = getLogoUrl(settings)
+        setLogoUrl(customUrl)
+        setVisualParams(settings.logo_visual_params || null)
+      }
+    } catch (err) {
+      // Non-blocking fallback: default vector logo remains active
+      console.warn('[LogoProvider] Failed to fetch custom site settings logo:', err)
       setLogoUrl(null)
       setVisualParams(null)
     } finally {
@@ -39,6 +46,7 @@ export function LogoProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
+    // Refresh asynchronously in the background; UI does not wait
     refresh()
   }, [])
 
