@@ -118,11 +118,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
         const ed = isLatest ? await getLatestEdition() : paramId ? await getEdition(paramId) : null
 
         if (!ed) {
-          if (isLatest) {
-            navigate('/', { replace: true })
-          } else {
-            setNotFound(true)
-          }
+          setNotFound(true)
           return
         }
 
@@ -131,8 +127,6 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
       } catch (err: any) {
         if (isNotFoundResponseError(err)) {
           setNotFound(true)
-        } else if (isLatest) {
-          navigate('/', { replace: true })
         } else {
           console.error('Failed to load edition:', err)
           setLoadError(true)

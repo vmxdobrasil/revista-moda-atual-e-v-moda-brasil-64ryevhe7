@@ -73,7 +73,7 @@ export function BrandLogo({
       <div
         onClick={onClick}
         className={cn(
-          'inline-flex items-center justify-center transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] select-none bg-transparent p-0 m-0 border-0 shrink-0 overflow-visible',
+          'inline-flex items-center justify-center transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] select-none bg-transparent p-0 m-0 border-0 shadow-none ring-0 shrink-0 overflow-visible',
           onClick && 'cursor-pointer',
           className,
         )}
@@ -84,7 +84,7 @@ export function BrandLogo({
           alt={alt}
           onError={() => setImgError(true)}
           className={cn(
-            'object-contain max-w-full bg-transparent p-0 m-0 border-0 shadow-none filter-none mix-blend-normal',
+            'object-contain max-w-full bg-transparent p-0 m-0 border-0 shadow-none ring-0 filter-none mix-blend-normal',
             sizeClasses[size],
             className,
           )}
@@ -99,7 +99,7 @@ export function BrandLogo({
     <div
       onClick={onClick}
       className={cn(
-        'inline-flex items-center justify-center transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] select-none bg-transparent p-0 m-0 border-0 shrink-0 overflow-visible',
+        'inline-flex items-center justify-center transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] select-none bg-transparent p-0 m-0 border-0 shadow-none ring-0 shrink-0 overflow-visible',
         onClick && 'cursor-pointer',
         className,
       )}
@@ -111,7 +111,7 @@ export function BrandLogo({
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         className={cn(
-          'object-contain max-w-full w-auto bg-transparent p-0 m-0 border-0 drop-shadow-none',
+          'object-contain max-w-full w-auto bg-transparent p-0 m-0 border-0 shadow-none ring-0 drop-shadow-none',
           sizeClasses[size],
           className,
         )}

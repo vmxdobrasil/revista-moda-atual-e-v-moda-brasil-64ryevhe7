@@ -83,11 +83,16 @@ export const getEditions = () =>
   pb.collection('editions').getFullList<Edition>({ sort: '-created', expand: 'brand' })
 
 export const getLatestEdition = async () => {
-  const result = await pb.collection('editions').getList<Edition>(1, 1, {
-    sort: '-created',
-    expand: 'brand',
-  })
-  return result.items.length > 0 ? result.items[0] : null
+  try {
+    const result = await pb.collection('editions').getList<Edition>(1, 1, {
+      sort: '-created',
+      expand: 'brand',
+    })
+    return result.items.length > 0 ? result.items[0] : null
+  } catch (err) {
+    console.error('Error fetching latest edition:', err)
+    return null
+  }
 }
 
 export const getEdition = (id: string) =>

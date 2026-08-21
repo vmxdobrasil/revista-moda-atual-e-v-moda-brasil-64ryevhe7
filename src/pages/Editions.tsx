@@ -70,10 +70,10 @@ export default function Editions() {
   return (
     <div className="container mx-auto px-4 py-12 md:py-16">
       <div className="mb-12 text-center max-w-3xl mx-auto">
-        <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-4">
+        <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground mb-4">
           Todas as Edições
         </h2>
-        <p className="text-lg md:text-xl text-gray-600 leading-relaxed">
+        <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
           Explore todas as edições da Revista Moda Atual. Clique em qualquer capa para começar a
           leitura interativa.
         </p>
@@ -81,16 +81,16 @@ export default function Editions() {
 
       <div className="flex flex-col sm:flex-row gap-3 mb-10 max-w-2xl mx-auto">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Buscar por título..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10"
+            className="pl-10 bg-card border-border"
           />
         </div>
         <Select value={brandFilter} onValueChange={setBrandFilter}>
-          <SelectTrigger className="w-full sm:w-56">
+          <SelectTrigger className="w-full sm:w-56 bg-card border-border">
             <SelectValue placeholder="Filtrar por marca" />
           </SelectTrigger>
           <SelectContent>
@@ -107,16 +107,16 @@ export default function Editions() {
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-12">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="aspect-[0.7118] bg-gray-200 animate-pulse rounded-xl" />
+            <div key={i} className="aspect-[0.7118] bg-muted animate-pulse rounded-xl" />
           ))}
         </div>
       ) : error ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mb-6">
+          <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center mb-6">
             <AlertCircle className="w-10 h-10 text-red-500" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-800 mb-3">Não foi possível carregar</h3>
-          <p className="text-gray-500 max-w-md text-lg mb-6">
+          <h3 className="text-2xl font-bold text-foreground mb-3">Não foi possível carregar</h3>
+          <p className="text-muted-foreground max-w-md text-lg mb-6">
             Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.
           </p>
           <Button
@@ -131,11 +131,11 @@ export default function Editions() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-20 h-20 rounded-full bg-orange-100 flex items-center justify-center mb-6">
+          <div className="w-20 h-20 rounded-full bg-orange-500/10 flex items-center justify-center mb-6">
             <Library className="w-10 h-10 text-orange-500" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-800 mb-3">Nenhuma edição encontrada</h3>
-          <p className="text-gray-500 max-w-md text-lg">
+          <h3 className="text-2xl font-bold text-foreground mb-3">Nenhuma edição encontrada</h3>
+          <p className="text-muted-foreground max-w-md text-lg">
             Não há edições que correspondam aos seus filtros. Tente limpar a busca.
           </p>
         </div>
@@ -147,7 +147,7 @@ export default function Editions() {
               <Card
                 key={ed.id}
                 className={cn(
-                  'overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-white rounded-xl relative',
+                  'overflow-hidden group hover:shadow-2xl transition-all duration-300 border border-border/80 bg-card rounded-xl relative',
                   isLatest && 'ring-2 ring-orange-500 shadow-lg',
                 )}
               >
@@ -158,7 +158,7 @@ export default function Editions() {
                     </Badge>
                   </div>
                 )}
-                <div className="relative aspect-[0.7118] overflow-hidden bg-gray-100 flex items-center justify-center">
+                <div className="relative aspect-[0.7118] overflow-hidden bg-muted flex items-center justify-center">
                   <img
                     src={ed.cover_file ? getFileUrl(ed, ed.cover_file) : ed.cover_url}
                     alt={ed.title}
@@ -179,10 +179,10 @@ export default function Editions() {
                   </div>
                 </div>
                 <CardContent className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-1 group-hover:text-orange-600 transition-colors">
+                  <h3 className="text-xl font-bold text-foreground mb-3 line-clamp-1 group-hover:text-orange-600 transition-colors">
                     {ed.title}
                   </h3>
-                  <p className="text-gray-600 text-sm line-clamp-3 leading-relaxed">
+                  <p className="text-muted-foreground text-sm line-clamp-3 leading-relaxed">
                     {ed.description}
                   </p>
                 </CardContent>

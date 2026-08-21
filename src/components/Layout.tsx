@@ -5,7 +5,7 @@ import { Chatbot } from '@/components/Chatbot'
 
 export function Layout() {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans relative">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans relative">
       <SiteHeader />
       <main className="flex-1">
         <Outlet />
