@@ -34,8 +34,30 @@ export function LeadCaptureSection({ source = 'landing_page' }: { source?: strin
     type: 'subscribe',
     notes: '',
   })
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        return toast({
+          title: 'Arquivo muito grande',
+          description: 'A foto deve ter até 5MB.',
+          variant: 'destructive',
+        })
+      }
+      setAvatarFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -49,10 +71,28 @@ export function LeadCaptureSection({ source = 'landing_page' }: { source?: strin
 
     setLoading(true)
     try {
+      // Cria o lead
       await createLead({
         ...formData,
         origem: source,
       })
+
+      // Salva ou atualiza também na coleção subscribers
+      try {
+        const subFormData = new FormData()
+        subFormData.append('name', (formData.nome || '').trim())
+        subFormData.append('email', (formData.email || '').trim().toLowerCase())
+        subFormData.append('segment', (formData.segmento as string) || 'atacado')
+        subFormData.append('status', 'ativo')
+        subFormData.append('source', 'site')
+        subFormData.append('engagement_score', '100')
+        if (avatarFile) {
+          subFormData.append('avatar', avatarFile)
+        }
+        await createSubscriber(subFormData)
+      } catch (subErr) {
+        console.warn('Subscriber save warning in LeadCaptureSection:', subErr)
+      }
 
       setSubmitted(true)
       toast({
@@ -135,6 +175,8 @@ export function LeadCaptureSection({ source = 'landing_page' }: { source?: strin
                       size="sm"
                       onClick={() => {
                         setSubmitted(false)
+                        setAvatarFile(null)
+                        setAvatarPreview(null)
                         setFormData({
                           nome: '',
                           email: '',
