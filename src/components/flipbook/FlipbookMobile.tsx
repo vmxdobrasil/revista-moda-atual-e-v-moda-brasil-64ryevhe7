@@ -176,7 +176,8 @@ export function FlipbookMobile({ pages, hotspots, onPageChange, targetPage }: Fl
         className="relative w-full max-w-sm sm:max-w-md mx-auto flex items-center justify-center p-2"
         style={{
           aspectRatio: '210 / 295',
-          maxHeight: '74vh',
+          height: 'calc(100vh - 105px)',
+          maxHeight: 'calc(100vh - 105px)',
         }}
       >
         {/* Soft background glow */}

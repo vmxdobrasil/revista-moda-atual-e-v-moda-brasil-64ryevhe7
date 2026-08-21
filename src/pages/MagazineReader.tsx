@@ -83,6 +83,8 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
   const [currentSpread, setCurrentSpread] = useState(0)
   const [currentPage, setCurrentPage] = useState(0)
   const [uiVisible, setUiVisible] = useState(true)
+  const [thumbnailsSidebarOpen, setThumbnailsSidebarOpen] = useState(true)
+  const [mobileThumbnailsDrawerOpen, setMobileThumbnailsDrawerOpen] = useState(false)
   const [fullscreenImage, setFullscreenImage] = useState<{ src: string; alt: string } | null>(null)
   const [exportDialogOpen, setExportDialogOpen] = useState(false)
 
@@ -470,125 +472,161 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
               </div>
             </SheetContent>
           </Sheet>
-          {/* Grid Overview Drawer */}
-          <Drawer>
-            <DrawerTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5 bg-slate-850 border-slate-700 text-slate-200 hover:text-white hover:bg-slate-800 active:scale-95 transition-all text-xs h-8 sm:h-9"
-              >
-                <LayoutGrid className="w-3.5 h-3.5 text-[#ea580c]" />
-                <span className="hidden md:inline">Páginas</span>
-              </Button>
-            </DrawerTrigger>
-            <DrawerContent className="bg-slate-900 text-slate-100 border-slate-800">
-              <div className="p-4 md:p-8 h-[60vh] overflow-y-auto">
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6 max-w-6xl mx-auto">
-                  {pages.map((p, index) => {
-                    const pageImg = p.image_file ? getFileUrl(p, p.image_file) : p.image_url || ''
-                    const hasPageImg = Boolean(pageImg && pageImg.trim() !== '')
-                    const hasPageTemplate = Boolean(
-                      (p.template && p.template !== 'default') ||
-                      (p.template === 'default' &&
-                        p.template_data &&
-                        Object.keys(p.template_data).length > 0),
-                    )
+          {/* Mobile Thumbnails Drawer Trigger (Visible only on mobile/tablet) */}
+          <div className="md:hidden">
+            <Drawer open={mobileThumbnailsDrawerOpen} onOpenChange={setMobileThumbnailsDrawerOpen}>
+              <DrawerTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 bg-slate-850 border-slate-700 text-slate-200 hover:text-white hover:bg-slate-800 active:scale-95 transition-all text-xs h-8 sm:h-9"
+                  title="Abrir miniaturas das páginas"
+                >
+                  <LayoutGrid className="w-3.5 h-3.5 text-[#ea580c]" />
+                  <span>Miniaturas</span>
+                </Button>
+              </DrawerTrigger>
+              <DrawerContent className="bg-slate-900 text-slate-100 border-slate-800 max-h-[80vh]">
+                <div className="p-4 overflow-y-auto max-h-[70vh]">
+                  <div className="flex items-center justify-between mb-3 px-1">
+                    <h3 className="text-sm font-semibold text-slate-200 uppercase tracking-wider">
+                      Miniaturas das Páginas ({pages.length})
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {pages.map((p, index) => {
+                      const pageImg = p.image_file ? getFileUrl(p, p.image_file) : p.image_url || ''
+                      const hasPageImg = Boolean(pageImg && pageImg.trim() !== '')
+                      const hasPageTemplate = Boolean(
+                        (p.template && p.template !== 'default') ||
+                        (p.template === 'default' &&
+                          p.template_data &&
+                          Object.keys(p.template_data).length > 0),
+                      )
 
-                    return (
-                      <div key={p.id} className="group flex flex-col gap-2">
-                        <div
-                          className={cn(
-                            'relative aspect-[0.7118] overflow-hidden rounded-md shadow-md transition-all flex items-center justify-center bg-slate-800 cursor-pointer active:scale-95',
-                            index === currentPage
-                              ? 'ring-2 ring-[#ea580c] ring-offset-2 ring-offset-slate-900'
-                              : 'hover:ring-1 hover:ring-white/40',
-                          )}
-                          onClick={() => {
-                            if (hasPageImg) {
-                              setFullscreenImage({
-                                src: pageImg,
-                                alt: `Página ${p.page_number}`,
-                              })
-                            } else {
-                              jumpToPage(index)
-                            }
-                          }}
-                        >
-                          {hasPageImg ? (
-                            <SmartImage
-                              src={pageImg}
-                              alt={`Página ${p.page_number}`}
-                              className="w-full h-full pointer-events-none"
-                              imgClassName="w-full h-full object-cover"
-                            />
-                          ) : hasPageTemplate ? (
-                            <div className="w-full h-full relative bg-[#fdfcf9] overflow-hidden pointer-events-none">
-                              <div className="absolute inset-0 w-[400%] h-[400%] origin-top-left transform scale-[0.25] overflow-hidden p-2">
-                                <TemplateRenderer page={p} />
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-800 text-slate-400">
-                              <span className="text-[10px] uppercase font-mono text-orange-500">
-                                Pág
-                              </span>
-                              <span className="text-sm font-bold font-mono text-slate-200">
-                                {p.page_number || index + 1}
-                              </span>
-                            </div>
-                          )}
-
-                          {hasPageImg && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/40 transition-colors">
-                              <Maximize2 className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </div>
-                          )}
+                      return (
+                        <div key={p.id} className="group flex flex-col gap-1.5">
+                          <DrawerClose asChild>
+                            <button
+                              type="button"
+                              className={cn(
+                                'relative aspect-[210/295] overflow-hidden rounded-md shadow-md transition-all flex items-center justify-center bg-slate-800 cursor-pointer active:scale-95 text-left w-full',
+                                index === currentPage
+                                  ? 'ring-2 ring-[#ea580c] ring-offset-2 ring-offset-slate-900 shadow-[0_0_12px_rgba(234,88,12,0.5)]'
+                                  : 'hover:ring-1 hover:ring-white/40 opacity-75 hover:opacity-100',
+                              )}
+                              onClick={() => jumpToPage(index)}
+                            >
+                              {hasPageImg ? (
+                                <SmartImage
+                                  src={pageImg}
+                                  alt={`Página ${p.page_number}`}
+                                  className="w-full h-full pointer-events-none"
+                                  imgClassName="w-full h-full object-cover"
+                                />
+                              ) : hasPageTemplate ? (
+                                <div className="w-full h-full relative bg-[#fdfcf9] overflow-hidden pointer-events-none">
+                                  <div className="absolute inset-0 w-[400%] h-[400%] origin-top-left transform scale-[0.25] overflow-hidden p-2">
+                                    <TemplateRenderer page={p} />
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="w-full h-full flex flex-col items-center justify-center bg-slate-800 text-slate-400">
+                                  <span className="text-[10px] uppercase font-mono text-orange-500">
+                                    Pág
+                                  </span>
+                                  <span className="text-sm font-bold font-mono text-slate-200">
+                                    {p.page_number || index + 1}
+                                  </span>
+                                </div>
+                              )}
+                            </button>
+                          </DrawerClose>
+                          <DrawerClose asChild>
+                            <button
+                              onClick={() => jumpToPage(index)}
+                              className={cn(
+                                'text-center text-xs font-medium transition-colors cursor-pointer truncate',
+                                index === currentPage
+                                  ? 'text-[#ea580c] font-semibold'
+                                  : 'text-slate-400 hover:text-slate-200',
+                              )}
+                            >
+                              {index === 0 ? 'Capa' : `Pág ${p.page_number || index + 1}`}
+                            </button>
+                          </DrawerClose>
                         </div>
-                        <DrawerClose asChild>
-                          <button
-                            onClick={() => jumpToPage(index)}
-                            className="text-center text-xs font-medium text-slate-400 group-hover:text-[#ea580c] transition-colors cursor-pointer"
-                          >
-                            {index === 0 ? 'Capa' : `Pág ${p.page_number || index + 1}`}
-                          </button>
-                        </DrawerClose>
-                      </div>
-                    )
-                  })}
+                      )
+                    })}
+                  </div>
                 </div>
-              </div>
-            </DrawerContent>
-          </Drawer>
+              </DrawerContent>
+            </Drawer>
+          </div>
+
+          {/* Desktop Toggle Thumbnails Sidebar Button */}
+          <div className="hidden md:block">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setThumbnailsSidebarOpen((prev) => !prev)}
+              className={cn(
+                'gap-1.5 border-slate-700 text-slate-200 hover:text-white hover:bg-slate-800 active:scale-95 transition-all text-xs h-8 sm:h-9',
+                thumbnailsSidebarOpen
+                  ? 'bg-slate-800 text-[#ea580c] border-[#ea580c]/40'
+                  : 'bg-slate-850',
+              )}
+              title={
+                thumbnailsSidebarOpen
+                  ? 'Ocultar barra de miniaturas'
+                  : 'Mostrar barra de miniaturas'
+              }
+            >
+              <LayoutGrid className="w-3.5 h-3.5 text-[#ea580c]" />
+              <span>Miniaturas</span>
+            </Button>
+          </div>
         </div>
       </header>
 
-      {/* Main Flipbook Canvas with smooth fade in */}
-      <main className="flex-1 relative overflow-hidden flex items-center justify-center bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 animate-in fade-in duration-500 fill-mode-forwards">
-        {isMobile ? (
-          <FlipbookMobile
+      {/* Reader Layout: Lateral Thumbnails Sidebar + Central Flipbook Main */}
+      <div className="flex-1 flex flex-row min-h-0 relative overflow-hidden">
+        {/* Left Vertical Thumbnails Sidebar (Desktop) */}
+        {!isMobile && (
+          <FlipbookThumbnails
             pages={pages}
-            hotspots={hotspots}
-            onPageChange={handlePageChange}
-            targetPage={currentPage}
-          />
-        ) : (
-          <FlipbookDesktop
-            pages={pages}
-            hotspots={hotspots}
             currentPage={currentPage}
-            onPageChange={handlePageChange}
+            onSelectPage={jumpToPage}
+            layout="vertical"
+            collapsed={!thumbnailsSidebarOpen}
+            onToggleCollapse={() => setThumbnailsSidebarOpen((prev) => !prev)}
           />
         )}
-      </main>
 
-      {/* MELHORIA B: Barra de Miniaturas fixa na parte inferior */}
-      <FlipbookThumbnails pages={pages} currentPage={currentPage} onSelectPage={jumpToPage} />
+        {/* Main Flipbook Canvas with smooth fade in */}
+        <main className="flex-1 relative overflow-hidden flex items-center justify-center bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 animate-in fade-in duration-500 fill-mode-forwards">
+          {isMobile ? (
+            <FlipbookMobile
+              pages={pages}
+              hotspots={hotspots}
+              onPageChange={handlePageChange}
+              targetPage={currentPage}
+            />
+          ) : (
+            <FlipbookDesktop
+              pages={pages}
+              hotspots={hotspots}
+              currentPage={currentPage}
+              onPageChange={handlePageChange}
+            />
+          )}
+        </main>
+      </div>
 
-      {/* Bottom Status / Progress bar */}
+      {/* Reduced bottom status / progress bar (ONLY progress bar and basic edition info) */}
       <footer
         className={cn(
-          'h-9 bg-slate-900 border-t border-slate-800/80 flex flex-col shrink-0 relative z-40 transition-opacity duration-300',
+          'h-8 sm:h-9 bg-slate-900/95 border-t border-slate-800/80 flex flex-col shrink-0 relative z-40 transition-opacity duration-300 backdrop-blur',
           isMobile && !uiVisible ? 'opacity-30' : 'opacity-100',
         )}
       >
@@ -611,18 +649,16 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
           />
         </div>
 
-        <div className="flex-1 flex items-center justify-between px-4 sm:px-6 text-[11px] font-medium text-slate-400 tracking-wider uppercase">
-          <div className="flex items-center gap-1.5 text-slate-500">
-            <Sparkles className="w-3 h-3 text-[#ea580c]" />
-            <span className="hidden sm:inline">Revista Digital Interativa</span>
+        <div className="flex-1 flex items-center justify-between px-4 sm:px-6 text-[11px] font-medium text-slate-400 tracking-wider">
+          <div className="text-slate-400 font-medium truncate max-w-xs text-xs">
+            {edition.title}
           </div>
-          <div className="text-slate-300 font-semibold">
+          <div className="text-slate-200 font-semibold text-xs font-mono">
             {displayPage === 0 ? 'Capa' : `Página ${displayPage + 1}`} / {totalPages}
           </div>
-          <div className="text-slate-500 text-[10px]">{Math.round(progress)}%</div>
+          <div className="text-slate-400 text-[10px] font-mono">{Math.round(progress)}%</div>
         </div>
       </footer>
-
       <FullscreenImageViewer
         src={fullscreenImage?.src ?? null}
         alt={fullscreenImage?.alt ?? ''}

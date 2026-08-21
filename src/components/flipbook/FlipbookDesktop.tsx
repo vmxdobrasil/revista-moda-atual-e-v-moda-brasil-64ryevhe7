@@ -257,10 +257,10 @@ export function FlipbookDesktop({
         )}
         style={{
           aspectRatio: '210 / 295',
-          height: '76vh',
-          maxHeight: '76vh',
-          width: 'calc(76vh * 210 / 295)',
-          maxWidth: 'min(90vw, calc(76vh * 210 / 295))',
+          height: 'calc(100vh - 105px)',
+          maxHeight: 'calc(100vh - 105px)',
+          width: 'calc((100vh - 105px) * 210 / 295)',
+          maxWidth: 'min(85vw, calc((100vh - 105px) * 210 / 295))',
           perspective: '2200px',
         }}
       >
