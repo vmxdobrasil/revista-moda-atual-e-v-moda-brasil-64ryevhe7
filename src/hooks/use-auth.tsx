@@ -11,7 +11,14 @@ interface SignInResult {
 interface AuthContextType {
   user: any
   isAuthenticated: boolean
-  signUp: (email: string, password: string) => Promise<{ error: any }>
+  signUp: (
+    email: string,
+    password: string,
+    options?: { name?: string; avatar?: File | null },
+  ) => Promise<{ error: any; record?: any }>
+  updateProfile: (
+    data: FormData | Partial<{ name: string; avatar: File | null }>,
+  ) => Promise<{ error: any; record?: any }>
   signIn: (email: string, password: string) => Promise<SignInResult>
   signOut: () => void
   loading: boolean
@@ -66,11 +73,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [])
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    options?: { name?: string; avatar?: File | null },
+  ) => {
     try {
-      await pb.collection('users').create({ email, password, passwordConfirm: password })
-      await pb.collection('users').authWithPassword(email, password)
-      return { error: null }
+      let createData: any = {
+        email,
+        password,
+        passwordConfirm: password,
+      }
+
+      if (options?.name) {
+        createData.name = options.name
+      }
+
+      if (options?.avatar) {
+        const formData = new FormData()
+        formData.append('email', email)
+        formData.append('password', password)
+        formData.append('passwordConfirm', password)
+        if (options.name) formData.append('name', options.name)
+        formData.append('avatar', options.avatar)
+        createData = formData
+      }
+
+      const createdUser = await pb.collection('users').create(createData)
+      const authData = await pb.collection('users').authWithPassword(email, password)
+      setUser(authData.record)
+      setIsAuthenticated(true)
+      return { error: null, record: authData.record || createdUser }
+    } catch (error) {
+      return { error }
+    }
+  }
+
+  const updateProfile = async (data: FormData | Partial<{ name: string; avatar: File | null }>) => {
+    if (!pb.authStore.record?.id) return { error: new Error('Não autenticado') }
+    try {
+      const updated = await pb.collection('users').update(pb.authStore.record.id, data)
+      setUser(updated)
+      return { error: null, record: updated }
     } catch (error) {
       return { error }
     }
@@ -116,7 +160,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated, signUp, signIn, signOut, loading, checkBackendHealth }}
+      value={{
+        user,
+        isAuthenticated,
+        signUp,
+        updateProfile,
+        signIn,
+        signOut,
+        loading,
+        checkBackendHealth,
+      }}
     >
       {children}
     </AuthContext.Provider>

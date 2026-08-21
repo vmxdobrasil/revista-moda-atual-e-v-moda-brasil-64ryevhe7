@@ -2,6 +2,7 @@ import { EditionPage, Hotspot, getFileUrl } from '@/services/magazine'
 import { HotspotMarker } from './HotspotMarker'
 import { TemplateRenderer } from './TemplateRenderer'
 import { SmartImage } from './SmartImage'
+import { SubscriberCoverBadge } from '@/components/SubscriberCoverBadge'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 
@@ -69,6 +70,13 @@ export function PageRenderer({ page, hotspots = [], isLeft = false }: PageRender
             <div className="w-full h-full pointer-events-auto">
               <TemplateRenderer page={page} />
             </div>
+          </div>
+        )}
+
+        {/* Cover subscriber badge for cover page */}
+        {page.page_number <= 1 && zoom === 1 && (
+          <div className="absolute top-4 right-4 z-40 pointer-events-auto">
+            <SubscriberCoverBadge variant="floating" />
           </div>
         )}
 

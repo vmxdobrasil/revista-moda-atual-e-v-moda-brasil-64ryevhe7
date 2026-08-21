@@ -6,6 +6,7 @@ import type { TemplateFormat } from './format-context'
 import { isVertical, isSquare, isWide, formatTitleSize } from './format-context'
 import { getEdition, getFileUrl } from '@/services/magazine'
 import { BrandLogo } from '@/components/BrandLogo'
+import { SubscriberCoverBadge } from '@/components/SubscriberCoverBadge'
 
 function renderCTA(label: string, href: string, format: TemplateFormat = 'a4') {
   if (!label) return null
@@ -75,7 +76,10 @@ function CapaEdicaoView({ data, format }: { data: any; format: TemplateFormat })
       <div className="relative z-10 flex flex-col h-full justify-between p-6">
         <div className="flex items-center justify-between w-full pt-2">
           <BrandLogo variant="white" className="h-14 md:h-20 w-auto drop-shadow-md" />
-          <EditionSeal text="Edição Digital" />
+          <div className="flex flex-col items-end gap-2">
+            <EditionSeal text="Edição Digital" />
+            <SubscriberCoverBadge variant={story ? 'story' : 'floating'} />
+          </div>
         </div>
         <div className="flex flex-col justify-end">
           <div className="flex items-center gap-2 mb-2">

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { getLatestEdition, Edition } from '@/services/magazine'
 import { BookOpen, Award, ArrowRight, Sparkles, CheckCircle, TrendingUp, Zap } from 'lucide-react'
 import { LeadCaptureSection } from '@/components/LeadCaptureSection'
+import { SubscriberCoverBadge } from '@/components/SubscriberCoverBadge'
 
 export default function Index() {
   const [latestEdition, setLatestEdition] = useState<Edition | null>(null)
@@ -129,6 +130,9 @@ export default function Index() {
                   <p className="text-sm font-semibold">{latestEdition.title}</p>
                 </div>
               )}
+              <div className="absolute top-3 right-3 z-10">
+                <SubscriberCoverBadge variant="floating" />
+              </div>
             </div>
 
             <div className="w-full md:w-2/3 space-y-4 text-left">

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-21T15:37:10.299Z",
+  "generatedAt": "2026-08-21T15:59:04.813Z",
   "collections": [
     {
       "name": "users",
@@ -1873,6 +1873,18 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "avatar",
+          "type": "file",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "avatar_url",
+          "type": "url",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [

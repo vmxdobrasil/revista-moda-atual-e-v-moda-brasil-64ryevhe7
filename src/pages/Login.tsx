@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useRef } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
 import { BrandLogo } from '@/components/BrandLogo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
-import { Lock, Mail, ArrowLeft } from 'lucide-react'
+import { Lock, Mail, ArrowLeft, Sparkles, UserPlus } from 'lucide-react'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -122,6 +122,20 @@ export default function Login() {
                 {loading ? 'Autenticando...' : 'Entrar no Painel'}
               </Button>
             </form>
+
+            <div className="mt-6 text-center text-xs text-slate-400 space-y-2 border-t border-slate-800/80 pt-4">
+              <p className="text-slate-300 font-medium">Ainda não é assinante?</p>
+              <Button
+                variant="outline"
+                size="sm"
+                type="button"
+                onClick={() => navigate('/cadastro')}
+                className="border-orange-500/50 text-orange-400 hover:bg-orange-500/10 gap-1.5 w-full text-xs"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-orange-400" />
+                Cadastrar-se & Colocar Minha Foto na Capa
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

@@ -35,6 +35,7 @@ import { LayoutGrid, List, Loader2, Instagram, Maximize2 } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 import { BrandLogo } from '@/components/BrandLogo'
 import { FullscreenImageViewer } from '@/components/FullscreenImageViewer'
+import { SubscriberCoverBadge } from '@/components/SubscriberCoverBadge'
 
 function isNotFoundResponseError(err: unknown): boolean {
   if (err instanceof ClientResponseError) {
@@ -303,13 +304,16 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
           />
         </div>
         <div className="z-10 flex flex-col items-center gap-8 animate-fade-in-up">
-          <div className="w-48 md:w-64 aspect-[0.7118] rounded-md shadow-2xl overflow-hidden bg-white">
+          <div className="w-48 md:w-64 aspect-[0.7118] rounded-md shadow-2xl overflow-hidden bg-white relative">
             <SmartImage
               src={coverImage}
               alt={edition.title}
               className="w-full h-full"
               imgClassName="w-full h-full object-contain"
             />
+            <div className="absolute top-2 right-2 pointer-events-none">
+              <SubscriberCoverBadge variant="compact" />
+            </div>
           </div>
           <div className="flex flex-col items-center gap-3">
             <h2 className="text-xl md:text-2xl font-bold text-gray-800 text-center drop-shadow-md">

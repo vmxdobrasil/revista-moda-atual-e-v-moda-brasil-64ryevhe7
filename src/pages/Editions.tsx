@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { ArrowRight, BookOpen, Library, AlertCircle, Search, Sparkles } from 'lucide-react'
+import { SubscriberCoverBadge } from '@/components/SubscriberCoverBadge'
 
 export default function Editions() {
   const [editions, setEditions] = useState<Edition[]>([])
@@ -163,6 +164,9 @@ export default function Editions() {
                     alt={ed.title}
                     className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700 ease-out"
                   />
+                  <div className="absolute top-2 right-2 z-10">
+                    <SubscriberCoverBadge variant="compact" />
+                  </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
                     <Button
                       asChild

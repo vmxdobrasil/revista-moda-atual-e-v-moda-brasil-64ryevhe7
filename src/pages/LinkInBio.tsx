@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { getLatestEdition, getEditions, Edition } from '@/services/magazine'
 import { getEvents, FashionEvent } from '@/services/fashion_events'
+import { SubscriberCoverBadge } from '@/components/SubscriberCoverBadge'
 import {
   Smartphone,
   Instagram,
@@ -143,7 +144,7 @@ export default function LinkInBio() {
             <Link to="/reader/latest" className="block group">
               <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-600/30 to-amber-600/30 border border-orange-500/40 p-4 shadow-xl group-hover:border-orange-400 transition-all duration-300">
                 <div className="flex items-center gap-4">
-                  <div className="w-20 h-24 rounded-lg bg-slate-900 overflow-hidden shrink-0 shadow-md">
+                  <div className="w-20 h-24 rounded-lg bg-slate-900 overflow-hidden shrink-0 shadow-md relative">
                     {latestEdition.cover_url ? (
                       <img
                         src={latestEdition.cover_url}
@@ -155,6 +156,9 @@ export default function LinkInBio() {
                         <BookOpen className="w-8 h-8" />
                       </div>
                     )}
+                    <div className="absolute top-1 right-1 pointer-events-none">
+                      <SubscriberCoverBadge variant="compact" />
+                    </div>
                   </div>
                   <div className="flex-1 min-w-0 space-y-1">
                     <span className="text-[10px] uppercase font-bold text-orange-400 tracking-wider">

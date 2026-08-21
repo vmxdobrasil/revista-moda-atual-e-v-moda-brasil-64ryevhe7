@@ -13,6 +13,7 @@ import NotFound from './pages/NotFound'
 import { Layout } from '@/components/Layout'
 import MagazineReader from './pages/MagazineReader'
 import Login from './pages/Login'
+import Register from './pages/Register'
 import { AdminLayout } from './pages/admin/AdminLayout'
 import EditionsPage from './pages/admin/EditionsPage'
 import EditionEditPage from './pages/admin/EditionEditPage'
@@ -99,6 +100,9 @@ const App = () => (
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/admin/2fa-verify" element={<TwoFactorVerify />} />
               <Route path="/admin/login" element={<Login />} />
+              <Route path="/cadastro" element={<Register />} />
+              <Route path="/assinar" element={<Register />} />
+              <Route path="/register" element={<Register />} />
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<DashboardPage />} />
                 <Route path="editions" element={<EditionsPage />} />

@@ -53,6 +53,8 @@ export interface Subscriber {
   id: string
   name: string
   email: string
+  avatar?: string
+  avatar_url?: string
   segment: string
   engagement_score: number
   status: string
@@ -147,6 +149,19 @@ export const deleteCampaign = async (id: string) => {
 
 export const deleteSubscriber = async (id: string) => {
   return pb.collection('subscribers').delete(id)
+}
+
+export const createSubscriber = async (
+  data: FormData | Partial<Subscriber>,
+): Promise<Subscriber> => {
+  return pb.collection('subscribers').create<Subscriber>(data)
+}
+
+export const updateSubscriber = async (
+  id: string,
+  data: FormData | Partial<Subscriber>,
+): Promise<Subscriber> => {
+  return pb.collection('subscribers').update<Subscriber>(id, data)
 }
 
 export const deleteSequence = async (id: string) => {

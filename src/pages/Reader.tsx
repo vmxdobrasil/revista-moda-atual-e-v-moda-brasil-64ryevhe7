@@ -7,6 +7,7 @@ import { ArrowLeft, Share2, ZoomIn, ZoomOut, Play, BookOpenText } from 'lucide-r
 import { toast } from '@/hooks/use-toast'
 import { MagazinePage } from '@/components/magazine/MagazinePage'
 import { Hotspot } from '@/components/magazine/Hotspot'
+import { SubscriberCoverBadge } from '@/components/SubscriberCoverBadge'
 import type { Hotspot as HotspotType } from '@/services/magazine'
 
 const mockHotspots: HotspotType[] = [
@@ -105,9 +106,12 @@ export default function Reader() {
                       OUTONO INVERNO 2026
                     </p>
                   </div>
-                  <div className="text-white">
-                    <h3 className="font-serif text-2xl font-bold mb-2">O NOVO MINIMALISMO</h3>
-                    <p className="text-sm tracking-widest uppercase">Elegância Redefinida</p>
+                  <div className="text-white flex flex-col items-center gap-3">
+                    <SubscriberCoverBadge variant="floating" />
+                    <div>
+                      <h3 className="font-serif text-2xl font-bold mb-2">O NOVO MINIMALISMO</h3>
+                      <p className="text-sm tracking-widest uppercase">Elegância Redefinida</p>
+                    </div>
                   </div>
                 </div>
               </MagazinePage>

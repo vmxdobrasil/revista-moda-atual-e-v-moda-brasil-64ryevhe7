@@ -1,12 +1,26 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { createLead, Lead } from '@/services/leads'
+import { createSubscriber } from '@/services/newsletter'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Sparkles, Send, CheckCircle2, Building2, Mail, Phone, User, Loader2 } from 'lucide-react'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import {
+  Sparkles,
+  Send,
+  CheckCircle2,
+  Building2,
+  Mail,
+  Phone,
+  User,
+  Loader2,
+  Camera,
+  Upload,
+} from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 export function LeadCaptureSection({ source = 'landing_page' }: { source?: string }) {
   const { toast } = useToast()
@@ -139,6 +153,56 @@ export function LeadCaptureSection({ source = 'landing_page' }: { source?: strin
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* Upload Foto do Assinante */}
+                    <div className="p-3.5 rounded-xl bg-slate-950/80 border border-orange-500/40 flex flex-col sm:flex-row items-center gap-3 text-center sm:text-left">
+                      <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className="relative group cursor-pointer shrink-0"
+                      >
+                        <Avatar className="h-14 w-14 border-2 border-dashed border-orange-500 group-hover:border-orange-400 ring-2 ring-orange-500/20">
+                          {avatarPreview ? (
+                            <AvatarImage
+                              src={avatarPreview}
+                              alt="Preview"
+                              className="object-cover"
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-slate-900 text-orange-400 flex flex-col items-center justify-center">
+                            <Camera className="w-5 h-5 mb-0.5" />
+                            <span className="text-[8px]">Sua Foto</span>
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Upload className="w-4 h-4 text-white" />
+                        </div>
+                      </div>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarChange}
+                        className="hidden"
+                      />
+                      <div className="space-y-0.5 min-w-0">
+                        <span className="text-[11px] font-bold text-orange-400 uppercase tracking-wider flex items-center gap-1 justify-center sm:justify-start">
+                          <Sparkles className="w-3 h-3" /> Foto do Assinante na Capa * (Obrigatória)
+                        </span>
+                        <p className="text-[11px] text-slate-400">
+                          Foto pequena que aparecerá no selo de capa da revista digital.
+                        </p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="text-[11px] h-6 px-2 border-slate-700 text-slate-300 hover:border-orange-500 mt-0.5"
+                        >
+                          <Upload className="w-2.5 h-2.5 mr-1 text-orange-400" />
+                          {avatarFile ? 'Trocar Foto' : 'Escolher Foto'}
+                        </Button>
+                      </div>
+                    </div>
+
                     <div className="space-y-1">
                       <h3 className="font-serif font-bold text-lg text-white">
                         Cadastre seu Negócio
