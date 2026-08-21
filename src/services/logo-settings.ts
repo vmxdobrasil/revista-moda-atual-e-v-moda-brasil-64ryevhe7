@@ -1,5 +1,4 @@
 import pb from '@/lib/pocketbase/client'
-import officialOrangeLogoUrl from '@/assets/editedimage1786389429173-467b1.png'
 
 export interface SiteSettings {
   id: string

@@ -1,6 +1,5 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from 'react'
 import { getSiteSettings, getLogoUrl } from '@/services/logo-settings'
-import { useRealtime } from '@/hooks/use-realtime'
 
 interface LogoContextType {
   logoUrl: string | null
@@ -24,6 +23,7 @@ export function LogoProvider({ children }: { children: ReactNode }) {
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [visualParams, setVisualParams] = useState<Record<string, any> | null>(null)
   const [loading, setLoading] = useState(false)
+  const initializedRef = useRef(false)
 
   const refresh = async () => {
     try {
@@ -46,13 +46,11 @@ export function LogoProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
+    if (initializedRef.current) return
+    initializedRef.current = true
     // Refresh asynchronously in the background; UI does not wait
     refresh()
   }, [])
-
-  useRealtime('site_settings', () => {
-    refresh()
-  })
 
   return (
     <LogoContext.Provider
