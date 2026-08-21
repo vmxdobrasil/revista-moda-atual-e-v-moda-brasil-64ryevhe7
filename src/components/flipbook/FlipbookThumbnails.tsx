@@ -133,6 +133,7 @@ export interface FlipbookThumbnailsProps {
   collapsed?: boolean
   onToggleCollapse?: () => void
   className?: string
+  viewMode?: 'single' | 'double'
 }
 
 export function FlipbookThumbnails({
@@ -143,10 +144,18 @@ export function FlipbookThumbnails({
   collapsed = false,
   onToggleCollapse,
   className,
+  viewMode = 'single',
 }: FlipbookThumbnailsProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
   const isPageActive = (index: number) => {
+    if (viewMode === 'double') {
+      if (index === 0) return currentPage === 0
+      // In double mode, if currentPage is 1 or 2, both pages 1 & 2 belong to the active spread
+      const activeSpread = currentPage === 0 ? 0 : Math.floor((currentPage - 1) / 2) + 1
+      const itemSpread = index === 0 ? 0 : Math.floor((index - 1) / 2) + 1
+      return activeSpread === itemSpread
+    }
     return index === currentPage
   }
 

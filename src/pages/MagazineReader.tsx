@@ -1,4 +1,4 @@
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { ClientResponseError } from 'pocketbase'
 import { cn } from '@/lib/utils'
@@ -14,13 +14,14 @@ import {
 } from '@/services/magazine'
 import { trackPageView } from '@/services/analytics'
 import { getAllSocialPosts, type SocialPost } from '@/services/social-posts'
-import { FlipbookDesktop } from '@/components/flipbook/FlipbookDesktop'
+import { FlipbookDesktop, type DesktopViewMode } from '@/components/flipbook/FlipbookDesktop'
 import { FlipbookMobile } from '@/components/flipbook/FlipbookMobile'
 import { FlipbookThumbnails } from '@/components/flipbook/FlipbookThumbnails'
 import { SmartImage } from '@/components/flipbook/SmartImage'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useMetaTags } from '@/hooks/use-meta-tags'
 import { SocialShare } from '@/components/SocialShare'
+import { SharePageDialog } from '@/components/flipbook/SharePageDialog'
 import { SocialGallery } from '@/components/magazine/SocialGallery'
 import {
   Sheet,
@@ -32,7 +33,7 @@ import {
 } from '@/components/ui/sheet'
 import { Drawer, DrawerContent, DrawerTrigger, DrawerClose } from '@/components/ui/drawer'
 import { Button } from '@/components/ui/button'
-import { LayoutGrid, List, Loader2, Instagram, Maximize2, Sparkles, Download } from 'lucide-react'
+import { LayoutGrid, List, Loader2, Instagram, Download, BookOpen, FileText } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 import { BrandLogo } from '@/components/BrandLogo'
 import { FullscreenImageViewer } from '@/components/FullscreenImageViewer'
@@ -67,6 +68,7 @@ function isNotFoundResponseError(err: unknown): boolean {
 
 export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
   const { id: paramId } = useParams<{ id: string }>()
+  const [searchParams, setSearchParams] = useSearchParams()
   const isMobile = useIsMobile()
   const navigate = useNavigate()
 
@@ -80,8 +82,8 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
   const [notFound, setNotFound] = useState(false)
   const [loadError, setLoadError] = useState(false)
 
-  const [currentSpread, setCurrentSpread] = useState(0)
   const [currentPage, setCurrentPage] = useState(0)
+  const [desktopViewMode, setDesktopViewMode] = useState<DesktopViewMode>('single')
   const [uiVisible, setUiVisible] = useState(true)
   const [thumbnailsSidebarOpen, setThumbnailsSidebarOpen] = useState(true)
   const [mobileThumbnailsDrawerOpen, setMobileThumbnailsDrawerOpen] = useState(false)
@@ -150,8 +152,27 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
         setLoadingPages(true)
         const pgs = await getEditionPages(edition.id)
         setPages(pgs)
-        setCurrentPage(0)
-        setCurrentSpread(0)
+
+        // Initial page resolution from query parameter `?page=X`
+        const pageParam = searchParams.get('page')
+        if (pageParam && pgs.length > 0) {
+          const parsed = parseInt(pageParam, 10)
+          if (!isNaN(parsed) && parsed >= 1) {
+            // Check if there is an exact page with page_number matching
+            const matchIndex = pgs.findIndex((p) => p.page_number === parsed)
+            if (matchIndex !== -1) {
+              setCurrentPage(matchIndex)
+            } else {
+              const clamped = Math.max(0, Math.min(pgs.length - 1, parsed - 1))
+              setCurrentPage(clamped)
+            }
+          } else {
+            setCurrentPage(0)
+          }
+        } else {
+          setCurrentPage(0)
+        }
+
         try {
           const hts = await getHotspots(edition.id, pgs)
           setHotspots(hts)
@@ -179,31 +200,71 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
       .catch(() => setSocialPosts([]))
   }, [edition])
 
-  const metaConfig = useMemo(() => {
-    if (!edition) return null
-    const coverImage = edition.cover_file
-      ? getFileUrl(edition, edition.cover_file)
-      : edition.cover_url || ''
-    return {
-      title: `Revista Moda Atual - ${edition.title}`,
-      description: edition.description || 'Edição da Revista Moda Atual',
-      image: coverImage,
-      url: window.location.href,
-      type: 'article',
-    }
-  }, [edition])
+  // Update URL search params when current page changes (keeping page in sync)
+  const updatePageUrl = useCallback(
+    (pageIndex: number, pgsList = pages) => {
+      if (pgsList.length === 0) return
+      const targetPageObj = pgsList[pageIndex]
+      const targetPageNum =
+        targetPageObj?.page_number > 0 ? targetPageObj.page_number : pageIndex + 1
 
-  useMetaTags(metaConfig)
-
-  const handleSpreadChange = (pageIndex: number) => {
-    setCurrentPage(pageIndex)
-    setCurrentSpread(pageIndex)
-  }
+      // If page is 1 (cover), we can optionally keep or remove ?page=1
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev)
+          if (pageIndex === 0) {
+            next.delete('page')
+          } else {
+            next.set('page', String(targetPageNum))
+          }
+          return next
+        },
+        { replace: true },
+      )
+    },
+    [pages, setSearchParams],
+  )
 
   const handlePageChange = (pageIndex: number) => {
     setCurrentPage(pageIndex)
-    setCurrentSpread(pageIndex)
+    updatePageUrl(pageIndex)
   }
+
+  const jumpToPage = (pageNum: number) => {
+    const clamped = Math.max(0, Math.min(pages.length - 1, pageNum))
+    setCurrentPage(clamped)
+    updatePageUrl(clamped)
+  }
+
+  // Active page object for meta tags and sharing
+  const activePageObj = pages[currentPage] || null
+  const activePageDisplayNum =
+    activePageObj && activePageObj.page_number > 0 ? activePageObj.page_number : currentPage + 1
+
+  // Dynamic Open Graph / Meta tags for current page
+  const metaConfig = useMemo(() => {
+    if (!edition) return null
+    const pageImage = activePageObj?.image_file
+      ? getFileUrl(activePageObj, activePageObj.image_file)
+      : activePageObj?.image_url ||
+        (edition.cover_file ? getFileUrl(edition, edition.cover_file) : edition.cover_url || '')
+
+    const pageSubtitle =
+      currentPage === 0
+        ? 'Capa'
+        : `Página ${activePageDisplayNum}${activePageObj?.toc_title ? ` - ${activePageObj.toc_title}` : ''}`
+
+    return {
+      title: `${edition.title} (${pageSubtitle}) - Revista Moda Atual`,
+      description:
+        activePageObj?.toc_title || edition.description || 'Edição Digital da Revista Moda Atual',
+      image: pageImage,
+      url: window.location.href,
+      type: 'article',
+    }
+  }, [edition, activePageObj, currentPage, activePageDisplayNum])
+
+  useMetaTags(metaConfig)
 
   const isValidEdition = !loadingEdition && !errorEmpty && !!edition
   const isValidPages = isValidEdition && !loadingPages && pages.length > 0
@@ -216,11 +277,20 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
     trackPageView(currentVisiblePageId, edition?.id).catch(() => {})
   }, [currentVisiblePageId, isValidPages, edition])
 
-  const jumpToPage = (pageNum: number) => {
-    const clamped = Math.max(0, Math.min(pages.length - 1, pageNum))
-    setCurrentPage(clamped)
-    setCurrentSpread(clamped)
-  }
+  // Compute direct link for the current page
+  const currentPageShareUrl = useMemo(() => {
+    if (typeof window === 'undefined') return ''
+    const origin = window.location.origin
+    const basePath = isLatest
+      ? '/reader/latest'
+      : paramId
+        ? `/reader/${paramId}`
+        : window.location.pathname
+    if (currentPage === 0) {
+      return `${origin}${basePath}`
+    }
+    return `${origin}${basePath}?page=${activePageDisplayNum}`
+  }, [isLatest, paramId, currentPage, activePageDisplayNum])
 
   if (loadingEdition) {
     return (
@@ -394,6 +464,51 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-3">
+          {/* Desktop Toggle View Mode: Single Page vs Double Page (Livro Aberto) */}
+          {!isMobile && (
+            <div className="hidden lg:flex items-center bg-slate-950/80 border border-slate-800 p-0.5 rounded-lg">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setDesktopViewMode('single')}
+                className={cn(
+                  'h-7 px-2.5 text-xs gap-1.5 rounded-md transition-all',
+                  desktopViewMode === 'single'
+                    ? 'bg-[#ea580c] text-white hover:bg-[#c2410c] hover:text-white font-medium shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60',
+                )}
+                title="Modo Página Única Vertical (A4)"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>Página Única</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setDesktopViewMode('double')}
+                className={cn(
+                  'h-7 px-2.5 text-xs gap-1.5 rounded-md transition-all',
+                  desktopViewMode === 'double'
+                    ? 'bg-[#ea580c] text-white hover:bg-[#c2410c] hover:text-white font-medium shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60',
+                )}
+                title="Modo Duas Páginas Expandido (Livro Aberto 3D)"
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>Livro Aberto (2 Pág)</span>
+              </Button>
+            </div>
+          )}
+
+          {/* Direct Specific Page Share Button */}
+          <SharePageDialog
+            editionTitle={edition.title}
+            pageNumber={activePageDisplayNum}
+            pageIndex={currentPage}
+            totalPages={totalPages}
+            pageUrl={currentPageShareUrl}
+          />
+
           {/* Export Dialog Button */}
           <Button
             variant="outline"
@@ -403,7 +518,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
             title="Exportar edição (PDF ou Link)"
           >
             <Download className="w-3.5 h-3.5 text-[#ea580c]" />
-            <span className="hidden md:inline">Exportar</span>
+            <span className="hidden xl:inline">Exportar</span>
           </Button>
 
           {/* Social Posts Sheet */}
@@ -415,7 +530,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
                 className="gap-1.5 bg-slate-850 border-slate-700 text-slate-200 hover:text-white hover:bg-slate-800 active:scale-95 transition-all text-xs h-8 sm:h-9"
               >
                 <Instagram className="w-3.5 h-3.5 text-[#ea580c]" />
-                <span className="hidden md:inline">Redes Sociais</span>
+                <span className="hidden xl:inline">Redes Sociais</span>
               </Button>
             </SheetTrigger>
             <SheetContent
@@ -430,11 +545,6 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
               </div>
             </SheetContent>
           </Sheet>
-
-          {/* Social Share */}
-          <div className="hidden md:block">
-            <SocialShare title={edition.title} url={window.location.href} />
-          </div>
 
           {/* Table of Contents Sheet */}
           <Sheet>
@@ -600,6 +710,7 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
             layout="vertical"
             collapsed={!thumbnailsSidebarOpen}
             onToggleCollapse={() => setThumbnailsSidebarOpen((prev) => !prev)}
+            viewMode={desktopViewMode}
           />
         )}
 
@@ -618,6 +729,8 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
               hotspots={hotspots}
               currentPage={currentPage}
               onPageChange={handlePageChange}
+              viewMode={desktopViewMode}
+              onViewModeChange={setDesktopViewMode}
             />
           )}
         </main>
