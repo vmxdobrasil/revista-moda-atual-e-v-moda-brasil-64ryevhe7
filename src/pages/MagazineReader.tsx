@@ -556,8 +556,8 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
         </div>
       </header>
 
-      {/* Main Flipbook Canvas */}
-      <main className="flex-1 relative overflow-hidden flex items-center justify-center bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+      {/* Main Flipbook Canvas with smooth fade in */}
+      <main className="flex-1 relative overflow-hidden flex items-center justify-center bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 animate-in fade-in duration-500 fill-mode-forwards">
         {isMobile ? (
           <FlipbookMobile
             pages={pages}

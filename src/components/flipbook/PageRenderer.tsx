@@ -20,7 +20,7 @@ export function PageRenderer({ page, hotspots = [], isLeft = false }: PageRender
     return (
       <div
         className={cn(
-          'w-full h-full bg-[#f4f4f4] flex items-center justify-center',
+          'w-full h-full bg-[#fdfcf9] flex items-center justify-center',
           isLeft ? 'rounded-l-md' : 'rounded-r-md',
         )}
       >
@@ -52,30 +52,30 @@ export function PageRenderer({ page, hotspots = [], isLeft = false }: PageRender
 
   return (
     <div
-      className="relative w-full h-full overflow-hidden bg-[#faf9f6]"
+      className="relative w-full h-full overflow-hidden bg-[#fdfcf9]"
       onDoubleClick={handleDoubleClick}
     >
       <div
-        className="absolute inset-0 transition-transform duration-300 ease-out flex items-center justify-center"
+        className="absolute inset-0 transition-transform duration-300 ease-out flex items-center justify-center bg-[#fdfcf9]"
         style={{ transform: `scale(${zoom})`, transformOrigin: origin }}
       >
-        {hasImage ? (
+        {/* Base off-white layer always present so there are never black gaps */}
+        <div className="absolute inset-0 w-full h-full bg-[#fdfcf9] shadow-inner pointer-events-none" />
+
+        {hasImage && (
           <SmartImage
             src={imageSrc}
             alt={`Página ${page.page_number}`}
-            className="absolute inset-0 w-full h-full pointer-events-none"
+            className="absolute inset-0 w-full h-full pointer-events-none z-[1]"
             imgClassName="w-full h-full object-contain select-none"
           />
-        ) : (
-          /* Template-only page background: elegant white editorial background with subtle paper texture effect */
-          <div className="absolute inset-0 w-full h-full bg-[#fdfcf9] shadow-inner pointer-events-none" />
         )}
 
         {/* Template Overlay / Content */}
         {hasTemplate && (
           <div
             className={cn(
-              'absolute inset-0 w-full h-full flex flex-col pointer-events-none overflow-hidden',
+              'absolute inset-0 w-full h-full flex flex-col pointer-events-none overflow-hidden z-[2]',
               hasImage ? 'p-6 md:p-10' : 'p-4 md:p-8',
             )}
           >

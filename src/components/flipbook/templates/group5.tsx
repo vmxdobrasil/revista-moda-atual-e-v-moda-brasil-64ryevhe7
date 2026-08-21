@@ -7,7 +7,7 @@ import { isVertical } from './format-context'
 export function renderGroup5(template: string, d: any, format: TemplateFormat = 'a4') {
   if (template === 'coluna_holofote_evoluida') {
     const story = isVertical(format)
-    const highlights: string[] = d.highlights || []
+    const highlights: string[] = Array.isArray(d?.highlights) ? d.highlights : []
     return (
       <div className="h-full flex flex-col bg-gradient-to-b from-[#FFF9F5] to-[#FFF3E8] safe-area overflow-hidden relative">
         <div className="absolute top-0 right-0 w-40 h-40 bg-orange-200/30 rounded-bl-full pointer-events-none" />
@@ -97,8 +97,8 @@ export function renderGroup5(template: string, d: any, format: TemplateFormat = 
 
   if (template === 'coluna_marketing_moda') {
     const story = isVertical(format)
-    const insights: string[] = d.insights || []
-    const actions: string[] = d.practical_actions || []
+    const insights: string[] = Array.isArray(d?.insights) ? d.insights : []
+    const actions: string[] = Array.isArray(d?.practical_actions) ? d.practical_actions : []
     return (
       <div className="h-full flex flex-col bg-gradient-to-br from-gray-900 to-orange-950 safe-area overflow-hidden text-white">
         <div className="flex items-center justify-between mb-2">

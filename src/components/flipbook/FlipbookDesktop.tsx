@@ -258,13 +258,15 @@ export function FlipbookDesktop({
       <div
         ref={bookRef}
         className={cn(
-          'relative perspective-book rounded-md shadow-2xl mx-auto transition-shadow duration-300 w-[92vw] lg:w-auto',
+          'relative perspective-book rounded-md shadow-2xl mx-auto transition-shadow duration-300',
           isDragging ? 'cursor-grabbing' : 'cursor-grab',
         )}
         style={{
           aspectRatio: '1.4237',
+          height: '76vh',
           maxHeight: '76vh',
-          maxWidth: 'calc(76vh * 1.4237)',
+          width: 'calc(76vh * 1.4237)',
+          maxWidth: 'min(92vw, calc(76vh * 1.4237))',
           perspective: '2400px',
         }}
       >
