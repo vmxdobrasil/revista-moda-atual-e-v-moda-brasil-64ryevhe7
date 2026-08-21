@@ -22,14 +22,20 @@ export function useRealtime<TRecord extends RecordModel = RecordModel>(
   callbackRef.current = callback
 
   useEffect(() => {
-    if (!enabled) return
+    // Only subscribe if enabled, collection name provided, and authStore is valid
+    // Silently skip subscribing if the user is not authenticated to prevent 400 SSE errors
+    if (!enabled || !collectionName || !pb.authStore.isValid) return
 
     let unsubscribeFn: (() => Promise<void>) | undefined
     let cancelled = false
 
     pb.collection<TRecord>(collectionName)
       .subscribe('*', (e) => {
-        callbackRef.current(e)
+        try {
+          callbackRef.current(e)
+        } catch {
+          // Ignore errors within realtime callbacks silently
+        }
       })
       .then((fn) => {
         if (cancelled) {
@@ -38,7 +44,9 @@ export function useRealtime<TRecord extends RecordModel = RecordModel>(
           unsubscribeFn = fn
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        // Silently catch subscription errors to avoid unhandled rejections or noisy logs
+      })
 
     return () => {
       cancelled = true

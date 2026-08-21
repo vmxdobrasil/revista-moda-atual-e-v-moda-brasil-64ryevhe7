@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils'
 import { RefreshCw } from 'lucide-react'
 
 interface SmartImageProps {
-  src: string
+  src?: string | null
   alt: string
   className?: string
   imgClassName?: string
@@ -28,6 +28,19 @@ export function SmartImage({
     setLoaded(false)
     setRetryKey((k) => k + 1)
   }, [])
+
+  // If src is falsy (empty string, null, undefined), do not render <img> or error reload button.
+  // Render a clean editorial gradient placeholder.
+  if (!src) {
+    return (
+      <div
+        className={cn(
+          'relative overflow-hidden bg-gradient-to-br from-slate-100 via-white to-slate-200',
+          className,
+        )}
+      />
+    )
+  }
 
   return (
     <div className={cn('relative overflow-hidden bg-gray-100', className)}>

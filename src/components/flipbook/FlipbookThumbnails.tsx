@@ -31,7 +31,15 @@ export function PageThumbnail({
     }
   }, [isActive])
 
-  const imageUrl = page?.image_file ? getFileUrl(page, page.image_file) : page?.image_url || ''
+  const rawImageUrl = page?.image_file ? getFileUrl(page, page.image_file) : page?.image_url || ''
+  const imageUrl = rawImageUrl && rawImageUrl.trim() !== '' ? rawImageUrl : ''
+  const hasTemplate = Boolean(
+    page &&
+    ((page.template && page.template !== 'default') ||
+      (page.template === 'default' &&
+        page.template_data &&
+        Object.keys(page.template_data).length > 0)),
+  )
 
   return (
     <button
@@ -60,19 +68,27 @@ export function PageThumbnail({
             className="w-full h-full pointer-events-none"
             imgClassName="w-full h-full object-cover select-none"
           />
+        ) : hasTemplate && page ? (
+          /* Template-only preview */
+          <div className="w-full h-full relative bg-[#fdfcf9] overflow-hidden pointer-events-none">
+            <div className="absolute inset-0 w-[400%] h-[400%] origin-top-left transform scale-[0.25] overflow-hidden p-2 pointer-events-none">
+              <TemplateRenderer page={page} />
+            </div>
+          </div>
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-slate-800 text-slate-400 text-[10px] font-mono">
-            {pageNumber}
+          /* Visual styled fallback placeholder when no image and no template */
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-800 via-slate-850 to-slate-900 border border-slate-700/50 text-slate-300">
+            <span className="text-[10px] font-bold tracking-wider text-orange-500/90 uppercase font-mono">
+              PÁG
+            </span>
+            <span className="text-xs font-black text-slate-100 font-mono leading-none mt-0.5">
+              {pageNumber}
+            </span>
           </div>
         )}
 
-        {/* Scaled template overlay preview for template-driven pages */}
-        {page?.template && page.template !== 'default' && (
-          <div className="absolute inset-0 w-[400%] h-[400%] origin-top-left transform scale-[0.25] pointer-events-none overflow-hidden opacity-90 p-2">
-            <TemplateRenderer page={page} />
-          </div>
-        )}
-        {page?.template === 'default' && page.template_data && (
+        {/* Scaled template overlay preview for pages that have BOTH image and template */}
+        {imageUrl && hasTemplate && page && (
           <div className="absolute inset-0 w-[400%] h-[400%] origin-top-left transform scale-[0.25] pointer-events-none overflow-hidden opacity-90 p-2">
             <TemplateRenderer page={page} />
           </div>

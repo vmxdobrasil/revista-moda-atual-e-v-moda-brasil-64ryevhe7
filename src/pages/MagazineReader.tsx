@@ -37,6 +37,7 @@ import { Progress } from '@/components/ui/progress'
 import { BrandLogo } from '@/components/BrandLogo'
 import { FullscreenImageViewer } from '@/components/FullscreenImageViewer'
 import { SubscriberCoverBadge } from '@/components/SubscriberCoverBadge'
+import { TemplateRenderer } from '@/components/flipbook/TemplateRenderer'
 
 function isNotFoundResponseError(err: unknown): boolean {
   if (err instanceof ClientResponseError) {
@@ -477,43 +478,77 @@ export default function MagazineReader({ isLatest }: { isLatest?: boolean }) {
             <DrawerContent className="bg-slate-900 text-slate-100 border-slate-800">
               <div className="p-4 md:p-8 h-[60vh] overflow-y-auto">
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6 max-w-6xl mx-auto">
-                  {pages.map((p, index) => (
-                    <div key={p.id} className="group flex flex-col gap-2">
-                      <div
-                        className={cn(
-                          'relative aspect-[0.7118] overflow-hidden rounded-md shadow-md transition-all flex items-center justify-center bg-slate-800 cursor-pointer active:scale-95',
-                          index === (isMobile ? currentPage : currentSpread * 2)
-                            ? 'ring-2 ring-[#ea580c] ring-offset-2 ring-offset-slate-900'
-                            : 'hover:ring-1 hover:ring-white/40',
-                        )}
-                        onClick={() =>
-                          setFullscreenImage({
-                            src: p.image_file ? getFileUrl(p, p.image_file) : p.image_url,
-                            alt: `Página ${p.page_number}`,
-                          })
-                        }
-                      >
-                        <img
-                          src={p.image_file ? getFileUrl(p, p.image_file) : p.image_url}
-                          alt={`Página ${p.page_number}`}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                          decoding="async"
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/40 transition-colors">
-                          <Maximize2 className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </div>
-                      </div>
-                      <DrawerClose asChild>
-                        <button
-                          onClick={() => jumpToPage(index)}
-                          className="text-center text-xs font-medium text-slate-400 group-hover:text-[#ea580c] transition-colors cursor-pointer"
+                  {pages.map((p, index) => {
+                    const pageImg = p.image_file ? getFileUrl(p, p.image_file) : p.image_url || ''
+                    const hasPageImg = Boolean(pageImg && pageImg.trim() !== '')
+                    const hasPageTemplate = Boolean(
+                      (p.template && p.template !== 'default') ||
+                      (p.template === 'default' &&
+                        p.template_data &&
+                        Object.keys(p.template_data).length > 0),
+                    )
+
+                    return (
+                      <div key={p.id} className="group flex flex-col gap-2">
+                        <div
+                          className={cn(
+                            'relative aspect-[0.7118] overflow-hidden rounded-md shadow-md transition-all flex items-center justify-center bg-slate-800 cursor-pointer active:scale-95',
+                            index === (isMobile ? currentPage : currentSpread * 2)
+                              ? 'ring-2 ring-[#ea580c] ring-offset-2 ring-offset-slate-900'
+                              : 'hover:ring-1 hover:ring-white/40',
+                          )}
+                          onClick={() => {
+                            if (hasPageImg) {
+                              setFullscreenImage({
+                                src: pageImg,
+                                alt: `Página ${p.page_number}`,
+                              })
+                            } else {
+                              jumpToPage(index)
+                            }
+                          }}
                         >
-                          {index === 0 ? 'Capa' : `Pág ${p.page_number || index + 1}`}
-                        </button>
-                      </DrawerClose>
-                    </div>
-                  ))}
+                          {hasPageImg ? (
+                            <SmartImage
+                              src={pageImg}
+                              alt={`Página ${p.page_number}`}
+                              className="w-full h-full pointer-events-none"
+                              imgClassName="w-full h-full object-cover"
+                            />
+                          ) : hasPageTemplate ? (
+                            <div className="w-full h-full relative bg-[#fdfcf9] overflow-hidden pointer-events-none">
+                              <div className="absolute inset-0 w-[400%] h-[400%] origin-top-left transform scale-[0.25] overflow-hidden p-2">
+                                <TemplateRenderer page={p} />
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-800 text-slate-400">
+                              <span className="text-[10px] uppercase font-mono text-orange-500">
+                                Pág
+                              </span>
+                              <span className="text-sm font-bold font-mono text-slate-200">
+                                {p.page_number || index + 1}
+                              </span>
+                            </div>
+                          )}
+
+                          {hasPageImg && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/40 transition-colors">
+                              <Maximize2 className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                          )}
+                        </div>
+                        <DrawerClose asChild>
+                          <button
+                            onClick={() => jumpToPage(index)}
+                            className="text-center text-xs font-medium text-slate-400 group-hover:text-[#ea580c] transition-colors cursor-pointer"
+                          >
+                            {index === 0 ? 'Capa' : `Pág ${p.page_number || index + 1}`}
+                          </button>
+                        </DrawerClose>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             </DrawerContent>

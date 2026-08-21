@@ -41,32 +41,44 @@ export function PageRenderer({ page, hotspots = [], isLeft = false }: PageRender
     }
   }
 
+  const imageSrc = page.image_file ? getFileUrl(page, page.image_file) : page.image_url
+  const hasImage = Boolean(imageSrc && imageSrc.trim() !== '')
+  const hasTemplate = Boolean(
+    (page.template && page.template !== 'default') ||
+    (page.template === 'default' &&
+      page.template_data &&
+      Object.keys(page.template_data).length > 0),
+  )
+
   return (
     <div
-      className="relative w-full h-full overflow-hidden bg-white"
+      className="relative w-full h-full overflow-hidden bg-[#faf9f6]"
       onDoubleClick={handleDoubleClick}
     >
       <div
         className="absolute inset-0 transition-transform duration-300 ease-out flex items-center justify-center"
         style={{ transform: `scale(${zoom})`, transformOrigin: origin }}
       >
-        <SmartImage
-          src={page.image_file ? getFileUrl(page, page.image_file) : page.image_url}
-          alt={`Página ${page.page_number}`}
-          className="absolute inset-0 w-full h-full pointer-events-none"
-          imgClassName="w-full h-full object-contain select-none"
-        />
-
-        {/* Template Overlay */}
-        {page.template && page.template !== 'default' && (
-          <div className="absolute inset-0 w-full h-full flex flex-col p-6 md:p-10 pointer-events-none overflow-hidden">
-            <div className="w-full h-full pointer-events-auto">
-              <TemplateRenderer page={page} />
-            </div>
-          </div>
+        {hasImage ? (
+          <SmartImage
+            src={imageSrc}
+            alt={`Página ${page.page_number}`}
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            imgClassName="w-full h-full object-contain select-none"
+          />
+        ) : (
+          /* Template-only page background: elegant white editorial background with subtle paper texture effect */
+          <div className="absolute inset-0 w-full h-full bg-[#fdfcf9] shadow-inner pointer-events-none" />
         )}
-        {page.template === 'default' && page.template_data && (
-          <div className="absolute inset-0 w-full h-full flex flex-col p-6 md:p-10 pointer-events-none overflow-hidden">
+
+        {/* Template Overlay / Content */}
+        {hasTemplate && (
+          <div
+            className={cn(
+              'absolute inset-0 w-full h-full flex flex-col pointer-events-none overflow-hidden',
+              hasImage ? 'p-6 md:p-10' : 'p-4 md:p-8',
+            )}
+          >
             <div className="w-full h-full pointer-events-auto">
               <TemplateRenderer page={page} />
             </div>
