@@ -277,7 +277,7 @@ export async function listBrands(
 
     return response
   } catch (err: any) {
-    // Se o backend retornou 502 ou o endpoint externo estiver indisponível no momento
+    // Se o backend retornou 500, 502 ou erro de rede
     const errorMessage =
       err?.data?.error ||
       err?.message ||
