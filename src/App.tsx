@@ -57,6 +57,7 @@ import SocialEngagementPage from './pages/admin/SocialEngagementPage'
 import SkillsPage from './pages/admin/SkillsPage'
 import LogoSettingsPage from './pages/admin/LogoSettingsPage'
 import PublicAdvertiser from './pages/PublicAdvertiser'
+import VModaPipelinePage from './pages/admin/VModaPipelinePage'
 
 import Partners from './pages/Partners'
 import Advertisements from './pages/Advertisements'
@@ -121,6 +122,7 @@ const App = () => (
                 <Route path="social-posts" element={<SocialPostsPage />} />
                 <Route path="social-analytics" element={<SocialAnalyticsPage />} />
                 <Route path="dashboard" element={<DashboardPage />} />
+                <Route path="vmoda-pipeline" element={<VModaPipelinePage />} />
                 <Route path="ai-persona/chat" element={<AiPersonaChat />} />
                 <Route path="top60" element={<Top60Page />} />
                 <Route path="advertisements" element={<AdvertisementsAdminPage />} />
