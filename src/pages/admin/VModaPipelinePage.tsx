@@ -181,10 +181,10 @@ export default function VModaPipelinePage() {
   const handleQuickAbordagem = async (brand: VModaBrand) => {
     try {
       setActionLoadingId(brand.id)
-      await quickSetAbordagem(brand.id)
+      await quickSetAbordagem(brand.id, brand)
       toast({
         title: 'Status Atualizado',
-        description: `Marca ${brand.nome} marcada como contatada (etapa: Abordagem).`,
+        description: `Marca ${brand.nome} marcada como contatada (etapa: Abordagem). Lead sincronizado na base central.`,
       })
       await loadData()
     } catch (err: any) {
@@ -203,10 +203,10 @@ export default function VModaPipelinePage() {
     const brand = confirmFechamentoBrand
     try {
       setActionLoadingId(brand.id)
-      await quickSetFechamento(brand.id)
+      await quickSetFechamento(brand.id, brand)
       toast({
         title: '🎉 Marca Fechada com Sucesso!',
-        description: `Adesão TOP 60 confirmada e liberada a etapa "⭐ Oferta Upgrade V MODA BRASIL" para ${brand.nome}.`,
+        description: `Adesão TOP 60 confirmada e liberada a etapa "⭐ Oferta Upgrade V MODA BRASIL" para ${brand.nome}. Lead sincronizado na base central.`,
       })
       setConfirmFechamentoBrand(null)
       await loadData()

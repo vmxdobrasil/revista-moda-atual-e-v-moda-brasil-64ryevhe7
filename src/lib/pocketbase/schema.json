@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-13T22:12:26.519Z",
+  "generatedAt": "2026-09-18T00:51:56.475Z",
   "collections": [
     {
       "name": "users",
@@ -3430,6 +3430,138 @@
         "CREATE UNIQUE INDEX idx_contributors_slug ON contributors (slug)",
         "CREATE INDEX idx_contributors_featured ON contributors (featured)",
         "CREATE INDEX idx_contributors_created ON contributors (created DESC)"
+      ]
+    },
+    {
+      "name": "sales_leads",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "marca",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "categoria",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "porte",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "regiao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "contato_nome",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "contato_email",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "contato_whatsapp",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "prioridade",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["baixa", "media", "alta", "maxima"]
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["novo", "abordado", "em_negociacao", "fechado", "perdido"]
+        },
+        {
+          "name": "etapa_atual",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "canal",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "historico_contatos",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "data_ultimo_contato",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "data_proximo_followup",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "id_top60",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "id_marketplace",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_sales_leads_marca ON sales_leads (marca)",
+        "CREATE INDEX idx_sales_leads_status ON sales_leads (status)",
+        "CREATE INDEX idx_sales_leads_prioridade ON sales_leads (prioridade)",
+        "CREATE INDEX idx_sales_leads_id_top60 ON sales_leads (id_top60)",
+        "CREATE INDEX idx_sales_leads_id_marketplace ON sales_leads (id_marketplace)"
       ]
     }
   ]

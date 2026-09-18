@@ -412,20 +412,83 @@ export async function updateBrand(
 
 /**
  * Ação rápida: Marca como abordagem realizada
+ * Opcionalmente recebe a marca completa ou busca no estado local para disparar o upsert
+ * gracioso na coleção sales_leads sem quebrar o fluxo em caso de falha.
  */
-export async function quickSetAbordagem(id: string) {
-  return updateBrand(id, {
+export async function quickSetAbordagem(id: string, brand?: VModaBrand) {
+  const result = await updateBrand(id, {
     pipeline_etapa: 'abordagem',
     status: 'contatada',
   })
+
+  // Sincronização graciosa com sales_leads (degrada graciosamente sem bloquear)
+  try {
+    const targetBrand = brand || getLocalState().find((b) => b.id === id)
+    if (targetBrand) {
+      const { upsertSalesLeadGraceful } = await import('@/services/sales-leads')
+      await upsertSalesLeadGraceful({
+        marca: targetBrand.nome,
+        categoria: targetBrand.categoria,
+        status: 'abordado',
+        etapa_atual: 'abordagem',
+        id_marketplace: targetBrand.id,
+        canal: 'painel_vmoda',
+        data_ultimo_contato: new Date().toISOString(),
+        historico_contatos: [
+          {
+            data: new Date().toISOString(),
+            canal: 'painel_vmoda',
+            resumo: 'Abordagem realizada no pipeline V MODA BRASIL',
+            autor: 'admin_revista',
+          },
+        ],
+      })
+    }
+  } catch (leadSyncErr) {
+    console.warn('Degradação graciosa em quickSetAbordagem (sales_leads):', leadSyncErr)
+  }
+
+  return result
 }
 
 /**
  * Ação rápida: Fechamento de marca (adesão TOP 60 + Oferta Upgrade V MODA BRASIL)
+ * Executa o fechamento no V MODA BRASIL e faz upsert gracioso em sales_leads
+ * com status: fechado e etapa_atual: "⭐ Oferta Upgrade V MODA BRASIL".
  */
-export async function quickSetFechamento(id: string) {
-  return updateBrand(id, {
+export async function quickSetFechamento(id: string, brand?: VModaBrand) {
+  const result = await updateBrand(id, {
     pipeline_etapa: 'fechamento',
     status: 'FECHADO',
   })
+
+  // Sincronização graciosa com sales_leads
+  try {
+    const targetBrand = brand || getLocalState().find((b) => b.id === id)
+    if (targetBrand) {
+      const { upsertSalesLeadGraceful } = await import('@/services/sales-leads')
+      await upsertSalesLeadGraceful({
+        marca: targetBrand.nome,
+        categoria: targetBrand.categoria,
+        status: 'fechado',
+        etapa_atual: '⭐ Oferta Upgrade V MODA BRASIL',
+        id_marketplace: targetBrand.id,
+        canal: 'painel_vmoda',
+        data_ultimo_contato: new Date().toISOString(),
+        historico_contatos: [
+          {
+            data: new Date().toISOString(),
+            canal: 'painel_vmoda',
+            resumo:
+              'Fechamento concluído. Adesão TOP 60 ativada e liberada Oferta Upgrade V MODA BRASIL.',
+            autor: 'admin_revista',
+          },
+        ],
+      })
+    }
+  } catch (leadSyncErr) {
+    console.warn('Degradação graciosa em quickSetFechamento (sales_leads):', leadSyncErr)
+  }
+
+  return result
 }
