@@ -115,14 +115,32 @@ const App = () => (
               <Route path="/cadastro" element={<Register />} />
               <Route path="/assinar" element={<Register />} />
               <Route path="/register" element={<Register />} />
-              {/* Rota restrita Store Assets (também acessível diretamente em /store-assets para conveniência do admin) */}
-              <Route path="/store-assets" element={<AdminLayout />}>
-                <Route index element={<StoreAssetsPage />} />
+              {/* Recursos da Loja (Google Play Store Assets) - ACESSO PÚBLICO (CEO/Valter & time sem login) */}
+              <Route element={<Layout />}>
+                <Route
+                  path="/store-assets"
+                  element={
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+                      <StoreAssetsPage />
+                    </div>
+                  }
+                />
+              </Route>
+
+              {/* Alias /admin/store-assets com acesso público */}
+              <Route element={<Layout />}>
+                <Route
+                  path="/admin/store-assets"
+                  element={
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+                      <StoreAssetsPage />
+                    </div>
+                  }
+                />
               </Route>
 
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<DashboardPage />} />
-                <Route path="store-assets" element={<StoreAssetsPage />} />
                 <Route path="editions" element={<EditionsPage />} />
                 <Route path="editions/new" element={<EditionCreatePage />} />
                 <Route path="editions/:id" element={<EditionEditPage />} />

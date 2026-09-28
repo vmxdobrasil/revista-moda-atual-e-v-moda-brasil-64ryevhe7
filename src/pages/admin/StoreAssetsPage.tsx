@@ -198,17 +198,24 @@ export default function StoreAssetsPage() {
     }
   }
 
-  // Helper para auditoria graciosa
+  // Helper para auditoria graciosa (suporta acesso público ou autenticado)
   const logAdminAction = async (action: string, metadata: any) => {
     try {
+      const isLogged = pb.authStore.isValid
+      const user = pb.authStore.model
       await pb.collection('audit_logs').create({
         integration_name: 'google_play_store_assets',
         integration_type: 'event',
         status: 'success',
         executed_at: new Date().toISOString(),
-        agent_name: 'Admin Store Generator',
+        agent_name: isLogged
+          ? user?.email || 'Admin Store Generator'
+          : 'Acesso Público (Valter / CEO)',
         workflow_id: action,
-        error_message: JSON.stringify(metadata),
+        error_message: JSON.stringify({
+          ...metadata,
+          access_type: isLogged ? 'authenticated' : 'public',
+        }),
       })
     } catch {
       // Ignora silenciosamente se audit_logs tiver restrição ou offline

@@ -92,6 +92,14 @@ export function SiteFooter() {
                   Termos de Uso
                 </Link>
               </li>
+              <li>
+                <Link
+                  to="/store-assets"
+                  className="hover:text-white transition-colors text-orange-400"
+                >
+                  Google Play Store Assets
+                </Link>
+              </li>
             </ul>
           </div>
 
