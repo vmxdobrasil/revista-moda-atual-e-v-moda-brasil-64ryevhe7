@@ -1,15 +1,15 @@
 <!-- HTML template for the frontend react app: https://developer.mozilla.org/en-US/docs/Web/HTML -->
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Revista MODA ATUAL Digital</title>
-    <meta name="description" content="Revista MODA ATUAL Digital - A sua fonte de moda e estilo." />
+    <title>Revista MODA ATUAL Digital — Hub B2B de Moda</title>
+    <meta name="description" content="Revista de moda digital e hub de negócios do mercado atacadista brasileiro. Edições interativas, TOP 60 marcas, eventos e gestão de leads B2B." />
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#E91E63" />
+    <meta name="theme-color" content="#ea580c" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Moda Atual" />
     <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
     <meta name="author" content="Skip (https://goskip.dev)" />
@@ -26,6 +26,14 @@
 
   <body>
     <div id="root"></div>
+    <script>
+      // Immediate Service Worker registration on root scope (PWABuilder / Google Play TWA requirement)
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function (err) {
+          console.warn('SW registration fallback:', err);
+        });
+      }
+    </script>
     <!-- @skip-protected: Do not remove. Required for app features. -->
     <script src="https://goskip.dev/skip.js"></script>
     <!-- @skip-protected: Do not remove. App entrypoint. -->

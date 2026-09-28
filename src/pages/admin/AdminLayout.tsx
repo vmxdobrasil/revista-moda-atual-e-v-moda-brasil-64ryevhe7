@@ -34,6 +34,7 @@ import {
   Target,
   Eye,
   Handshake,
+  Smartphone,
 } from 'lucide-react'
 import { CommandBar } from '@/components/CommandBar'
 import { useFailureAlerts } from '@/hooks/use-failure-alerts'
@@ -81,6 +82,13 @@ export function AdminLayout() {
           onClick={() => setSidebarOpen(false)}
         >
           <LayoutDashboard className="w-5 h-5" /> Dashboard
+        </Link>
+        <Link
+          to="/store-assets"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg bg-orange-50 text-orange-700 font-semibold hover:bg-orange-100 transition-colors border border-orange-200"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <Smartphone className="w-5 h-5 text-orange-600" /> Google Play Assets
         </Link>
         <Link
           to="/admin/editions"

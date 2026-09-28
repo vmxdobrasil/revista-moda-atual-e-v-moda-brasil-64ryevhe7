@@ -74,15 +74,6 @@ export default function TwoFactorVerify() {
           Digite o código de verificação para continuar.
         </p>
 
-        {otp && (
-          <div className="mb-4 p-3 rounded-lg bg-blue-50 border border-blue-200">
-            <p className="text-xs text-blue-600 font-medium mb-1">
-              Código de verificação (demonstração):
-            </p>
-            <p className="text-2xl font-bold text-blue-700 tracking-widest text-center">{otp}</p>
-          </div>
-        )}
-
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 flex items-start gap-2 animate-fade-in">
             <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />

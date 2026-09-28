@@ -36,6 +36,9 @@ import PromptRefinementPage from './pages/admin/PromptRefinementPage'
 import PromptsPage from './pages/admin/PromptsPage'
 import About from './pages/About'
 import AboutPage from './pages/admin/AboutPage'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsOfUse from './pages/TermsOfUse'
+import StoreAssetsPage from './pages/admin/StoreAssetsPage'
 import Contributors from './pages/Contributors'
 import ContributorProfile from './pages/ContributorProfile'
 import ForgotPassword from './pages/ForgotPassword'
@@ -100,6 +103,10 @@ const App = () => (
               <Route path="/reader/latest" element={<MagazineReader isLatest />} />
               <Route path="/reader/:id" element={<MagazineReader />} />
 
+              {/* Páginas Legais Públicas (Google Play Store & LGPD) */}
+              <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+              <Route path="/termos-de-uso" element={<TermsOfUse />} />
+
               <Route path="/public/anunciante" element={<PublicAdvertiser />} />
               <Route path="/esqueci-senha" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
@@ -108,8 +115,14 @@ const App = () => (
               <Route path="/cadastro" element={<Register />} />
               <Route path="/assinar" element={<Register />} />
               <Route path="/register" element={<Register />} />
+              {/* Rota restrita Store Assets (também acessível diretamente em /store-assets para conveniência do admin) */}
+              <Route path="/store-assets" element={<AdminLayout />}>
+                <Route index element={<StoreAssetsPage />} />
+              </Route>
+
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<DashboardPage />} />
+                <Route path="store-assets" element={<StoreAssetsPage />} />
                 <Route path="editions" element={<EditionsPage />} />
                 <Route path="editions/new" element={<EditionCreatePage />} />
                 <Route path="editions/:id" element={<EditionEditPage />} />

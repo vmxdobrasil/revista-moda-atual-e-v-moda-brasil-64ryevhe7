@@ -82,6 +82,16 @@ export function SiteFooter() {
                   Sobre a Revista
                 </Link>
               </li>
+              <li>
+                <Link to="/politica-de-privacidade" className="hover:text-white transition-colors">
+                  Política de Privacidade
+                </Link>
+              </li>
+              <li>
+                <Link to="/termos-de-uso" className="hover:text-white transition-colors">
+                  Termos de Uso
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -114,9 +124,15 @@ export function SiteFooter() {
             © {new Date().getFullYear()} Revista MODA ATUAL Digital & V MODA BRASIL. Todos os
             direitos reservados.
           </p>
-          <p className="flex items-center gap-1">
-            Plataforma desenvolvida para o atacado de moda brasileiro.
-          </p>
+          <div className="flex items-center gap-4">
+            <Link to="/politica-de-privacidade" className="hover:text-slate-300 transition-colors">
+              Privacidade (LGPD)
+            </Link>
+            <span>•</span>
+            <Link to="/termos-de-uso" className="hover:text-slate-300 transition-colors">
+              Termos de Uso
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

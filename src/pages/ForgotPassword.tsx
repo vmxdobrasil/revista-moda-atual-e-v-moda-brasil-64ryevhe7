@@ -62,20 +62,6 @@ export default function ForgotPassword() {
                 Se o e-mail existir, você receberá um link de redefinição.
               </p>
             </div>
-            {resetUrl && (
-              <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
-                <p className="text-xs text-blue-600 mb-2 font-medium">
-                  Link de redefinição (demonstração):
-                </p>
-                <a
-                  href={resetUrl}
-                  className="text-sm text-blue-700 hover:underline flex items-center gap-1 break-all"
-                >
-                  <ExternalLink className="w-3 h-3 shrink-0" />
-                  Abrir página de redefinição
-                </a>
-              </div>
-            )}
             <Button asChild className="w-full bg-orange-500 hover:bg-orange-600 text-white">
               <Link to="/admin/login">Voltar para login</Link>
             </Button>
@@ -99,9 +85,9 @@ export default function ForgotPassword() {
                   setEmail(e.target.value)
                   setError('')
                 }}
-                placeholder="admin@exemplo.com"
+                placeholder="seu@email.com"
               />
-            </div>
+            </div>{' '}
             <Button
               type="submit"
               className="w-full bg-orange-500 hover:bg-orange-600 text-white"
